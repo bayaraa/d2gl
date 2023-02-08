@@ -1,0 +1,44 @@
+# Visual Studio generated .clang-format file
+
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AllowShortBlocksOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+BasedOnStyle: LLVM
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+BreakBeforeBraces: Custom
+ColumnLimit: 0
+Cpp11BracedListStyle: false
+FixNamespaceComments: false
+AlignOperands: false
+ContinuationIndentWidth: 2
+PenaltyIndentedWhitespace: 0
+AllowShortCaseLabelsOnASingleLine: true
+IndentCaseLabels: true
+IndentPPDirectives: None
+IndentWidth: 4
+TabWidth: 4
+UseTab: Always
+MaxEmptyLinesToKeep: 10
+NamespaceIndentation: None
+PointerAlignment: Left
+AlignConsecutiveMacros: false
+AlignArrayOfStructures: None
+SortIncludes: true
+IncludeCategories:
+  - Regex: '.*pch.h'
+    Priority: -1
+  - Regex: '.*'
+    Priority: 1

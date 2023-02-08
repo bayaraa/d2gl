@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <GameDir>C:\Games\Diablo II 1.13c\</GameDir>
+    <Game114d>C:\Games\Diablo II 1.14d\</Game114d>
+    <Game113d>C:\Games\Diablo II 1.13d\</Game113d>
+    <Game113c>C:\Games\Diablo II 1.13c\</Game113c>
+    <Game112a>C:\Games\Diablo II 1.12\</Game112a>
+    <Game111b>C:\Games\Diablo II 1.11b\</Game111b>
+    <Game111a>C:\Games\Diablo II 1.11\</Game111a>
+    <Game110f>C:\Games\Diablo II 1.10\</Game110f>
+    <Game109d>C:\Games\Diablo II 1.09d\</Game109d>
+    <GameDirPD2>C:\Games\Diablo II\ProjectD2\</GameDirPD2>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="GameDir">
+      <Value>$(GameDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="Game114d">
+      <Value>$(Game114d)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game113d">
+      <Value>$(Game113d)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game113c">
+      <Value>$(Game113c)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game112a">
+      <Value>$(Game112a)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game111b">
+      <Value>$(Game111b)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game111a">
+      <Value>$(Game111a)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game110f">
+      <Value>$(Game110f)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Game109d">
+      <Value>$(Game109d)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GameDirPD2">
+      <Value>$(GameDirPD2)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

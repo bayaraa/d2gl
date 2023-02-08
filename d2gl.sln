@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glide3x", "glide3x\glide3x.vcxproj", "{B824C3D6-1268-442E-B26F-A857C905C310}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddraw", "ddraw\ddraw.vcxproj", "{C24BA525-9B5F-4FA3-922E-8D1C1DCABFC0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d2gl", "d2gl\d2gl.vcxitems", "{B72EA5EF-5E60-4404-A36B-6657DB61241C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B824C3D6-1268-442E-B26F-A857C905C310}.Debug|x86.ActiveCfg = Debug|Win32
+		{B824C3D6-1268-442E-B26F-A857C905C310}.Debug|x86.Build.0 = Debug|Win32
+		{B824C3D6-1268-442E-B26F-A857C905C310}.Release|x86.ActiveCfg = Release|Win32
+		{B824C3D6-1268-442E-B26F-A857C905C310}.Release|x86.Build.0 = Release|Win32
+		{C24BA525-9B5F-4FA3-922E-8D1C1DCABFC0}.Debug|x86.ActiveCfg = Debug|Win32
+		{C24BA525-9B5F-4FA3-922E-8D1C1DCABFC0}.Debug|x86.Build.0 = Debug|Win32
+		{C24BA525-9B5F-4FA3-922E-8D1C1DCABFC0}.Release|x86.ActiveCfg = Release|Win32
+		{C24BA525-9B5F-4FA3-922E-8D1C1DCABFC0}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4EE1AD4C-3988-411C-BD79-D93CAD3A1416}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		d2gl\d2gl.vcxitems*{b72ea5ef-5e60-4404-a36b-6657db61241c}*SharedItemsImports = 9
+		d2gl\d2gl.vcxitems*{b824c3d6-1268-442e-b26f-a857c905c310}*SharedItemsImports = 4
+	EndGlobalSection
+EndGlobal
