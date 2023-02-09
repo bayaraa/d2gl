@@ -73,10 +73,17 @@ Context::Context()
 		trace("GL_KHR_debug enabled!");
 	}
 
+	if (glewIsSupported("GL_ARB_compute_shader"))
+		App.gl_caps.compute_shader = true;
+
+	if (glewIsSupported("GL_VERSION_4_0"))
+		App.gl_caps.independent_blending = true;
+
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
-	glEnable(GL_BLEND);
+
+	glBlendEquation(GL_FUNC_ADD);
 
 	uint32_t offset = 0;
 	uint32_t* indices = new uint32_t[MAX_INDICES];
@@ -154,10 +161,8 @@ void Context::bindDefaultFrameBuffer()
 	flushVertices();
 
 	FrameBuffer::unBind();
-
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, App.window.size.x, App.window.size.y);
 }
 
 void Context::presentFrame()

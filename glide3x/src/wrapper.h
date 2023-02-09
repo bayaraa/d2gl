@@ -12,7 +12,7 @@ namespace d2gl {
 
 #define GL_TEXTURE_SLOT_GAME 1
 #define GL_TEXTURE_SLOT_MAP 2
-#define GL_TEXTURE_SLOT_SCALE 3
+#define GL_TEXTURE_SLOT_UPSCALE 3
 #define GL_TEXTURE_SLOT_POSTFX1 4
 #define GL_TEXTURE_SLOT_POSTFX2 5
 #define GL_TEXTURE_SLOT_LUT 6
@@ -32,7 +32,6 @@ class Wrapper {
 
 	std::unique_ptr<UniformBuffer> m_game_color_ubo;
 	std::unique_ptr<TextureManager> m_game_texture;
-
 	std::unique_ptr<FrameBuffer> m_game_framebuffer;
 	std::unique_ptr<Pipeline> m_game_pipeline;
 	uint32_t m_current_blend_index = 0;
@@ -45,20 +44,19 @@ class Wrapper {
 	std::unique_ptr<UniformBuffer> m_upscale_ubo;
 	std::unique_ptr<Texture> m_upscale_texture;
 	std::unique_ptr<Pipeline> m_upscale_pipeline;
-	int m_current_shader = 0;
+	int m_current_shader = -1;
 
 	glm::vec3 m_sharpen_data;
 
 	std::unique_ptr<UniformBuffer> m_postfx_ubo;
-	// std::unique_ptr<RenderPass> m_postfx_renderpass;
-	std::array<std::unique_ptr<FrameBuffer>, 2> m_postfx_framebuffer;
+	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
 	std::unique_ptr<Pipeline> m_postfx_pipeline;
 
 public:
 	Wrapper();
 	~Wrapper();
 	void onResize();
-	void onShaderChange(bool texture, bool pipeline = false);
+	void onShaderChange(bool texture = false);
 	void onStageChange();
 
 	void grBufferClear();

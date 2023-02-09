@@ -1,44 +1,46 @@
-#version 450
+#version 330
 
-#ifdef SPIRV
-#define layout_binding_std140(a) layout(binding = a, std140)
-#define layout_location(a) layout(location = a)
-#define layout_binding(a) layout(binding = a)
-#else
-#define layout_binding_std140(a) layout(std140)
-#define layout_location(a)
-#define layout_binding(a)
-#endif
+/*
+   4xGLSLHqFilter shader
+   
+   Copyright (C) 2005 guest(r) - guest.r@gmail.com
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
 
 // =============================================================
 #ifdef VERTEX
 
-layout_binding_std140(0) uniform ubo_MVPs {
-	mat4 u_mvp_game;
-	mat4 u_mvp_upscale;
-	mat4 u_mvp_movie;
-	mat4 u_mvp_normal;
-};
-
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
 
-layout_location(0) out vec2 v_TexCoord;
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
 
 void main()
 {
-	gl_Position = u_mvp_movie * vec4(Position, 0.0, 1.0);
+	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
 }
 
 // =============================================================
 #elif FRAGMENT
 
-layout_binding(1) uniform sampler2D u_Texture;
-
-layout_location(0) in vec2 v_TexCoord;
-
 layout(location = 0) out vec4 FragColor;
+
+uniform sampler2D u_Texture;
+
+in vec2 v_TexCoord;
 
 vec2 u_TexSize = vec2(640.0, 480.0);
 vec2 u_RelSize = 1.0 / u_TexSize;

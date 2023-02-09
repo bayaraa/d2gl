@@ -22,51 +22,36 @@
 	Incorporates some of the ideas from SABR shader. Thanks to Joshua Street.
 */
 
-#ifdef SPIRV
-#define layout_binding_std140(a) layout(binding = a, std140)
-#define layout_location(a) layout(location = a)
-#define layout_binding(a) layout(binding = a)
-#else
-#define layout_binding_std140(a) layout(std140)
-#define layout_location(a)
-#define layout_binding(a)
-#endif
-
 // =============================================================
 #ifdef VERTEX
-
-layout_binding_std140(0) uniform ubo_MVPs {
-	mat4 u_mvp_game;
-	mat4 u_mvp_upscale;
-	mat4 u_mvp_movie;
-	mat4 u_mvp_normal;
-};
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
 
-layout_location(0) out vec2 v_TexCoord;
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
 
 void main()
 {
-	gl_Position = u_mvp_upscale * vec4(Position, 0.0, 1.0);
+	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
 }
 
 // =============================================================
 #elif FRAGMENT
 
-layout_binding_std140(1) uniform ubo_Sizes {
+layout(location = 0) out vec4 FragColor;
+
+layout(std140) uniform ubo_Metrics {
 	vec2 u_OutSize;
 	vec2 u_TexSize;
 	vec2 u_RelSize;
 };
 
-layout_binding(2) uniform sampler2D u_Texture;
+uniform sampler2D u_Texture;
 
-layout_location(0) in vec2 v_TexCoord;
-
-layout(location = 0) out vec4 FragColor;
+in vec2 v_TexCoord;
 
 #define CoefLuma vec3(0.2126, 0.7152, 0.0722)
 

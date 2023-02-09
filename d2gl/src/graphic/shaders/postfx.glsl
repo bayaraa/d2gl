@@ -1,35 +1,43 @@
-#version 450
+#version 330
 
-#ifdef SPIRV
-#define layout_binding_std140(a) layout(binding = a, std140)
-#define layout_location(a) layout(location = a)
-#define layout_binding(a) layout(binding = a)
-#else
-#define layout_binding_std140(a) layout(std140)
-#define layout_location(a)
-#define layout_binding(a)
-#endif
+/*
+ 	FXAA @license
+ 	Copyright (c) 2011 NVIDIA Corporation. All rights reserved.
+ 	
+ 	TO  THE MAXIMUM  EXTENT PERMITTED  BY APPLICABLE  LAW, THIS SOFTWARE  IS PROVIDED
+ 	*AS IS*  AND NVIDIA AND  ITS SUPPLIERS DISCLAIM  ALL WARRANTIES,  EITHER  EXPRESS
+ 	OR IMPLIED, INCLUDING, BUT NOT LIMITED  TO, NONINFRINGEMENT,IMPLIED WARRANTIES OF
+ 	MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  IN NO EVENT SHALL  NVIDIA 
+ 	OR ITS SUPPLIERS BE  LIABLE  FOR  ANY  DIRECT, SPECIAL,  INCIDENTAL,  INDIRECT,  OR  
+ 	CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION,  DAMAGES FOR LOSS 
+ 	OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY 
+ 	OTHER PECUNIARY LOSS) ARISING OUT OF THE  USE OF OR INABILITY  TO USE THIS SOFTWARE, 
+ 	EVEN IF NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+*/
+/*
+	LumaSharpen
+	by Christian Cann Schuldt Jensen ~ CeeJay.dk
+	
+	It blurs the original pixel with the surrounding pixels and then subtracts this blur to sharpen the image.
+	It does this in luma to avoid color artifacts and allows limiting the maximum sharpning to avoid or lessen halo artifacts.
+	This is similar to using Unsharp Mask in Photoshop.
+*/
 
 // =============================================================
 #ifdef VERTEX
-
-layout_binding_std140(0) uniform ubo_MVPs {
-	mat4 u_mvp_game;
-	mat4 u_mvp_upscale;
-	mat4 u_mvp_movie;
-	mat4 u_mvp_normal;
-};
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 5) in ivec4 Flags;
 
-layout_location(0) out vec2 v_TexCoord;
-layout_location(1) flat out ivec4 v_Flags;
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
+flat out ivec4 v_Flags;
 
 void main()
 {
-	gl_Position = u_mvp_normal * vec4(Position, 0.0, 1.0);
+	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
 	v_Flags = Flags;
 }
@@ -37,7 +45,9 @@ void main()
 // =============================================================
 #elif FRAGMENT
 
-layout_binding_std140(1) uniform ubo_Sizes {
+layout(location = 0) out vec4 FragColor;
+
+layout(std140) uniform ubo_Metrics {
 	float u_SharpStrength;
 	float u_SharpClamp;
 	float u_Radius;
@@ -45,12 +55,10 @@ layout_binding_std140(1) uniform ubo_Sizes {
 	vec2 u_RelSize;
 };
 
-layout_binding(2) uniform sampler2D u_Texture;
+uniform sampler2D u_Texture;
 
-layout_location(0) in vec2 v_TexCoord;
-layout_location(1) flat in ivec4 v_Flags;
-
-layout(location = 0) out vec4 FragColor;
+in vec2 v_TexCoord;
+flat in ivec4 v_Flags;
 
 float FxaaLuma(vec3 rgb)
 {

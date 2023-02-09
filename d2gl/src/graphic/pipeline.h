@@ -2,9 +2,10 @@
 
 namespace d2gl {
 
+class UniformBuffer;
+
 enum class BindingType {
 	UniformBuffer,
-	FrameBuffer,
 	Texture,
 };
 
@@ -27,8 +28,14 @@ struct ShaderSource {
 struct BindingInfo {
 	BindingType type;
 	std::string name;
-	void* ptr = nullptr;
-	int index = 0;
+	uint32_t value;
+};
+
+struct BlendFactors {
+	GLenum src_color;
+	GLenum dst_color;
+	GLenum src_alpha;
+	GLenum dst_alpha;
 };
 
 typedef std::vector<std::vector<BlendType>> AttachmentBlends;
@@ -36,7 +43,7 @@ typedef std::vector<std::vector<BlendType>> AttachmentBlends;
 struct PipelineCreateInfo {
 	ShaderSource* shader;
 	std::vector<BindingInfo> bindings;
-	AttachmentBlends attachment_blends = { { BlendType::Default } };
+	AttachmentBlends attachment_blends = { { BlendType::NoBlend } };
 };
 
 class Pipeline {
@@ -56,8 +63,10 @@ public:
 	inline const GLuint getId() const { return m_id; }
 
 private:
+	void setBlendState(uint32_t index = 0);
 	GLint getUniformLocation(const std::string& name);
 
+	static BlendFactors blendFactor(BlendType type);
 	static GLuint createShader(const char* source, int type);
 };
 

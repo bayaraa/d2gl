@@ -30,17 +30,6 @@ Wrapper::Wrapper()
 		{ 5, { 3, BlendType::SAlpha_OneMinusSAlpha } },
 	};
 
-	// UniformBufferCreateInfo ubo_mvps_ci;
-	// ubo_mvps_ci.variables = {
-	//	{ "mvp_game", sizeof(glm::mat4) },
-	//	{ "mvp_upscale", sizeof(glm::mat4) },
-	//	{ "mvp_movie", sizeof(glm::mat4) },
-	//	{ "mvp_normal", sizeof(glm::mat4) },
-	// };
-	// m_ubo_mvps = Context::createUniformBuffer(ubo_mvps_ci);
-	// m_ubo_mvps->updateDataMat4f("mvp_normal", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
-
-
 	TextureCreateInfo movie_texture_ci;
 	movie_texture_ci.size = { 640, 480 };
 	movie_texture_ci.min_filter = GL_LINEAR;
@@ -50,7 +39,7 @@ Wrapper::Wrapper()
 
 	PipelineCreateInfo movie_pipeline_ci;
 	movie_pipeline_ci.shader = (ShaderSource*)&g_shader_movie;
-	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", m_movie_texture.get() } };
+	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", m_movie_texture->getSlot() } };
 	m_movie_pipeline = Context::createPipeline(movie_pipeline_ci);
 
 	UniformBufferCreateInfo ubo_ci;
@@ -63,27 +52,13 @@ Wrapper::Wrapper()
 	PipelineCreateInfo game_pipeline_ci;
 	game_pipeline_ci.shader = (ShaderSource*)&g_shader_game;
 	game_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Colors", m_game_color_ubo.get() },
-		{ BindingType::Texture, "u_Texture", m_game_texture->getTexture() },
+		{ BindingType::UniformBuffer, "ubo_Colors", m_game_color_ubo->getBinding() },
+		{ BindingType::Texture, "u_Texture", m_game_texture->getTexture()->getSlot() },
 	};
 	game_pipeline_ci.attachment_blends.clear();
 	for (auto& blend : m_blend_types)
 		game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha });
 	m_game_pipeline = Context::createPipeline(game_pipeline_ci);
-
-
-
-	/*
-
-	PipelineCreateInfo prefx_pipeline_ci;
-	prefx_pipeline_ci.layout_bindings = {
-		{ DescriptorType::UniformBuffer, ShaderStage::Vertex, "ubo_MVPs" },
-		{ DescriptorType::ImageSampler, ShaderStage::Fragment, "u_Texture" },
-		{ DescriptorType::ImageSampler, ShaderStage::Fragment, "u_LUTTexture" },
-	};
-	prefx_pipeline_ci.vertex_members = { VxMember::Position, VxMember::TexCoord, VxMember::Flags };
-	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
-	m_prefx_pipeline->allocateDescriptorSets();
 
 	TextureCreateInfo texture_create_info;
 	texture_create_info.size = { 1024, 32 };
@@ -92,50 +67,37 @@ Wrapper::Wrapper()
 	m_lut_texture = Context::createTexture(texture_create_info);
 
 	auto image_data = helpers::loadImage("assets\\textures\\lut.png", false);
-	m_lut_texture->fillArray(image_data.data);
+	m_lut_texture->fillImage(image_data, 1, 14);
 	helpers::clearImage(image_data);
 
-	UniformBufferCreateInfo upscale_ubo_ci;
-	upscale_ubo_ci.variables = {
-		{ "out_size", sizeof(glm::vec2) },
-		{ "tex_size", sizeof(glm::vec2) },
-		{ "rel_size", sizeof(glm::vec2) },
+	PipelineCreateInfo prefx_pipeline_ci;
+	prefx_pipeline_ci.shader = (ShaderSource*)&g_shader_prefx;
+	prefx_pipeline_ci.bindings = {
+		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_GAME },
+		{ BindingType::Texture, "u_LUTTexture", m_lut_texture->getSlot() },
 	};
+	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
+	m_prefx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
+
+	UniformBufferCreateInfo upscale_ubo_ci;
+	upscale_ubo_ci.variables = { { "out_size", sizeof(glm::vec2) }, { "tex_size", sizeof(glm::vec2) }, { "rel_size", sizeof(glm::vec2) } };
 	m_upscale_ubo = Context::createUniformBuffer(upscale_ubo_ci);
 
-	PipelineCreateInfo upscale_pipeline_ci;
-	upscale_pipeline_ci.layout_bindings = {
-		{ DescriptorType::UniformBuffer, ShaderStage::Vertex, "ubo_MVPs" },
-		{ DescriptorType::UniformBuffer, ShaderStage::Fragment, "ubo_Sizes" },
-		{ DescriptorType::ImageSampler, ShaderStage::Fragment, "u_Texture" },
-	};
-	upscale_pipeline_ci.dynamic_states = DynamicStates::Viewport | DynamicStates::Scissor;
-	m_upscale_pipeline = Context::createPipeline(upscale_pipeline_ci);
-	m_upscale_pipeline->allocateDescriptorSets();
-
 	UniformBufferCreateInfo postfx_ubo_ci;
-	postfx_ubo_ci.variables = {
-		{ "sharpen", sizeof(glm::vec4) },
-		{ "rel_size", sizeof(glm::vec2) },
-	};
+	postfx_ubo_ci.variables = { { "sharpen", sizeof(glm::vec4) }, { "rel_size", sizeof(glm::vec2) } };
 	m_postfx_ubo = Context::createUniformBuffer(postfx_ubo_ci);
 
-	PipelineCreateInfo postfx_pipeline_ci;
-	postfx_pipeline_ci.layout_bindings = {
-		{ DescriptorType::UniformBuffer, ShaderStage::Vertex, "ubo_MVPs" },
-		{ DescriptorType::UniformBuffer, ShaderStage::Fragment, "ubo_Sizes" },
-		{ DescriptorType::ImageSampler, ShaderStage::Fragment, "u_Texture" },
-	};
-	postfx_pipeline_ci.vertex_members = { VxMember::Position, VxMember::TexCoord, VxMember::Flags };
-	postfx_pipeline_ci.descriptor_set_count = 2;
-	postfx_pipeline_ci.dynamic_states = DynamicStates::Viewport | DynamicStates::Scissor;
-	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
-	m_postfx_pipeline->allocateDescriptorSets();
-
-	m_current_shader = App.shader.selected;
-
 	m_sharpen_data = { App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value };
-	m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));*/
+	m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));
+
+	PipelineCreateInfo postfx_pipeline_ci;
+	postfx_pipeline_ci.shader = (ShaderSource*)&g_shader_postfx;
+	postfx_pipeline_ci.bindings = {
+		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
+		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_POSTFX1 },
+	};
+	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
+	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
 }
 
 Wrapper::~Wrapper()
@@ -157,39 +119,13 @@ void Wrapper::onResize()
 
 	if (game_resized) {
 		m_game_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
-		//	m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
-		//	m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
+		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
+		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
 
-		//	RenderPassCreateInfo game_renderpass_ci;
-		//	game_renderpass_ci.size = game_size;
-		//	game_renderpass_ci.attachments = { { true, { 0.0f, 0.0f, 0.0f, 1.0f } }, { true, { 0.0f, 0.0f, 0.0f, 0.0f } } };
-		//	m_game_renderpass[0] = Context::createRenderPass(game_renderpass_ci);
-		//	game_renderpass_ci.attachments = { { false }, { false } };
-		//	m_game_renderpass[1] = Context::createRenderPass(game_renderpass_ci);
-
-		//	FrameBufferCreateInfo game_frambuffer_ci;
-		//	game_frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_GAME, ImageUsageFlag::Sampled | ImageUsageFlag::ColorAttachment | ImageUsageFlag::TransferSrc }, { GL_TEXTURE_SLOT_MAP } };
-		//	game_frambuffer_ci.renderpass = m_game_renderpass[0].get();
-		//	m_game_framebuffer = Context::createFrameBuffer(game_frambuffer_ci);
-
-		//	VecBlendTypes blend_types;
-		//	for (auto& blend : m_blend_map)
-		//		blend_types.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha });
-		//	m_game_pipeline->createPipelines(g_shader_game, m_game_renderpass[0].get(), blend_types);
-
-		//	TextureCreateInfo texture_create_info;
-		//	texture_create_info.size = App.game.size;
-		//	m_prefx_texture = Context::createTexture(texture_create_info);
-
-		//	WriteSets write_sets = {
-		//		{ { m_ubo_mvps.get() } },
-		//		{ { m_prefx_texture.get() } },
-		//		{ { m_lut_texture.get() } },
-		//	};
-		//	m_prefx_pipeline->updateDescriptorSet(write_sets);
-		//	m_prefx_pipeline->createPipelines(g_shader_prefx, m_game_renderpass[1].get(), { { BlendType::NoBlend, BlendType::SAlpha_OneMinusSAlpha } });
-
-		//	onShaderChange(true);
+		FrameBufferCreateInfo game_frambuffer_ci;
+		game_frambuffer_ci.size = game_size;
+		game_frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_GAME }, { GL_TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } } };
+		m_game_framebuffer = Context::createFrameBuffer(game_frambuffer_ci);
 	}
 
 	if (window_resized) {
@@ -198,61 +134,43 @@ void Wrapper::onResize()
 		glm::vec2 scale = { (float)window_size.x / 640, (float)window_size.y / 360 };
 		float offset_x = ((scale.x > scale.y) ? scale.x / scale.y : 1.0f) * 1.00f;
 		float offset_y = ((scale.x < scale.y) ? scale.y / scale.x : 1.0f) * 0.75f;
-		m_movie_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f * offset_x, 1.0f * offset_x, -1.0f * offset_y, 1.0f * offset_y));
+		m_movie_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f * offset_x, 1.0f * offset_x, 1.0f * offset_y, -1.0f * offset_y));
 	}
 
-	// m_ubo_mvps->updateDataMat4f("mvp_upscale", glm::ortho(-App.game.tex_scale.x, App.game.tex_scale.x, -App.game.tex_scale.y, App.game.tex_scale.y));
-	// m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
-	// m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
+	FrameBufferCreateInfo frambuffer_ci;
+	frambuffer_ci.size = App.viewport.size;
+	frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
+	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
 
-	// RenderPassCreateInfo renderpass_ci;
-	// renderpass_ci.attachments = { { false } };
-	// renderpass_ci.size = App.viewport.size;
-	// m_postfx_renderpass = Context::createRenderPass(renderpass_ci);
-
-	// FrameBufferCreateInfo frambuffer_ci;
-	// frambuffer_ci.renderpass = m_postfx_renderpass.get();
-	// frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX1, ImageUsageFlag::Sampled | ImageUsageFlag::ColorAttachment, Filter::Linear, Filter::Linear } };
-	// m_postfx_framebuffer[0] = Context::createFrameBuffer(frambuffer_ci);
-	// frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX2, ImageUsageFlag::Sampled | ImageUsageFlag::ColorAttachment, Filter::Linear, Filter::Linear } };
-	// m_postfx_framebuffer[1] = Context::createFrameBuffer(frambuffer_ci);
-
-	// for (size_t i = 0; i < 2; i++) {
-	//	WriteSets write_sets = {
-	//		{ { m_ubo_mvps.get() } },
-	//		{ { m_postfx_ubo.get() } },
-	//		{ { m_postfx_framebuffer[i].get(), 0 } },
-	//	};
-	//	m_postfx_pipeline->updateDescriptorSet(write_sets, i);
-	// }
-	// m_postfx_pipeline->createPipelines(g_shader_postfx, { App.viewport.size });
-
-	onShaderChange(false, true);
+	onShaderChange(game_resized);
+	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
+	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 }
 
-void Wrapper::onShaderChange(bool texture, bool pipeline)
+void Wrapper::onShaderChange(bool texture)
 {
-	if (texture) {
-		// TextureCreateInfo texture_create_info;
-		// texture_create_info.size = App.game.tex_size;
-		// texture_create_info.slot = GL_TEXTURE_SLOT_SCALE;
-		// if (App.shader.selected == 0) {
-		//	texture_create_info.min_filter = Filter::Linear;
-		//	texture_create_info.mag_filter = Filter::Linear;
-		// }
-		// m_upscale_texture = Context::createTexture(texture_create_info);
-
-		// WriteSets write_sets = {
-		//	{ { m_ubo_mvps.get() } },
-		//	{ { m_upscale_ubo.get() } },
-		//	{ { m_upscale_texture.get() } },
-		// };
-		// m_upscale_pipeline->updateDescriptorSet(write_sets);
+	if (texture || (m_current_shader != App.shader.selected && (m_current_shader == 0 || App.shader.selected == 0))) {
+		TextureCreateInfo texture_ci;
+		texture_ci.size = App.game.tex_size;
+		texture_ci.slot = GL_TEXTURE_SLOT_UPSCALE;
+		if (App.shader.selected == 0) {
+			texture_ci.min_filter = GL_LINEAR;
+			texture_ci.mag_filter = GL_LINEAR;
+		}
+		m_upscale_texture = Context::createTexture(texture_ci);
 	}
 
-	// if (pipeline)
-	//	m_upscale_pipeline->createPipelines(g_shader_upscale[App.shader.selected].second, { App.viewport.size });
+	if (m_current_shader != App.shader.selected) {
+		PipelineCreateInfo pipeline_ci;
+		pipeline_ci.shader = (ShaderSource*)&g_shader_upscale[App.shader.selected].second;
+		pipeline_ci.bindings = {
+			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
+			{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_UPSCALE },
+		};
+		m_upscale_pipeline = Context::createPipeline(pipeline_ci);
+	}
 
+	m_upscale_pipeline->setUniformMat4f("u_MVP", glm::ortho(-App.game.tex_scale.x, App.game.tex_scale.x, -App.game.tex_scale.y, App.game.tex_scale.y));
 	m_current_shader = App.shader.selected;
 }
 
@@ -266,15 +184,10 @@ void Wrapper::onStageChange()
 			break;
 		case DrawStage::UI:
 			if (App.lut.selected) {
-				// ctx->copyToTexture(m_game_framebuffer, m_prefx_texture);
+				ctx->bindPipeline(m_prefx_pipeline);
+				ctx->pushQuad(App.lut.selected - 1);
 
-				// ctx->beginRenderPass(m_game_renderpass[1], m_game_framebuffer);
-				// ctx->bindDescriptorSet(m_prefx_pipeline);
-				// ctx->bindPipeline(m_prefx_pipeline);
-				// ctx->pushQuad(App.lut.selected - 1);
-
-				// ctx->bindDescriptorSet(m_game_pipeline, frame_index);
-				// ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
+				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
 			}
 			break;
 		case DrawStage::Map:
@@ -312,37 +225,28 @@ void Wrapper::grBufferClear()
 	if (App.game.screen == GameScreen::Movie) {
 		ctx->beginFrame();
 		ctx->bindDefaultFrameBuffer();
+		ctx->setViewport(App.window.size);
 		ctx->bindPipeline(m_movie_pipeline);
 		ctx->pushQuad();
 
 		grBufferSwap();
 	} else {
 		if (m_current_shader != App.shader.selected)
-			onShaderChange(true, true);
+			onShaderChange();
 
-		// if (App.sharpen.active) {
-		//	const auto sharpen_data = glm::vec3(App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value);
-		//	if (m_sharpen_data != sharpen_data) {
-		//		m_sharpen_data = sharpen_data;
-		//		m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));
-		//	}
-		// }
+		if (App.sharpen.active) {
+			const auto sharpen_data = glm::vec3(App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value);
+			if (m_sharpen_data != sharpen_data) {
+				m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(sharpen_data, 1.0f));
+				m_sharpen_data = sharpen_data;
+			}
+		}
 
-		// if (m_game_ubo_colors[frame_index]->getHash("palette") != m_game_palette.hash) {
-		//	m_game_ubo_colors[frame_index]->updateData("palette", m_game_palette.data);
-		//	m_game_ubo_colors[frame_index]->updateHash("palette", m_game_palette.hash);
-		// }
-		// if (m_game_ubo_colors[frame_index]->getHash("gamma") != m_game_gamma.hash) {
-		//	m_game_ubo_colors[frame_index]->updateData("gamma", m_game_gamma.data);
-		//	m_game_ubo_colors[frame_index]->updateHash("gamma", m_game_gamma.hash);
-		// }
-
-		// modules::MotionPrediction::Instance().update();
+		modules::MotionPrediction::Instance().update();
 
 		ctx->beginFrame();
-		ctx->bindDefaultFrameBuffer();
-		// ctx->beginRenderPass(m_game_renderpass[0], m_game_framebuffer);
-		// ctx->bindDescriptorSet(m_game_pipeline, frame_index);
+		ctx->bindFrameBuffer(m_game_framebuffer);
+		ctx->setViewport(App.game.size);
 
 		App.game.draw_stage = DrawStage::World;
 		onStageChange();
@@ -355,56 +259,42 @@ void Wrapper::grBufferSwap()
 		return;
 	m_swapped = true;
 
-	// if (App.game.screen != GameScreen::Movie) {
-	//	ctx->copyToTexture(m_game_framebuffer, m_upscale_texture);
+	if (App.game.screen != GameScreen::Movie) {
+		m_upscale_texture->fillFromBuffer(m_game_framebuffer);
 
-	//	if (App.sharpen.active || App.fxaa) {
-	//		ctx->beginRenderPass(m_postfx_renderpass, m_postfx_framebuffer[0]);
-	//		ctx->setViewport(App.viewport.size);
-	//	} else {
-	//		ctx->beginFinalPass();
-	//		ctx->setViewport(App.viewport.size, App.viewport.offset);
-	//	}
-	//	ctx->bindDescriptorSet(m_upscale_pipeline);
-	//	ctx->bindPipeline(m_upscale_pipeline);
-	//	ctx->pushQuad();
+		if (App.sharpen.active || App.fxaa) {
+			ctx->bindFrameBuffer(m_postfx_framebuffer, false);
+			ctx->setViewport(App.viewport.size);
+		} else {
+			ctx->bindDefaultFrameBuffer();
+			ctx->setViewport(App.viewport.size, App.viewport.offset);
+		}
+		ctx->bindPipeline(m_upscale_pipeline);
+		ctx->pushQuad();
 
-	//	if (App.sharpen.active) {
-	//		if (App.fxaa) {
-	//			ctx->beginRenderPass(m_postfx_renderpass, m_postfx_framebuffer[1]);
-	//			ctx->setViewport(App.viewport.size);
-	//		} else {
-	//			ctx->beginFinalPass();
-	//			ctx->setViewport(App.viewport.size, App.viewport.offset);
-	//		}
-	//		ctx->bindDescriptorSet(m_postfx_pipeline, 0);
-	//		ctx->bindPipeline(m_postfx_pipeline);
-	//		ctx->pushQuad(0);
-	//	}
+		if (App.sharpen.active) {
+			if (!App.fxaa) {
+				ctx->bindDefaultFrameBuffer();
+				ctx->setViewport(App.viewport.size, App.viewport.offset);
+			}
+			ctx->bindPipeline(m_postfx_pipeline);
+			ctx->pushQuad(0);
+		}
 
-	//	if (App.fxaa) {
-	//		ctx->beginFinalPass();
-	//		ctx->setViewport(App.viewport.size, App.viewport.offset);
-	//		ctx->bindDescriptorSet(m_postfx_pipeline, App.sharpen.active);
-	//		ctx->bindPipeline(m_postfx_pipeline);
-	//		ctx->pushQuad(1);
-	//	}
-	//}
+		if (App.fxaa) {
+			ctx->bindDefaultFrameBuffer();
+			ctx->setViewport(App.viewport.size, App.viewport.offset);
+			ctx->bindPipeline(m_postfx_pipeline);
+			ctx->pushQuad(1);
+		}
+	}
 
-	// App.var1 = m_game_textures[0]->getUsage(256);
-	// App.var3 = m_game_textures[0]->getUsage(128);
-	// App.var5 = m_game_textures[0]->getUsage(64);
-	// App.var7 = m_game_textures[0]->getUsage(32);
-	// App.var9 = m_game_textures[0]->getUsage(16);
-	// App.var11 = m_game_textures[0]->getUsage(8);
-	// if (App.backend == Backend::Vulkan) {
-	//	App.var2 = m_game_textures[1]->getUsage(256);
-	//	App.var4 = m_game_textures[1]->getUsage(128);
-	//	App.var6 = m_game_textures[1]->getUsage(64);
-	//	App.var8 = m_game_textures[1]->getUsage(32);
-	//	App.var10 = m_game_textures[1]->getUsage(16);
-	//	App.var12 = m_game_textures[1]->getUsage(8);
-	// }
+	App.var1 = m_game_texture->getUsage(256);
+	App.var2 = m_game_texture->getUsage(128);
+	App.var3 = m_game_texture->getUsage(64);
+	App.var4 = m_game_texture->getUsage(32);
+	App.var5 = m_game_texture->getUsage(16);
+	App.var6 = m_game_texture->getUsage(8);
 	option::Menu::instance().draw();
 
 	ctx->presentFrame();

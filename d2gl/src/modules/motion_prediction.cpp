@@ -76,7 +76,7 @@ glm::ivec2 MotionPrediction::getGlobalOffset(bool skip)
 	return { 0, 0 };
 }
 
-glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn)
+glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn, uint32_t gamma, int draw_mode)
 {
 	glm::ivec2 pos = { x, y };
 	if (!isAvailable())
@@ -101,7 +101,7 @@ glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn)
 			m_player_motion.screen_pos = pos;
 			return pos;
 		} else {
-			if (d2::currently_drawing_unit->dwType == d2::UnitType::Player || d2::currently_drawing_unit->dwType == d2::UnitType::Monster || d2::currently_drawing_unit->dwType != d2::UnitType::Missile) {
+			if (d2::currently_drawing_unit->dwType == d2::UnitType::Player || d2::currently_drawing_unit->dwType == d2::UnitType::Monster || d2::currently_drawing_unit->dwType == d2::UnitType::Missile) {
 				const uint32_t type_id = d2::getUnitID(d2::currently_drawing_unit) | ((uint8_t)d2::currently_drawing_unit->dwType << 24);
 				UnitMotion* unit_motion = &m_units[type_id];
 				const uint32_t frame = App.context->getFrameCount();
@@ -116,6 +116,9 @@ glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn)
 			}
 			return pos - m_global_offset;
 		}
+	} else {
+		if (App.game.draw_stage == DrawStage::World && fn == D2DrawFn::Image && draw_mode == 3 && gamma == 0xffffffff)
+			return pos - m_global_offset;
 	}
 
 	return pos;

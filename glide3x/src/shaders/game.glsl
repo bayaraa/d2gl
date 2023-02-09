@@ -1,24 +1,7 @@
-#version 450
-
-#ifdef SPIRV
-#define layout_binding_std140(a) layout(binding = a, std140)
-#define layout_location(a) layout(location = a)
-#define layout_binding(a) layout(binding = a)
-#else
-#define layout_binding_std140(a) layout(std140)
-#define layout_location(a)
-#define layout_binding(a)
-#endif
+#version 330
 
 // =============================================================
 #ifdef VERTEX
-
-layout_binding_std140(0) uniform ubo_MVPs {
-	mat4 u_mvp_game;
-	mat4 u_mvp_upscale;
-	mat4 u_mvp_movie;
-	mat4 u_mvp_normal;
-};
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
@@ -27,15 +10,17 @@ layout(location = 3) in vec4 Color2;
 layout(location = 4) in ivec2 TexIds;
 layout(location = 5) in ivec4 Flags;
 
-layout_location(0) out vec2 v_TexCoord;
-layout_location(1) out vec4 v_Color1;
-layout_location(2) out vec4 v_Color2;
-layout_location(3) flat out ivec2 v_TexIds;
-layout_location(4) flat out ivec4 v_Flags;
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
+out vec4 v_Color1;
+out vec4 v_Color2;
+flat out ivec2 v_TexIds;
+flat out ivec4 v_Flags;
 
 void main()
 {
-	gl_Position = u_mvp_game * vec4(Position, 0.0, 1.0);
+	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
 	v_Color1 = Color1.bgra;
 	v_Color2 = Color2.abgr;
@@ -46,21 +31,21 @@ void main()
 // =============================================================
 #elif FRAGMENT
 
-layout_binding_std140(1) uniform ubo_Colors {
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 FragColorMap;
+
+layout(std140) uniform ubo_Colors {
 	vec4 u_Palette[256];
 	vec4 u_Gamma[256];
 };
 
-layout_binding(2) uniform sampler2DArray u_Texture;
+uniform sampler2DArray u_Texture;
 
-layout_location(0) in vec2 v_TexCoord;
-layout_location(1) in vec4 v_Color1;
-layout_location(2) in vec4 v_Color2;
-layout_location(3) flat in ivec2 v_TexIds;
-layout_location(4) flat in ivec4 v_Flags;
-
-layout(location = 0) out vec4 FragColor;
-layout(location = 1) out vec4 FragColorMap;
+in vec2 v_TexCoord;
+in vec4 v_Color1;
+in vec4 v_Color2;
+flat in ivec2 v_TexIds;
+flat in ivec4 v_Flags;
 
 void main()
 {

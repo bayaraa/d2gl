@@ -43,11 +43,6 @@ struct VertexParams {
 	glm::vec<4, int8_t> flags;
 };
 
-struct GameColorData {
-	glm::vec4 data[256] = {};
-	uint32_t hash = 0;
-};
-
 struct SharpenData {
 	float strength = 0.405f;
 	float clamp = 0.135f;
@@ -58,8 +53,8 @@ struct FrameMetrics {
 	double frame_time = 0.0;
 	double prev_time = 0.0;
 	std::deque<double> frame_times;
-	LARGE_INTEGER time;
-	double frequency;
+	LARGE_INTEGER time = { 0 };
+	double frequency = 0.0;
 
 	uint32_t vertex_count = 0;
 	uint32_t drawcall_count = 0;
@@ -68,10 +63,15 @@ struct FrameMetrics {
 
 struct LimiterMetrics {
 	bool active = false;
-	HANDLE timer;
-	LARGE_INTEGER due_time;
-	float frame_len_ms;
-	uint64_t frame_len_ns;
+	HANDLE timer = 0;
+	LARGE_INTEGER due_time = { 0 };
+	float frame_len_ms = 0.0f;
+	uint64_t frame_len_ns = 0;
+};
+
+struct GLCaps {
+	bool compute_shader = false;
+	bool independent_blending = false;
 };
 
 class Context {

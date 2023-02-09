@@ -121,18 +121,12 @@ void Menu::draw()
 	ImGui::Begin("Glide", &show_info, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
 	ImGui::Separator();
-	ImGui::Text("256 0: 1024 / %d", App.var1);
-	ImGui::Text("256 1: 1024 / %d", App.var2);
-	ImGui::Text("128 0: 2048 / %d", App.var3);
-	ImGui::Text("128 1: 2048 / %d", App.var4);
-	ImGui::Text(" 64 0: 4096 / %d", App.var5);
-	ImGui::Text(" 64 1: 4096 / %d", App.var6);
-	ImGui::Text(" 32 0: 8192 / %d", App.var7);
-	ImGui::Text(" 32 1: 8192 / %d", App.var8);
-	ImGui::Text(" 16 0: 5120 / %d", App.var9);
-	ImGui::Text(" 16 1: 5120 / %d", App.var10);
-	ImGui::Text("  8 0: 4096 / %d", App.var11);
-	ImGui::Text("  8 1: 4096 / %d", App.var12);
+	ImGui::Text("256: 1024 / %d", App.var1);
+	ImGui::Text("128: 2048 / %d", App.var2);
+	ImGui::Text(" 64: 4096 / %d", App.var3);
+	ImGui::Text(" 32: 8192 / %d", App.var4);
+	ImGui::Text(" 16: 5120 / %d", App.var5);
+	ImGui::Text("  8: 4096 / %d", App.var6);
 	// ImGui::SliderInt("X1", &App.var9, -200, 200);
 	// ImGui::SliderInt("Y1", &App.var10, -200, 200);
 	// ImGui::SliderInt("X2", &App.var11, -200, 200);
@@ -141,7 +135,12 @@ void Menu::draw()
 	// ImGui::Text("px: %d", App.var8);
 	//   ImGui::InputInt("ShakeX", &App.var11);
 	//   ImGui::InputInt("ShakeY", &App.var12);
-	ImGui::Checkbox("check", &App.hd_cursor);
+	ImGui::Checkbox("check1", (bool*)&App.var7);
+	ImGui::Checkbox("check2", (bool*)&App.var8);
+	ImGui::Checkbox("check3", (bool*)&App.var9);
+	ImGui::Checkbox("check4", (bool*)&App.var10);
+	ImGui::Checkbox("check5", (bool*)&App.var11);
+	ImGui::Checkbox("check6", (bool*)&App.var12);
 	ImGui::End();
 
 	if (m_visible) {

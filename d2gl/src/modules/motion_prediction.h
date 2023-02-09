@@ -58,7 +58,7 @@ public:
 
 	glm::ivec2 getGlobalOffset(bool skip = false);
 
-	glm::ivec2 drawImage(int x, int y, D2DrawFn fn);
+	glm::ivec2 drawImage(int x, int y, D2DrawFn fn, uint32_t gamma = 0, int draw_mode = 0);
 	glm::ivec2 drawLine(int start_x, int start_y);
 	glm::ivec2 drawSolidRect();
 	glm::ivec2 drawText(const wchar_t* str, int x, int y, D2DrawFn fn);

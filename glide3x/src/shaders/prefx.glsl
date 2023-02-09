@@ -1,35 +1,20 @@
-#version 450
-
-#ifdef SPIRV
-#define layout_binding_std140(a) layout(binding = a, std140)
-#define layout_location(a) layout(location = a)
-#define layout_binding(a) layout(binding = a)
-#else
-#define layout_binding_std140(a) layout(std140)
-#define layout_location(a)
-#define layout_binding(a)
-#endif
+#version 330
 
 // =============================================================
 #ifdef VERTEX
-
-layout_binding_std140(0) uniform ubo_MVPs {
-	mat4 u_mvp_game;
-	mat4 u_mvp_upscale;
-	mat4 u_mvp_movie;
-	mat4 u_mvp_normal;
-};
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 5) in ivec4 Flags;
 
-layout_location(0) out vec2 v_TexCoord;
-layout_location(1) flat out ivec4 v_Flags;
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
+flat out ivec4 v_Flags;
 
 void main()
 {
-	gl_Position = u_mvp_normal * vec4(Position, 0.0, 1.0);
+	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
 	v_Flags = Flags;
 }
@@ -37,14 +22,14 @@ void main()
 // =============================================================
 #elif FRAGMENT
 
-layout_binding(1) uniform sampler2D u_Texture;
-layout_binding(2) uniform sampler2DArray u_LUTTexture;
-
-layout_location(0) in vec2 v_TexCoord;
-layout_location(1) flat in ivec4 v_Flags;
-
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 FragColorMap;
+
+uniform sampler2D u_Texture;
+uniform sampler2DArray u_LUTTexture;
+
+in vec2 v_TexCoord;
+flat in ivec4 v_Flags;
 
 vec4 mixfix(vec4 a, vec4 b, float c)
 {

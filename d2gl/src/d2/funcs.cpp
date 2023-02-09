@@ -123,7 +123,7 @@ void uiDrawEnd()
 void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette)
 {
 	// if (modules::HDText::Instance().DrawImage(pData, nXpos, nYpos, dwGamma, nDrawMode)) {
-	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image);
+	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image, gamma, draw_mode);
 	drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
 	//}
 }
@@ -162,7 +162,7 @@ void __stdcall drawShadowHooked(CellContext* cell, int x, int y)
 
 void __stdcall drawSolidRectExHooked(int left, int top, int right, int bottom, uint32_t color, int draw_mode)
 {
-	//const auto offset = modules::MotionPrediction::Instance().drawText(D2DrawFn::SolidRectEx);
+	// const auto offset = modules::MotionPrediction::Instance().drawText(D2DrawFn::SolidRectEx);
 	const auto offset = modules::MotionPrediction::Instance().drawSolidRect();
 	//  if (!modules::HDText::Instance().DrawSolidRect(nXStart + offset.x, nYStart + offset.y, nXEnd + offset.x, nYEnd + offset.y, dwColor, nDrawMode))
 	drawSolidRectEx(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode);

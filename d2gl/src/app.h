@@ -21,6 +21,7 @@ struct D2GLApp {
 	std::unique_ptr<Context> context;
 	std::string version = "";
 	bool vsync = true;
+	GLCaps gl_caps;
 
 	bool ready = false;
 	HMODULE hmodule = 0;

@@ -7,6 +7,7 @@
 namespace d2gl {
 
 GLuint current_program = 0;
+uint32_t current_blend_index = 10;
 
 Pipeline::Pipeline(const PipelineCreateInfo& info)
 	: m_attachment_blends(info.attachment_blends)
@@ -38,19 +39,12 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 	for (auto& binding : info.bindings) {
 		switch (binding.type) {
 			case BindingType::UniformBuffer: {
-				const auto ubo = static_cast<UniformBuffer*>(binding.ptr);
 				GLuint ubo_index = glGetUniformBlockIndex(m_id, binding.name.c_str());
-				glUniformBlockBinding(m_id, ubo_index, ubo->getBinding());
-				break;
-			}
-			case BindingType::FrameBuffer: {
-				const auto fbo = static_cast<FrameBuffer*>(binding.ptr);
-				setUniform1i(binding.name, fbo->getTexture(binding.index)->getSlot());
+				glUniformBlockBinding(m_id, ubo_index, binding.value);
 				break;
 			}
 			case BindingType::Texture: {
-				const auto tex = static_cast<Texture*>(binding.ptr);
-				setUniform1i(binding.name, tex->getSlot());
+				setUniform1i(binding.name, binding.value);
 				break;
 			}
 		};
@@ -58,6 +52,7 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 
 	glUseProgram(0);
 	current_program = 0;
+	current_blend_index = 10;
 }
 
 Pipeline::~Pipeline()
@@ -67,13 +62,52 @@ Pipeline::~Pipeline()
 
 void Pipeline::bind(uint32_t index)
 {
-	if (current_program == m_id)
+	if (current_program == m_id && current_blend_index == index)
 		return;
 
 	App.context->flushVertices();
 
-	glUseProgram(m_id);
-	current_program = m_id;
+	if (current_program != m_id) {
+		glUseProgram(m_id);
+		current_program = m_id;
+		current_blend_index = 10;
+	}
+
+	if (current_blend_index != index) {
+		setBlendState(index);
+		current_blend_index = index;
+	}
+}
+
+void Pipeline::setBlendState(uint32_t index)
+{
+	const auto& blends = m_attachment_blends[index];
+	if (blends[0] == BlendType::NoBlend) {
+		glDisable(GL_BLEND);
+		return;
+	}
+
+	glEnable(GL_BLEND);
+	if (App.gl_caps.independent_blending) {
+		for (size_t i = 0; i < blends.size(); i++) {
+			const auto factor = blendFactor(blends[i]);
+			glBlendFuncSeparatei(i, factor.src_color, factor.dst_color, factor.src_alpha, factor.dst_alpha);
+		}
+	} else {
+		const auto factor = blendFactor(blends[0]);
+		glBlendFuncSeparate(factor.src_color, factor.dst_color, factor.src_alpha, factor.dst_alpha);
+	}
+}
+
+BlendFactors Pipeline::blendFactor(BlendType type)
+{
+	switch (type) {
+		case BlendType::One_Zero: return { GL_ONE, GL_ZERO, GL_ONE, GL_ZERO };
+		case BlendType::Zero_SColor: return { GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_SRC_COLOR };
+		case BlendType::One_One: return { GL_ONE, GL_ONE, GL_ZERO, GL_ONE };
+		case BlendType::SAlpha_OneMinusSAlpha: return { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA };
+	}
+	return { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA };
 }
 
 void Pipeline::setUniform1i(const std::string& name, int value)
@@ -140,21 +174,21 @@ const std::vector<std::pair<std::string, ShaderSource>> g_shader_upscale = {
 	{ "simple-sharp-bilinear", {
 		#include "shaders/upscale/simple-sharp-bilinear.glsl.h"
 	} },
-	//{ "xbr-lv2-noblend", {
-	//	#include "shaders/upscale/xbr-lv2-noblend.glsl.h"
-	//} },
-	//{ "xbrz-freescale", {
-	//	#include "shaders/upscale/xbrz-freescale.glsl.h"
-	//} },
-	//{ "2xbr-hybrid-v5-gamma", {
-	//	#include "shaders/upscale/2xbr-hybrid-v5-gamma.glsl.h"
-	//} },
-	//{ "aa-shader-4.0", {
-	//	#include "shaders/upscale/aa-shader-4.0.glsl.h"
-	//} },
-	//{ "advanced-aa", {
-	//	#include "shaders/upscale/advanced-aa.glsl.h"
-	//} },
+	{ "xbr-lv2-noblend", {
+		#include "shaders/upscale/xbr-lv2-noblend.glsl.h"
+	} },
+	{ "xbrz-freescale", {
+		#include "shaders/upscale/xbrz-freescale.glsl.h"
+	} },
+	{ "2xbr-hybrid-v5-gamma", {
+		#include "shaders/upscale/2xbr-hybrid-v5-gamma.glsl.h"
+	} },
+	{ "aa-shader-4.0", {
+		#include "shaders/upscale/aa-shader-4.0.glsl.h"
+	} },
+	{ "advanced-aa", {
+		#include "shaders/upscale/advanced-aa.glsl.h"
+	} },
 };
 // clang-format on
 

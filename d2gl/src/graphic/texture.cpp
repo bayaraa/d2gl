@@ -59,13 +59,10 @@ void Texture::fill(const uint8_t* pixels, uint32_t width, uint32_t height, uint3
 		glTexSubImage3D(m_target, 0, offset_x, offset_y, layer, width, height, 1, m_format, m_type, pixels);
 }
 
-void Texture::fillArray(const uint8_t* pixels, uint32_t div_x, uint32_t div_y)
-{
-	fill(pixels, m_width, m_height);
-}
-
 void Texture::fillFromBuffer(const std::unique_ptr<FrameBuffer>& fbo, uint32_t index)
 {
+	App.context->flushVertices();
+
 	fbo->bind(false);
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
 	const auto width = fbo->getWidth();
@@ -73,6 +70,46 @@ void Texture::fillFromBuffer(const std::unique_ptr<FrameBuffer>& fbo, uint32_t i
 
 	bind();
 	glCopyTexSubImage2D(m_target, 0, (m_width - width) / 2, (m_height - height) / 2, 0, 0, width, height);
+}
+
+TextureData Texture::fillImage(ImageData image, uint32_t div_x, uint32_t div_y)
+{
+	TextureData texture_data = { m_next_layer };
+
+	int width = glm::min(image.width / div_x, m_width);
+	int height = glm::min(image.height / div_y, m_height);
+	texture_data.coord = { (float)width / (float)m_width, (float)height / (float)m_height };
+
+	if (div_x == 1 && div_y == 1) {
+		if (m_target == GL_TEXTURE_2D)
+			fill(image.data, image.width, image.height);
+		else {
+			fill(image.data, image.width, image.height, 0, 0, m_next_layer);
+			m_next_layer++;
+		}
+	} else {
+		if (div_x == 1) {
+			for (int y = 0; y < div_y; y++) {
+				int offset_buffer = y * height * image.width;
+				fill(image.data + offset_buffer * m_channel, width, height, 0, 0, m_next_layer);
+				m_next_layer++;
+			}
+		} else {
+			uint8_t* pixels = new uint8_t[width * height * m_channel];
+			for (int x = 0; x < div_x; x++) {
+				for (int y = 0; y < height; y++) {
+					int offset_pixel = y * width;
+					int offset_buffer = x * width + y * image.width;
+					std::memcpy(pixels + offset_pixel * m_channel, image.data + offset_buffer * m_channel, width * m_channel);
+				}
+				fill(pixels, width, height, 0, 0, m_next_layer);
+				m_next_layer++;
+			}
+			delete[] pixels;
+		}
+	}
+
+	return texture_data;
 }
 
 GLint Texture::getInternalFormat(GLenum format)
