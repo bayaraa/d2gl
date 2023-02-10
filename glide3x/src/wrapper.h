@@ -16,6 +16,7 @@ namespace d2gl {
 #define GL_TEXTURE_SLOT_POSTFX1 4
 #define GL_TEXTURE_SLOT_POSTFX2 5
 #define GL_TEXTURE_SLOT_LUT 6
+#define GL_TEXTURE_SLOT_PREFX 7
 
 extern const ShaderSource g_shader_game;
 extern const ShaderSource g_shader_prefx;
@@ -49,6 +50,7 @@ class Wrapper {
 	glm::vec3 m_sharpen_data;
 
 	std::unique_ptr<UniformBuffer> m_postfx_ubo;
+	std::unique_ptr<Texture> m_postfx_texture;
 	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
 	std::unique_ptr<Pipeline> m_postfx_pipeline;
 

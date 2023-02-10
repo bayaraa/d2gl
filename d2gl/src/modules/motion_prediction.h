@@ -69,7 +69,7 @@ public:
 	inline void textMotion(D2DrawFn fn) { m_text_fn = fn; }
 
 private:
-	void setUnitMotion(UnitMotion* unit_motion, uint32_t type_id, int32_t delta);
+	void setUnitMotion(UnitMotion* unit_motion, int32_t delta);
 	glm::ivec2 getUnitOffset(UnitMotion* unit_motion);
 
 	inline bool isAvailable() { return m_active && App.game.screen == GameScreen::InGame; }

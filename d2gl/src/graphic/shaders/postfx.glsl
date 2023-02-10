@@ -55,7 +55,7 @@ layout(std140) uniform ubo_Metrics {
 	vec2 u_RelSize;
 };
 
-uniform sampler2D u_Texture;
+uniform sampler2D u_Textures[2];
 
 in vec2 v_TexCoord;
 flat in ivec4 v_Flags;
@@ -65,7 +65,7 @@ float FxaaLuma(vec3 rgb)
 	return rgb.y * (0.587 / 0.299) + rgb.x;
 }
 
-#define P(x) texture(u_Texture, x).rgb
+#define P(x) texture(u_Textures[v_Flags.y], x).rgb
 #define e_t_div 16.0
 #define s_steps 16
 
@@ -199,8 +199,8 @@ vec3 FxaaPass(vec3 rgb)
 
 vec3 LumaSharpen(vec3 rgb)
 {
-	vec3 p1 = texture(u_Texture, v_TexCoord + u_RelSize * u_Radius).rgb;
-	vec3 p2 = texture(u_Texture, v_TexCoord - u_RelSize * u_Radius).rgb;
+	vec3 p1 = texture(u_Textures[v_Flags.y], v_TexCoord + u_RelSize * u_Radius).rgb;
+	vec3 p2 = texture(u_Textures[v_Flags.y], v_TexCoord - u_RelSize * u_Radius).rgb;
 	vec3 color = (p1 + p2) / 2.0;
 
 	vec3 sharp = rgb - color;
@@ -214,7 +214,7 @@ vec3 LumaSharpen(vec3 rgb)
 
 void main()
 {
-	vec3 color = texture(u_Texture, v_TexCoord).rgb;
+	vec3 color = texture(u_Textures[v_Flags.y], v_TexCoord).rgb;
 
 	if (v_Flags.x == 0)
 		FragColor = vec4(LumaSharpen(color), 1.0);

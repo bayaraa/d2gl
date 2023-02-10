@@ -56,6 +56,18 @@ StaticPath* getUnitStaticPath(UnitAny* unit)
 	return isVer(V_109d) ? unit->v109.pStaticPath : unit->v110.pStaticPath;
 }
 
+UnitAny* findUnit(uint32_t type_id)
+{
+	const uint32_t unit_id = type_id & 0x00FFFFFF;
+	const uint32_t unit_type = type_id >> 24;
+
+	auto unit = findUnitClient(unit_id, unit_type);
+	if (unit)
+		return unit;
+
+	return findUnitServer(unit_id, unit_type);
+}
+
 UnitAny* getHoveredInvItem()
 {
 	return (UnitAny*)*(uintptr_t*)hovered_inv_item;

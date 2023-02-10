@@ -55,7 +55,7 @@ void dllAttach(HMODULE hmodule)
 	trace("Game version %s detected.", helpers::getVersionString().c_str());
 
 	option::loadIni();
-	// d2::initHooks();
+	d2::initHooks();
 	win32::initHooks();
 }
 
@@ -63,7 +63,7 @@ void dllDetach()
 {
 	if (App.hmodule) {
 		win32::destroyHooks();
-		// d2::destroyHooks();
+		d2::destroyHooks();
 		timeEndPeriod(1);
 		exit(EXIT_SUCCESS);
 	}

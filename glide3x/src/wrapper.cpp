@@ -46,7 +46,7 @@ Wrapper::Wrapper()
 	ubo_ci.variables = { { "palette", 256 * sizeof(glm::vec4) }, { "gamma", 256 * sizeof(glm::vec4) } };
 	m_game_color_ubo = Context::createUniformBuffer(ubo_ci);
 
-	SubTextureCounts sub_texture_counts = { { 256, 256 }, { 128, 128 }, { 64, 64 }, { 32, 32 }, { 16, 5 }, { 8, 1 } };
+	SubTextureCounts sub_texture_counts = { { 256, 256 }, { 128, 154 }, { 64, 64 }, { 32, 32 }, { 16, 5 }, { 8, 1 } };
 	m_game_texture = std::make_unique<TextureManager>(sub_texture_counts);
 
 	PipelineCreateInfo game_pipeline_ci;
@@ -73,7 +73,7 @@ Wrapper::Wrapper()
 	PipelineCreateInfo prefx_pipeline_ci;
 	prefx_pipeline_ci.shader = (ShaderSource*)&g_shader_prefx;
 	prefx_pipeline_ci.bindings = {
-		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_GAME },
+		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_PREFX },
 		{ BindingType::Texture, "u_LUTTexture", m_lut_texture->getSlot() },
 	};
 	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
@@ -94,7 +94,8 @@ Wrapper::Wrapper()
 	postfx_pipeline_ci.shader = (ShaderSource*)&g_shader_postfx;
 	postfx_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_POSTFX1 },
+		{ BindingType::Texture, "u_Textures[0]", GL_TEXTURE_SLOT_POSTFX1 },
+		{ BindingType::Texture, "u_Textures[1]", GL_TEXTURE_SLOT_POSTFX2 },
 	};
 	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
 	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
@@ -122,10 +123,15 @@ void Wrapper::onResize()
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
 		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
 
-		FrameBufferCreateInfo game_frambuffer_ci;
-		game_frambuffer_ci.size = game_size;
-		game_frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_GAME }, { GL_TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } } };
-		m_game_framebuffer = Context::createFrameBuffer(game_frambuffer_ci);
+		FrameBufferCreateInfo frambuffer_ci;
+		frambuffer_ci.size = game_size;
+		frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_GAME }, { GL_TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } } };
+		m_game_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+
+		TextureCreateInfo texture_ci;
+		texture_ci.size = game_size;
+		texture_ci.slot = GL_TEXTURE_SLOT_PREFX;
+		m_prefx_texture = Context::createTexture(texture_ci);
 	}
 
 	if (window_resized) {
@@ -141,6 +147,13 @@ void Wrapper::onResize()
 	frambuffer_ci.size = App.viewport.size;
 	frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
 	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+
+	TextureCreateInfo texture_ci;
+	texture_ci.size = App.viewport.size;
+	texture_ci.slot = GL_TEXTURE_SLOT_POSTFX2;
+	texture_ci.min_filter = GL_LINEAR;
+	texture_ci.mag_filter = GL_LINEAR;
+	m_postfx_texture = Context::createTexture(texture_ci);
 
 	onShaderChange(game_resized);
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
@@ -184,6 +197,8 @@ void Wrapper::onStageChange()
 			break;
 		case DrawStage::UI:
 			if (App.lut.selected) {
+				m_prefx_texture->fillFromBuffer(m_game_framebuffer);
+
 				ctx->bindPipeline(m_prefx_pipeline);
 				ctx->pushQuad(App.lut.selected - 1);
 
@@ -273,12 +288,14 @@ void Wrapper::grBufferSwap()
 		ctx->pushQuad();
 
 		if (App.sharpen.active) {
-			if (!App.fxaa) {
+			if (App.fxaa)
+				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
+			else {
 				ctx->bindDefaultFrameBuffer();
 				ctx->setViewport(App.viewport.size, App.viewport.offset);
 			}
 			ctx->bindPipeline(m_postfx_pipeline);
-			ctx->pushQuad(0);
+			ctx->pushQuad(0, App.fxaa);
 		}
 
 		if (App.fxaa) {

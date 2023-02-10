@@ -122,7 +122,7 @@ void Menu::draw()
 	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
 	ImGui::Separator();
 	ImGui::Text("256: 1024 / %d", App.var1);
-	ImGui::Text("128: 2048 / %d", App.var2);
+	ImGui::Text("128: 2464 / %d", App.var2);
 	ImGui::Text(" 64: 4096 / %d", App.var3);
 	ImGui::Text(" 32: 8192 / %d", App.var4);
 	ImGui::Text(" 16: 5120 / %d", App.var5);

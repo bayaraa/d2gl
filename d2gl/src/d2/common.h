@@ -13,10 +13,10 @@ typedef uint32_t(__fastcall* mpqCloseFile_t)(void* mpq_file);
 typedef uint32_t(__fastcall* mpqReadFile_t)(void* mpq_file, uint8_t* buffer, uint32_t nb_to_read, uint32_t* nb_read, int, int, int);
 typedef uint32_t(__fastcall* mpqGetFileSize_t)(void* mpq_file, uintptr_t* to_reset);
 
+typedef UnitAny*(__fastcall* findUnit_t)(uint32_t id, uint32_t type);
 typedef uint32_t(__stdcall* drawUnit_t)(UnitAny* unit, uint32_t, uint32_t, uint32_t, uint32_t);
 typedef void* drawWeatherParticles_t;
-
-typedef UnitAny* (__stdcall* getSelectedUnit_t)(void);
+typedef UnitAny*(__stdcall* getSelectedUnit_t)(void);
 
 typedef void(__stdcall* drawImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette);
 typedef void(__stdcall* drawShiftedImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift);
@@ -103,6 +103,8 @@ extern int* automap_type;
 extern uintptr_t d2ClientFn1_O;
 extern uintptr_t d2ClientFn2_O;
 
+extern findUnit_t findUnitClient;
+extern findUnit_t findUnitServer;
 extern drawUnit_t drawUnit;
 extern drawUnit_t drawMissile;
 extern drawWeatherParticles_t drawWeatherParticles;

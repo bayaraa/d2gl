@@ -48,19 +48,22 @@ void MotionPrediction::update()
 
 	m_frame_time = *d2::esc_menu_open ? 0.0f : (float)(App.context->getFrameTime() / 1000.0);
 
-	auto frame_time_ms = (int64_t)(App.context->getFrameTime() * (65536.0 / 1000.0));
+	const auto frame_time_ms = (int64_t)(App.context->getFrameTime() * (65536.0 / 1000.0));
 	int32_t delta = (int32_t)glm::max((int64_t)INT_MIN, glm::min((int64_t)INT_MAX, frame_time_ms));
 
 	m_player_motion.unit = d2::getPlayerUnit();
-	setUnitMotion(&m_player_motion, 0, delta);
+	setUnitMotion(&m_player_motion, delta);
 
 	const auto frame = App.context->getFrameCount() - 1;
 	for (auto it = m_units.begin(); it != m_units.end();) {
 		if (it->second.frame != frame)
 			it = m_units.erase(it);
 		else {
-			setUnitMotion(&it->second, it->first, delta);
-			it++;
+			if (it->second.unit = d2::findUnit(it->first)) {
+				setUnitMotion(&it->second, delta);
+				it++;
+			} else
+				it = m_units.erase(it);
 		}
 	}
 
@@ -230,14 +233,8 @@ void MotionPrediction::altItemsTextMotion()
 	*y2 -= m_global_offset.y;
 }
 
-void MotionPrediction::setUnitMotion(UnitMotion* unit_motion, uint32_t type_id, int32_t delta)
+void MotionPrediction::setUnitMotion(UnitMotion* unit_motion, int32_t delta)
 {
-	if (!unit_motion->unit || !d2::getUnitID(unit_motion->unit))
-		return;
-
-	if (type_id && (unit_motion->unit->dwType != (d2::UnitType)(type_id >> 24) || d2::getUnitID(unit_motion->unit) != (type_id & 0x00FFFFFF)))
-		return;
-
 	const d2::Path* path = d2::getUnitPath(unit_motion->unit);
 	const glm::ivec2 unit_pos = { (int32_t)path->x, (int32_t)path->y };
 
