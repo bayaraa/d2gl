@@ -4,7 +4,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 {
 	switch (ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH: {
-			d2gl::App.api = d2gl::Api::Glide3x;
+			d2gl::App.api = d2gl::Api::Glide;
 			d2gl::dllAttach(hModule);
 			break;
 		}

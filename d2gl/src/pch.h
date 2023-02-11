@@ -24,8 +24,5 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// #define __MSC__
-// #include <glide3/glide.h>
-
 #include "app.h"
 #include "log.h"

@@ -228,7 +228,7 @@ void Wrapper::onStageChange()
 	}
 }
 
-void Wrapper::grBufferClear()
+void Wrapper::onBufferClear()
 {
 	if (!m_swapped)
 		return;
@@ -244,7 +244,7 @@ void Wrapper::grBufferClear()
 		ctx->bindPipeline(m_movie_pipeline);
 		ctx->pushQuad();
 
-		grBufferSwap();
+		onBufferSwap();
 	} else {
 		if (m_current_shader != App.shader.selected)
 			onShaderChange();
@@ -268,7 +268,7 @@ void Wrapper::grBufferClear()
 	}
 }
 
-void Wrapper::grBufferSwap()
+void Wrapper::onBufferSwap()
 {
 	if (m_swapped)
 		return;
@@ -315,8 +315,6 @@ void Wrapper::grBufferSwap()
 	option::Menu::instance().draw();
 
 	ctx->presentFrame();
-
-	// trace("==== SWAP ====");
 }
 
 void Wrapper::grDrawPoint(const void* pt)
@@ -497,7 +495,7 @@ FxBool Wrapper::grLfbUnlock()
 {
 	App.game.screen = GameScreen::Movie;
 	m_movie_texture->fill((uint8_t*)m_movie_buffer.lfbPtr, 640, 480);
-	grBufferClear();
+	onBufferClear();
 
 	return FXTRUE;
 }
@@ -513,13 +511,8 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 		App.game.size = { 640, 480 };
 	else if (screen_resolution == GR_RESOLUTION_800x600)
 		App.game.size = { 800, 600 };
-	else {
-		if (App.game.custom_size.x != 0 && App.game.custom_size.y != 0) {
-			App.game.size = App.game.custom_size;
-			App.game.custom_size = { 0, 0 };
-		} else
-			App.game.size = { *d2::screen_width, *d2::screen_height };
-	}
+	else
+		App.game.size = { *d2::screen_width, *d2::screen_height };
 	trace("Game requested screen size: %d x %d\n", App.game.size.x, App.game.size.y);
 
 	if (App.hwnd) {
@@ -541,8 +534,6 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
-
-	LoadLibraryA("SGD2FreeRes.dll");
 
 	return 1;
 }
@@ -580,4 +571,5 @@ inline void Wrapper::onGameStageChange()
 {
 	GlideWrapper->onStageChange();
 }
+
 }

@@ -89,14 +89,14 @@ TextureData Texture::fillImage(ImageData image, uint32_t div_x, uint32_t div_y)
 		}
 	} else {
 		if (div_x == 1) {
-			for (int y = 0; y < div_y; y++) {
+			for (size_t y = 0; y < div_y; y++) {
 				int offset_buffer = y * height * image.width;
 				fill(image.data + offset_buffer * m_channel, width, height, 0, 0, m_next_layer);
 				m_next_layer++;
 			}
 		} else {
 			uint8_t* pixels = new uint8_t[width * height * m_channel];
-			for (int x = 0; x < div_x; x++) {
+			for (size_t x = 0; x < div_x; x++) {
 				for (int y = 0; y < height; y++) {
 					int offset_pixel = y * width;
 					int offset_buffer = x * width + y * image.width;

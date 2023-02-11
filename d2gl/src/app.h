@@ -17,7 +17,7 @@ struct D2GLApp {
 	std::string ini_file = "d2gl.ini";
 	std::string mpq_file = "d2gl.mpq";
 
-	Api api = Api::Glide3x;
+	Api api = Api::Glide;
 	std::unique_ptr<Context> context;
 	std::string version = "";
 	bool vsync = true;
@@ -47,8 +47,8 @@ struct D2GLApp {
 	} viewport;
 
 	struct {
+		uint32_t bpp = 8;
 		glm::uvec2 size = { 0, 0 };
-		glm::uvec2 custom_size  = { 0, 0 };
 		GameScreen screen = GameScreen::Movie;
 		DrawStage draw_stage = DrawStage::World;
 		glm::uvec2 tex_size = { 0, 0 };

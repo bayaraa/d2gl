@@ -88,7 +88,7 @@ Menu::Menu()
 	m_fonts[14] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 14.0f) : io.Fonts->Fonts[0];
 	m_fonts[12] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 12.0f) : io.Fonts->Fonts[0];
 
-	App.menu_title += (App.api == Api::Glide3x ? " (Glide / " : " (DDraw, ");
+	App.menu_title += (App.api == Api::Glide ? " (Glide / " : " (DDraw, ");
 	App.menu_title += "OpenGL: " + App.version + " / D2Lod: " + helpers::getVersionString() + ")";
 }
 

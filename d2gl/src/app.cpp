@@ -40,6 +40,10 @@ void checkDPIAwareness()
 
 void dllAttach(HMODULE hmodule)
 {
+	auto flag_3dfx = strstr(GetCommandLineA(), "-3dfx");
+	if ((App.api == Api::Glide && !flag_3dfx) || (App.api == Api::DDraw && flag_3dfx))
+		return;
+
 	App.hmodule = hmodule;
 
 	logInit();
@@ -55,6 +59,9 @@ void dllAttach(HMODULE hmodule)
 	trace("Game version %s detected.", helpers::getVersionString().c_str());
 
 	option::loadIni();
+
+	LoadLibraryA("SGD2FreeRes.dll");
+
 	d2::initHooks();
 	win32::initHooks();
 }

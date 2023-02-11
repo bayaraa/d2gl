@@ -161,15 +161,15 @@ GLuint Pipeline::createShader(const char* source, int type)
 	return id;
 }
 
-// clang-format off
 const ShaderSource g_shader_movie = {
-	#include "shaders/movie.glsl.h"
+#include "shaders/movie.glsl.h"
 };
 
 const ShaderSource g_shader_postfx = {
-	#include "shaders/postfx.glsl.h"
+#include "shaders/postfx.glsl.h"
 };
 
+// clang-format off
 const std::vector<std::pair<std::string, ShaderSource>> g_shader_upscale = {
 	{ "simple-sharp-bilinear", {
 		#include "shaders/upscale/simple-sharp-bilinear.glsl.h"

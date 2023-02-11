@@ -113,18 +113,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\configurator.cpp" />
-    <ClCompile Include="src\glide3x.cpp" />
+    <ClCompile Include="src\glide\glide3x.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\texture_manager.cpp" />
+    <ClCompile Include="src\glide\texture_manager.cpp" />
     <ClCompile Include="src\wrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="src\texture_manager.h" />
+    <ClInclude Include="src\glide\texture_manager.h" />
     <ClInclude Include="src\wrapper.h" />
   </ItemGroup>
   <ItemGroup>

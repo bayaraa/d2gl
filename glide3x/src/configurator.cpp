@@ -56,16 +56,12 @@ public:
 	STDMETHOD(SetCustomResolution)
 	(int32_t width, int32_t height) noexcept
 	{
-		d2gl::App.game.custom_size.x = width;
-		d2gl::App.game.custom_size.y = height;
 		return S_OK;
 	}
 
 	STDMETHOD(GetSuggestedCustomResolution)
 	(int32_t* width, int32_t* height) noexcept
 	{
-		//*width = Glide.game.width;
-		//*height = Glide.game.height;
 		return S_OK;
 	}
 };

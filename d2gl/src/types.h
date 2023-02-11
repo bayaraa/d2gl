@@ -3,7 +3,7 @@
 namespace d2gl {
 
 enum class Api {
-	Glide3x,
+	Glide,
 	DDraw,
 };
 

@@ -21,13 +21,13 @@
     <ClCompile Include="src\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\glide3x.cpp">
+    <ClCompile Include="src\glide\glide3x.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\wrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\texture_manager.cpp">
+    <ClCompile Include="src\glide\texture_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\configurator.cpp">
@@ -41,7 +41,7 @@
     <ClInclude Include="src\wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\texture_manager.h">
+    <ClInclude Include="src\glide\texture_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

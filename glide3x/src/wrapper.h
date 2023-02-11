@@ -1,6 +1,6 @@
 #pragma once
 
-#include "texture_manager.h"
+#include "glide/texture_manager.h"
 
 #define __MSC__
 #include <glide3/glide.h>
@@ -57,12 +57,13 @@ class Wrapper {
 public:
 	Wrapper();
 	~Wrapper();
+
 	void onResize();
 	void onShaderChange(bool texture = false);
 	void onStageChange();
+	void onBufferClear();
+	void onBufferSwap();
 
-	void grBufferClear();
-	void grBufferSwap();
 	void grDrawPoint(const void* pt);
 	void grDrawLine(const void* v1, const void* v2);
 	void grDrawVertexArray(FxU32 mode, FxU32 count, void** pointers);

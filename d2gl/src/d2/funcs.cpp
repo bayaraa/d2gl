@@ -97,11 +97,8 @@ DWORD getCellNo(CellContext* cell)
 
 void gameDrawBegin()
 {
-	if (App.game.screen == GameScreen::Loading || App.game.screen == GameScreen::Menu) {
+	if (App.game.screen == GameScreen::Loading || App.game.screen == GameScreen::Menu)
 		App.game.screen = GameScreen::InGame;
-		if (App.game.onStageChange)
-			App.game.onStageChange();
-	}
 }
 
 void automapDrawBegin()

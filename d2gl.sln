@@ -33,5 +33,6 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		d2gl\d2gl.vcxitems*{b72ea5ef-5e60-4404-a36b-6657db61241c}*SharedItemsImports = 9
 		d2gl\d2gl.vcxitems*{b824c3d6-1268-442e-b26f-a857c905c310}*SharedItemsImports = 4
+		d2gl\d2gl.vcxitems*{c24ba525-9b5f-4fa3-922e-8d1c1dcabfc0}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
