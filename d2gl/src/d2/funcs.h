@@ -9,12 +9,11 @@ glm::ivec2 getCursorPos();
 bool isPerspective();
 
 UnitAny* getPlayerUnit();
+UnitAny* findUnit(uint32_t type_id);
 DWORD getUnitID(UnitAny* unit);
 DWORD getUnitFlag(UnitAny* unit);
 Path* getUnitPath(UnitAny* unit);
 StaticPath* getUnitStaticPath(UnitAny* unit);
-
-UnitAny* findUnit(uint32_t type_id);
 UnitAny* getHoveredInvItem();
 
 CellFile* getCellFile(CellContext* cell);

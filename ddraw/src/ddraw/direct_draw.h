@@ -6,35 +6,42 @@
 
 namespace d2gl {
 
-struct DirectDraw : public IDirectDraw {
+// clang-format off
+class DirectDraw : public IDirectDraw {
 	ULONG m_ref = 0;
 
-	HRESULT __stdcall QueryInterface(REFIID riid, LPVOID FAR* object);
-	ULONG __stdcall AddRef();
-	ULONG __stdcall Release();
+public:
+	DirectDraw() = default;
+	~DirectDraw() = default;
 
-	HRESULT __stdcall Compact();
-	HRESULT __stdcall CreateClipper(DWORD flags, LPDIRECTDRAWCLIPPER FAR* clipper, IUnknown FAR* unknown);
-	HRESULT __stdcall CreatePalette(DWORD flags, LPPALETTEENTRY palette_entry, LPDIRECTDRAWPALETTE FAR* palette, IUnknown FAR* unknown);
-	HRESULT __stdcall CreateSurface(LPDDSURFACEDESC surface_desc, LPDIRECTDRAWSURFACE FAR* surface, IUnknown FAR* unknown);
-	HRESULT __stdcall DuplicateSurface(LPDIRECTDRAWSURFACE src_surface, LPDIRECTDRAWSURFACE FAR* dst_surface);
-	HRESULT __stdcall EnumDisplayModes(DWORD flags, LPDDSURFACEDESC surface_desc, LPVOID context, LPDDENUMMODESCALLBACK enum_modes_callback);
-	HRESULT __stdcall EnumSurfaces(DWORD flags, LPDDSURFACEDESC surface_desc, LPVOID context, LPDDENUMSURFACESCALLBACK enum_surfaces_callback);
-	HRESULT __stdcall FlipToGDISurface();
-	HRESULT __stdcall GetCaps(LPDDCAPS driver_caps, LPDDCAPS emul_caps);
-	HRESULT __stdcall GetDisplayMode(LPDDSURFACEDESC surface_desc);
-	HRESULT __stdcall GetFourCCCodes(LPDWORD num_codes, LPDWORD codes);
-	HRESULT __stdcall GetGDISurface(LPDIRECTDRAWSURFACE FAR* gdi_surface);
-	HRESULT __stdcall GetMonitorFrequency(LPDWORD frequency);
-	HRESULT __stdcall GetScanLine(LPDWORD scan_line);
-	HRESULT __stdcall GetVerticalBlankStatus(LPBOOL in_vertical_blank);
-	HRESULT __stdcall Initialize(GUID* guid);
-	HRESULT __stdcall RestoreDisplayMode();
-	HRESULT __stdcall SetCooperativeLevel(HWND hwnd, DWORD flags);
-	HRESULT __stdcall SetDisplayMode(DWORD width, DWORD height, DWORD bpp);
-	HRESULT __stdcall WaitForVerticalBlank(DWORD flags, HANDLE event);
+	/*** IUnknown methods ***/
+	STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID FAR* ppvObj) { return DDERR_UNSUPPORTED; }
+	STDMETHOD_(ULONG, AddRef)(THIS);
+	STDMETHOD_(ULONG, Release)(THIS);
+	/*** IDirectDraw methods ***/
+	STDMETHOD(Compact)(THIS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(CreateClipper)(THIS_ DWORD, LPDIRECTDRAWCLIPPER FAR*, IUnknown FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(CreatePalette)(THIS_ DWORD, LPPALETTEENTRY, LPDIRECTDRAWPALETTE FAR*, IUnknown FAR*);
+	STDMETHOD(CreateSurface)(THIS_ LPDDSURFACEDESC, LPDIRECTDRAWSURFACE FAR*, IUnknown FAR*);
+	STDMETHOD(DuplicateSurface)(THIS_ LPDIRECTDRAWSURFACE, LPDIRECTDRAWSURFACE FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(EnumDisplayModes)(THIS_ DWORD, LPDDSURFACEDESC, LPVOID, LPDDENUMMODESCALLBACK) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(EnumSurfaces)(THIS_ DWORD, LPDDSURFACEDESC, LPVOID, LPDDENUMSURFACESCALLBACK) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(FlipToGDISurface)(THIS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetCaps)(THIS_ LPDDCAPS, LPDDCAPS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetDisplayMode)(THIS_ LPDDSURFACEDESC) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetFourCCCodes)(THIS_ LPDWORD, LPDWORD) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetGDISurface)(THIS_ LPDIRECTDRAWSURFACE FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetMonitorFrequency)(THIS_ LPDWORD) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetScanLine)(THIS_ LPDWORD) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetVerticalBlankStatus)(THIS_ LPBOOL) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(Initialize)(THIS_ GUID FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(RestoreDisplayMode)(THIS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(SetCooperativeLevel)(THIS_ HWND, DWORD);
+	STDMETHOD(SetDisplayMode)(THIS_ DWORD, DWORD, DWORD);
+	STDMETHOD(WaitForVerticalBlank)(THIS_ DWORD, HANDLE) { return DD_OK; }
 };
+// clang-format on
 
-extern DirectDraw* DDraw;
+// extern DirectDraw* DDraw;
 
 }

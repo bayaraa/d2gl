@@ -117,6 +117,11 @@ FX_ENTRY FxU32 FX_CALL grTexMinAddress(GrChipID_t tmu)
 	return 0;
 }
 
+FX_ENTRY const char* FX_CALL grGetString(FxU32 pname)
+{
+	return Wrapper::grGetString(pname);
+}
+
 // Called but unnecessary functions
 
 FX_ENTRY FxBool FX_CALL grSstWinClose(GrContext_t context)
@@ -468,12 +473,6 @@ FX_ENTRY FxU32 FX_CALL grTexTextureMemRequired(FxU32 evenOdd, GrTexInfo* info)
 FX_ENTRY void FX_CALL grDisableAllEffects(void)
 {
 	assert(false && "grDisableAllEffects");
-}
-
-FX_ENTRY const char* FX_CALL grGetString(FxU32 pname)
-{
-	assert(false && "grGetString");
-	return "";
 }
 
 #ifdef __cplusplus

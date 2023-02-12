@@ -185,7 +185,7 @@ void Wrapper::onBufferSwap(bool flip)
 
 	ctx->beginFrame();
 
-	m_ddraw_texture->fill((uint8_t*)DDrawSurface->m_data, App.game.size.x, App.game.size.y);
+	m_ddraw_texture->fill(DDrawSurface->getData(), App.game.size.x, App.game.size.y);
 
 	if (App.game.screen == GameScreen::Movie) {
 		ctx->bindDefaultFrameBuffer();

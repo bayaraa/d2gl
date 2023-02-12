@@ -554,6 +554,18 @@ FxU32 Wrapper::grGet(FxU32 pname, FxI32& params)
 	return 4;
 }
 
+const char* Wrapper::grGetString(FxU32 pname)
+{
+	switch (pname) {
+		case GR_EXTENSION: return " ";
+		case GR_HARDWARE: return "Spectre 3000";
+		case GR_RENDERER: return "Glide";
+		case GR_VENDOR: return "3Dfx Interactive";
+		case GR_VERSION: return "3.1";
+	}
+	return "";
+}
+
 uint32_t Wrapper::getTexSize(GrTexInfo* info, uint32_t& width, uint32_t& height)
 {
 	if (info->aspectRatioLog2 < 0) {

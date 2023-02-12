@@ -83,6 +83,7 @@ public:
 
 	static GrContext_t grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolution);
 	static FxU32 grGet(FxU32 pname, FxI32& params);
+	static const char* grGetString(FxU32 pname);
 
 	static uint32_t getTexSize(GrTexInfo* info, uint32_t& width, uint32_t& height);
 	static inline void onGameStageChange();

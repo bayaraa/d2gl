@@ -27,6 +27,11 @@ typedef void(__stdcall* drawShadow_t)(CellContext* cell, int x, int y);
 typedef void(__stdcall* drawSolidRectEx_t)(int left, int top, int right, int bottom, uint32_t color, int draw_mode);
 typedef void(__stdcall* drawLine_t)(int x_start, int y_start, int x_end, int y_end, uint8_t color, uint8_t alpha);
 
+typedef bool(__stdcall* drawGroundTile_t)(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data);
+typedef bool(__stdcall* drawWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels);
+typedef bool(__stdcall* drawTransWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
+typedef bool(__stdcall* drawShadowTile_t)(TileContext* tile, int x, int y, int draw_mode, int screen_panels);
+
 typedef void(__fastcall* drawRectFrame_t)(uint32_t rect, int);
 
 typedef void(__fastcall* drawNormalText_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
@@ -50,10 +55,7 @@ typedef uint32_t(__fastcall* setTextSize_t)(uint32_t size);
 
 // typedef void(__stdcall* DrawSolidRectAlpha_t) (int nXStart, int nYStart, int nXEnd, int nYEnd, uint32_t color, BYTE nAlpha);
 //
-typedef bool(__stdcall* drawGroundTile_t)(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data);
-typedef bool(__stdcall* drawWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels);
-typedef bool(__stdcall* drawTransWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
-typedef bool(__stdcall* drawShadowTile_t)(TileContext* tile, int x, int y, int draw_mode, int screen_panels);
+
 //
 // typedef int(__fastcall* SetTextSize_t) (int dwSize);
 // typedef void(__stdcall* CreateTextBox_t) (DWORD* data);
@@ -118,6 +120,11 @@ extern drawShadow_t drawShadow;
 extern drawSolidRectEx_t drawSolidRectEx;
 extern drawLine_t drawLine;
 
+extern drawGroundTile_t drawGroundTile;
+extern drawWallTile_t drawWallTile;
+extern drawTransWallTile_t drawTransWallTile;
+extern drawShadowTile_t drawShadowTile;
+
 extern drawNormalText_t drawNormalText;
 extern drawNormalTextEx_t drawNormalTextEx;
 extern drawFramedText_t drawFramedText;
@@ -127,11 +134,6 @@ extern getNormalTextNWidth_t getNormalTextNWidth;
 extern getFramedTextSize_t getFramedTextSize;
 extern getFontHeight_t getFontHeight;
 extern setTextSize_t setTextSize;
-
-extern drawGroundTile_t drawGroundTile;
-extern drawWallTile_t drawWallTile;
-extern drawTransWallTile_t drawTransWallTile;
-extern drawShadowTile_t drawShadowTile;
 
 // extern DWORD HoveredUnit;
 // extern Offset D2WinUnitHover;

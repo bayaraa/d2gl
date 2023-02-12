@@ -13,7 +13,7 @@ uint32_t* screen_width = (uint32_t*)getProc((DLL_D2CLIENT), (0xD40E4), (0xD40F4)
 uint32_t* screen_height = (uint32_t*)getProc((DLL_D2CLIENT), (0xD40E0), (0xD40F0), (0xF5C60), (0xF4FC8), (0xDC6E4), (0xDBC4C), (0xF7038), (0x311470));
 uint32_t* screen_shift = (uint32_t*)getProc((DLL_D2CLIENT), (0x115C10), (0x10B9C4), (0x11C1C0), (0x11C3E4), (0x11C1D0), (0x11C414), (0x11D070), (0x3A5210));
 
-bool* perspective = (bool*)getProc((DLL_D2GFX), (0xE188), (0xE198), (0x10C94), (0x10C30), (0x10C8C), (0x10BE0), (0x10BE4), (0x32DA48)); // repspective available is +4
+bool* perspective = (bool*)getProc((DLL_D2GFX), (0xE188), (0xE198), (0x10C94), (0x10C30), (0x10C8C), (0x10BE0), (0x10BE4), (0x32DA48));
 bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0xFB094), (0x1040E4), (0x102B7C), (0xFADA4), (0x11C8B4), (0x3A27E4));
 
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
@@ -52,8 +52,8 @@ int* automap_type = (int*)getProc((DLL_D2CLIENT), (0xEB01C), (0xEABDC), (0xF1694
 uintptr_t d2ClientFn1_O = getProc((DLL_D2CLIENT), (0x8CFC0), (0x883D0), (0x57E20), (0x50A90), (0x3E530), (0x5F9F0), (0x71390), (0x57520));
 uintptr_t d2ClientFn2_O = getProc((DLL_D2CLIENT), (0x8DC20), (0x89370), (0x9E990), (0x62670), (0x8BDA0), (0xBF0D0), (0x18E20), (0x55510));
 
-findUnit_t findUnitClient = (findUnit_t)getProc((DLL_D2CLIENT), (), (0x86BE0), (), (), (0x1F1A0), (0xA5B20), (0x620B0), (0x63990)); // TODO
-findUnit_t findUnitServer = (findUnit_t)getProc((DLL_D2CLIENT), (), (0x86C70), (), (), (0x1F1C0), (0xA5B40), (0x620D0), (0x639B0)); // TODO
+findUnit_t findUnitClient = (findUnit_t)getProc((DLL_D2CLIENT), (0x8B560), (0x869F0), (0x262D0), (0x4C040), (0x1F1A0), (0xA5B20), (0x620B0), (0x63990));
+findUnit_t findUnitServer = (findUnit_t)getProc((DLL_D2CLIENT), (0x8B5D0), (0x86A60), (0x262F0), (0x4C060), (0x1F1C0), (0xA5B40), (0x620D0), (0x639B0));
 drawUnit_t drawUnit = (drawUnit_t)getProc((DLL_D2CLIENT), (0xB8350), (0xBA720), (0x6C760), (0x478D0), (0x94250), (0x6C490), (0x605b0), (0x70EC0));
 drawUnit_t drawMissile = (drawUnit_t)getProc((DLL_D2CLIENT), (), (), (0x6CEB0), (0x480A0), (0x949C0), (0x6CC00), (0x60C70), (0x71EC0));
 drawWeatherParticles_t drawWeatherParticles = (drawWeatherParticles_t)getProc((DLL_D2CLIENT), (0x07BC0), (0x08690), (0x4C980), (0x12730), (0x14210), (0x7FE80), (0x4AD90), (0x73470));
@@ -65,7 +65,12 @@ drawClippedImage_t drawClippedImage = (drawClippedImage_t)getProc((DLL_D2GFX), (
 drawImageFast_t drawImageFast = (drawImageFast_t)getProc((DLL_D2GFX), (-10076), (-10076), (-10017), (-10075), (-10012), (-10046), (-10006), (0xF6570));
 drawShadow_t drawShadow = (drawShadow_t)getProc((DLL_D2GFX), (-10075), (-10075), (-10040), (-10032), (-10030), (-10011), (-10084), (0xF6540));
 drawSolidRectEx_t drawSolidRectEx = (drawSolidRectEx_t)getProc((DLL_D2GFX), (-10055), (-10055), (-10028), (-10000), (-10062), (-10014), (-10028), (0xF6300));
-drawLine_t drawLine = (drawLine_t)getProc((DLL_D2GFX), (), (-10057), (), (), (-10031), (-10010), (-10013), ());
+drawLine_t drawLine = (drawLine_t)getProc((DLL_D2GFX), (-10057), (-10057), (-10009), (-10001), (-10031), (-10010), (-10013), (0xF6380));
+
+drawGroundTile_t drawGroundTile = (drawGroundTile_t)getProc((DLL_D2GFX), (-10079), (-10079), (-10080), (-10082), (-10038), (-10076), (-10001), (0xF68E0));
+drawWallTile_t drawWallTile = (drawWallTile_t)getProc((DLL_D2GFX), (-10080), (-10080), (-10065), (-10011), (-10014), (-10001), (-10081), (0xF6920));
+drawTransWallTile_t drawTransWallTile = (drawTransWallTile_t)getProc((DLL_D2GFX), (-10081), (-10081), (-10035), (-10076), (-10075), (-10058), (-10040), (0xF6950));
+drawShadowTile_t drawShadowTile = (drawShadowTile_t)getProc((DLL_D2GFX), (-10082), (-10082), (-10012), (-10043), (-10042), (-10069), (-10060), (0xF6980));
 
 drawNormalText_t drawNormalText = (drawNormalText_t)getProc((DLL_D2WIN), (-10117), (-10117), (-10020), (-10064), (-10001), (-10150), (-10076), (0x102320));
 drawNormalTextEx_t drawNormalTextEx = (drawNormalTextEx_t)getProc((DLL_D2WIN), (), (), (-10006), (-10043), (-10157), (-10096), (-10084), (0x102360));
@@ -105,10 +110,7 @@ std::unique_ptr<Patch> patch_hd_text;
 
 // DrawSolidRectAlpha_t DrawSolidRectAlpha = (DrawSolidRectAlpha_t)getProc((DLL_D2GFX), (), (-10057), (), (), (), (), (-10013), ());
 
-drawGroundTile_t drawGroundTile = (drawGroundTile_t)getProc((DLL_D2GFX), (), (-10079), (), (), (-10038), (-10076), (), ());			 // TODO
-drawWallTile_t drawWallTile = (drawWallTile_t)getProc((DLL_D2GFX), (), (-10080), (), (), (-10014), (-10001), (), ());				 // TODO
-drawTransWallTile_t drawTransWallTile = (drawTransWallTile_t)getProc((DLL_D2GFX), (), (-10081), (), (), (-10075), (-10058), (), ()); // TODO
-drawShadowTile_t drawShadowTile = (drawShadowTile_t)getProc((DLL_D2GFX), (), (-10082), (), (), (-10042), (-10069), (), ());			 // TODO
+
 
 // SetTextSize = (SetTextSize_t)getProc(D2WIN, -10184, -10047);
 // CreateTextBox = (CreateTextBox_t)getProc(D2WIN, -10098, -10164);
@@ -130,13 +132,13 @@ void initHooks()
 	game_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x9B3D, 0xE87A5F0B), (0xA2A2, 0xE8B51B0C), (0x89A2F, 0xE84A37F8), (0x3356F, 0xE85E9CFD), (0x7D1BF, 0xE84801F9), (0x44E2F, 0xE81A85FC), (0x45E7F, 0xE8E473FC), (0x4F256, 0xE8E5550C)), 5, (uintptr_t)gameDrawBeginStub);
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5333DB3B), (0x865AC, 0x33ED894C), (0x81B7C, 0x33DB894C), (0xA35F6), (0x669F6), (0x90156), (0xC39E6), (0x1D3E6), (0x56EE1, 0x8BEC83EC)), isVerMax(V_110f) ? 6 : 5, (uintptr_t)uiDrawBeginStub);
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x508D5424), (0xB58CC, 0x6AFF5203), (0xB7A9C, 0x6AFF5203), (0x38461), (0x27F11), (0x9EB21), (0x16001), (0x14481), (0x684A5, 0x518D45B8)), 5, (uintptr_t)uiDrawEndStub); // Cursor changed
-	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x52894424), (0xB5606), (0xB7776), (0x38D46), (0x287F6), (0x9F406), (0x168E6), (0x14D66), (0x68435, 0x57568D55)), 5, (uintptr_t)uiDrawEndStub);							// Default cursor
-	game_loop.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xB9120000), (0xF4C2, 0x51895C24), (0xD922, 0x51895C24), (0xBA47), (0x133D7), (0xCDC7), (0x17F87), (0xE107), (0xF983F, 0x83EA0123)), 5, (uintptr_t)uiDrawEndStub);			// InMenu
+	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x52894424), (0xB5606), (0xB7776), (0x38D46), (0x287F6), (0x9F406), (0x168E6), (0x14D66), (0x68435, 0x57568D55)), 5, (uintptr_t)uiDrawEndStub); // Default cursor
+	game_loop.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xB9120000), (0xF4C2, 0x51895C24), (0xD922, 0x51895C24), (0xBA47), (0x133D7), (0xCDC7), (0x17F87), (0xE107), (0xF983F, 0x83EA0123)), 5, (uintptr_t)uiDrawEndStub); // InMenu
 	game_loop.toggle(true);
 
 	Patch fps_fix = Patch();
 	fps_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT), (0x9B5F, 0x392D400C), (0xA2C9, 0x85C0752B), (0x89A51, 0x391D2034), (0x33591, 0x391D8036), (0x7D1E1, 0x391D2834), (0x44E51, 0x391D9034), (0x45EA1, 0x391DF046), (0x4F278, 0x391D0407)), isVer(V_110f) ? 4 : 8); // InGame: Unlimited
-	fps_fix.add(PatchType::Swap, getOffset((DLL_D2WIN, 0x2881FF18), (0xEC0C, 0x6A195150), (0xD02B), (0xC63B), (0x13F5B), (0xD94B), (0x18A1B), (0xED6B), (0xFA62D)), 4, isVer(V_109d) ? 0x6A2D5150 : 0x1481FF18);														 // InMenu: 45fps
+	fps_fix.add(PatchType::Swap, getOffset((DLL_D2WIN, 0x2881FF18), (0xEC0C, 0x6A195150), (0xD02B), (0xC63B), (0x13F5B), (0xD94B), (0x18A1B), (0xED6B), (0xFA62D)), 4, isVer(V_109d) ? 0x6A2D5150 : 0x1481FF18); // InMenu: 45fps
 	fps_fix.toggle(true);
 
 	Patch sleep_fix = Patch();
@@ -166,8 +168,6 @@ void initHooks()
 		patch_motion_prediction->add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x63D95, 0x33FF8944), (0x6A19E, 0x89442430), (), (), (), (), (), ()), 6, isVer(V_110f) ? (uintptr_t)altItemsTextStub110f : (uintptr_t)altItemsTextStub109d);
 	else
 		patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0xC7442450), (), (), (0xB754D), (0x5DB8D), (0x775BD), (0x5921D), (0x4E7AD), (0xC0A58, 0xC745BC01)), isVer(V_114d) ? 7 : 8, (uintptr_t)altItemsTextStub);
-	// patch_motion_prediction->add(PatchType::Nop, getOffset((DLL_D2CLIENT), (), (), (), (), (), (0x3F8DF), (), ()), 2);
-	// patch_motion_prediction->add(PatchType::Nop, getOffset((DLL_D2CLIENT), (), (), (), (), (), (0x8B15D), (), ()), 2);
 	modules::MotionPrediction::Instance().toggle(App.motion_prediction);
 
 	/*patch_hd_text = std::make_unique<Patch>();

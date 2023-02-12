@@ -4,20 +4,29 @@
 
 namespace d2gl {
 
-struct DirectDrawPalette : public IDirectDrawPalette {
+// clang-format off
+class DirectDrawPalette : public IDirectDrawPalette {
 	ULONG m_ref = 0;
-	RGBQUAD m_data_rgb[256];
-	glm::vec4 m_data[256];
+
 	DWORD m_flags = 0;
+	glm::vec4 m_data[256];
 
-	HRESULT __stdcall QueryInterface(REFIID riid, LPVOID FAR* object);
-	ULONG __stdcall AddRef();
-	ULONG __stdcall Release();
+public:
+	DirectDrawPalette(DWORD flags, LPPALETTEENTRY palette_entry);
+	~DirectDrawPalette() = default;
 
-	HRESULT __stdcall GetCaps(LPDWORD caps);
-	HRESULT __stdcall GetEntries(DWORD flags, DWORD base, DWORD num_entries, LPPALETTEENTRY entries);
-	HRESULT __stdcall Initialize(LPDIRECTDRAW ddraw, DWORD flags, LPPALETTEENTRY color_table);
-	HRESULT __stdcall SetEntries(DWORD flags, DWORD starting_entry, DWORD count, LPPALETTEENTRY entries);
+	inline const glm::vec4* getData() { return m_data; }
+
+	/*** IUnknown methods ***/
+	STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID FAR* ppvObj) { return DDERR_UNSUPPORTED; }
+	STDMETHOD_(ULONG, AddRef)(THIS);
+	STDMETHOD_(ULONG, Release)(THIS);
+	/*** IDirectDrawPalette methods ***/
+	STDMETHOD(GetCaps)(THIS_ LPDWORD) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetEntries)(THIS_ DWORD, DWORD, DWORD, LPPALETTEENTRY) { return DD_OK; }
+	STDMETHOD(Initialize)(THIS_ LPDIRECTDRAW, DWORD, LPPALETTEENTRY) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(SetEntries)(THIS_ DWORD, DWORD, DWORD, LPPALETTEENTRY);
 };
+// clang-format on
 
 }

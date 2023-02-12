@@ -10,8 +10,10 @@ struct BitmapInfo256 {
 	RGBQUAD colors[256] = { 0 };
 };
 
-struct DirectDrawSurface : public IDirectDrawSurface {
+// clang-format off
+class DirectDrawSurface : public IDirectDrawSurface {
 	ULONG m_ref = 0;
+
 	LONG m_width = 0, m_height = 0;
 	DWORD m_bpp = 0, m_flags = 0, m_caps = 0;
 
@@ -25,57 +27,53 @@ struct DirectDrawSurface : public IDirectDrawSurface {
 	DirectDrawPalette* m_palette = nullptr;
 	DirectDrawSurface* m_back_buffer = nullptr;
 
-	HRESULT __stdcall QueryInterface(REFIID riid, LPVOID FAR* object);
-	ULONG __stdcall AddRef();
-	ULONG __stdcall Release();
+public:
+	DirectDrawSurface(LPDDSURFACEDESC surface_desc);
+	~DirectDrawSurface();
 
-	HRESULT __stdcall AddAttachedSurface(LPDIRECTDRAWSURFACE surface);
-	HRESULT __stdcall AddOverlayDirtyRect(LPRECT rect);
-	HRESULT __stdcall Blt(LPRECT in_dst_rect, LPDIRECTDRAWSURFACE surface, LPRECT in_src_rect, DWORD flags, LPDDBLTFX blt_fx);
-	HRESULT __stdcall BltBatch(LPDDBLTBATCH blt_batch, DWORD count, DWORD flags);
-	HRESULT __stdcall BltFast(DWORD x, DWORD y, LPDIRECTDRAWSURFACE surface, LPRECT in_src_rect, DWORD flags);
-	HRESULT __stdcall DeleteAttachedSurface(DWORD flags, LPDIRECTDRAWSURFACE surface);
-	HRESULT __stdcall EnumAttachedSurfaces(LPVOID context, LPDDENUMSURFACESCALLBACK enum_surfaces_callback);
-	HRESULT __stdcall EnumOverlayZOrders(DWORD flags, LPVOID context, LPDDENUMSURFACESCALLBACK enum_surfaces_callback);
-	HRESULT __stdcall Flip(LPDIRECTDRAWSURFACE surface, DWORD flags);
-	HRESULT __stdcall GetAttachedSurface(LPDDSCAPS caps, LPDIRECTDRAWSURFACE FAR* surface);
-	HRESULT __stdcall GetBltStatus(DWORD flags);
-	HRESULT __stdcall GetCaps(LPDDSCAPS caps);
-	HRESULT __stdcall GetClipper(LPDIRECTDRAWCLIPPER FAR* clipper);
-	HRESULT __stdcall GetColorKey(DWORD flags, LPDDCOLORKEY color_key);
-	HRESULT __stdcall GetDC(HDC FAR* hdc);
-	HRESULT __stdcall GetFlipStatus(DWORD flags);
-	HRESULT __stdcall GetOverlayPosition(LPLONG x, LPLONG y);
-	HRESULT __stdcall GetPalette(LPDIRECTDRAWPALETTE FAR* palette);
-	HRESULT __stdcall GetPixelFormat(LPDDPIXELFORMAT pixel_format);
-	HRESULT __stdcall GetSurfaceDesc(LPDDSURFACEDESC surface_desc);
-	HRESULT __stdcall Initialize(LPDIRECTDRAW ddraw, LPDDSURFACEDESC surface_desc);
-	HRESULT __stdcall IsLost();
-	HRESULT __stdcall Lock(LPRECT dst_rect, LPDDSURFACEDESC surface_desc, DWORD flags, HANDLE event);
-	HRESULT __stdcall ReleaseDC(HDC hdc);
-	HRESULT __stdcall Restore();
-	HRESULT __stdcall SetClipper(LPDIRECTDRAWCLIPPER clipper);
-	HRESULT __stdcall SetColorKey(DWORD flags, LPDDCOLORKEY color_key);
-	HRESULT __stdcall SetOverlayPosition(LONG x, LONG y);
-	HRESULT __stdcall SetPalette(LPDIRECTDRAWPALETTE palette);
-	HRESULT __stdcall Unlock(LPVOID rect);
-	HRESULT __stdcall UpdateOverlay(LPRECT src_rect, LPDIRECTDRAWSURFACE surface, LPRECT dst_rect, DWORD flags, LPDDOVERLAYFX overlay_fx);
-	HRESULT __stdcall UpdateOverlayDisplay(DWORD flags);
-	HRESULT __stdcall UpdateOverlayZOrder(DWORD flags, LPDIRECTDRAWSURFACE surface);
-	// HRESULT __stdcall GetDDInterface(LPVOID* lplpDD);
-	// HRESULT __stdcall PageLock(DWORD dwFlags);
-	// HRESULT __stdcall PageUnlock(DWORD dwFlags);
-	// HRESULT __stdcall SetSurfaceDesc(LPDDSURFACEDESC2 lpDDSD, DWORD dwFlags);
-	// HRESULT __stdcall SetPrivateData(REFGUID rtag, LPVOID lpData, DWORD dwSize, DWORD dwFlags);
-	// HRESULT __stdcall GetPrivateData(REFGUID rtag, LPVOID lpBuffer, LPDWORD lpdwBufferSize);
-	// HRESULT __stdcall FreePrivateData(REFGUID rtag);
-	// HRESULT __stdcall GetUniquenessValue(LPDWORD lpdwValue);
-	// HRESULT __stdcall ChangeUniquenessValue();
-	// HRESULT __stdcall SetPriority(DWORD dwPrio);
-	// HRESULT __stdcall GetPriority(LPDWORD lpdwPrio);
-	// HRESULT __stdcall SetLOD(DWORD dwLod);
-	// HRESULT __stdcall GetLOD(LPDWORD lpdwLod);
+	inline const DirectDrawPalette* getPalette() { return m_palette; }
+	inline const uint8_t* getData() { return (uint8_t*)m_data; }
+
+	/*** IUnknown methods ***/
+	STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID FAR* ppvObj) { return DDERR_UNSUPPORTED; }
+	STDMETHOD_(ULONG, AddRef)(THIS);
+	STDMETHOD_(ULONG, Release)(THIS);
+	/*** IDirectDrawSurface methods ***/
+	STDMETHOD(AddAttachedSurface)(THIS_ LPDIRECTDRAWSURFACE) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(AddOverlayDirtyRect)(THIS_ LPRECT) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(Blt)(THIS_ LPRECT, LPDIRECTDRAWSURFACE, LPRECT, DWORD, LPDDBLTFX);
+	STDMETHOD(BltBatch)(THIS_ LPDDBLTBATCH, DWORD, DWORD) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(BltFast)(THIS_ DWORD, DWORD, LPDIRECTDRAWSURFACE, LPRECT, DWORD);
+	STDMETHOD(DeleteAttachedSurface)(THIS_ DWORD, LPDIRECTDRAWSURFACE) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(EnumAttachedSurfaces)(THIS_ LPVOID, LPDDENUMSURFACESCALLBACK) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(EnumOverlayZOrders)(THIS_ DWORD, LPVOID, LPDDENUMSURFACESCALLBACK) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(Flip)(THIS_ LPDIRECTDRAWSURFACE, DWORD);
+	STDMETHOD(GetAttachedSurface)(THIS_ LPDDSCAPS, LPDIRECTDRAWSURFACE FAR*);
+	STDMETHOD(GetBltStatus)(THIS_ DWORD) { return DD_OK; }
+	STDMETHOD(GetCaps)(THIS_ LPDDSCAPS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetClipper)(THIS_ LPDIRECTDRAWCLIPPER FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetColorKey)(THIS_ DWORD, LPDDCOLORKEY) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetDC)(THIS_ HDC FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetFlipStatus)(THIS_ DWORD) { return DD_OK; }
+	STDMETHOD(GetOverlayPosition)(THIS_ LPLONG, LPLONG) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetPalette)(THIS_ LPDIRECTDRAWPALETTE FAR*) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(GetPixelFormat)(THIS_ LPDDPIXELFORMAT);
+	STDMETHOD(GetSurfaceDesc)(THIS_ LPDDSURFACEDESC);
+	STDMETHOD(Initialize)(THIS_ LPDIRECTDRAW, LPDDSURFACEDESC) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(IsLost)(THIS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(Lock)(THIS_ LPRECT, LPDDSURFACEDESC, DWORD, HANDLE);
+	STDMETHOD(ReleaseDC)(THIS_ HDC) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(Restore)(THIS) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(SetClipper)(THIS_ LPDIRECTDRAWCLIPPER) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(SetColorKey)(THIS_ DWORD, LPDDCOLORKEY) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(SetOverlayPosition)(THIS_ LONG, LONG) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(SetPalette)(THIS_ LPDIRECTDRAWPALETTE);
+	STDMETHOD(Unlock)(THIS_ LPVOID) { return DD_OK; }
+	STDMETHOD(UpdateOverlay)(THIS_ LPRECT, LPDIRECTDRAWSURFACE, LPRECT, DWORD, LPDDOVERLAYFX) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(UpdateOverlayDisplay)(THIS_ DWORD) { return DDERR_UNSUPPORTED; }
+	STDMETHOD(UpdateOverlayZOrder)(THIS_ DWORD, LPDIRECTDRAWSURFACE) { return DDERR_UNSUPPORTED; }
 };
+// clang-format on
 
 extern DirectDrawSurface* DDrawSurface;
 

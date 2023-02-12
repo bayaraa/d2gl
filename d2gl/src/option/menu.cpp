@@ -135,12 +135,12 @@ void Menu::draw()
 	// ImGui::Text("px: %d", App.var8);
 	//   ImGui::InputInt("ShakeX", &App.var11);
 	//   ImGui::InputInt("ShakeY", &App.var12);
-	ImGui::Checkbox("check1", (bool*)&App.var7);
-	ImGui::Checkbox("check2", (bool*)&App.var8);
-	ImGui::Checkbox("check3", (bool*)&App.var9);
-	ImGui::Checkbox("check4", (bool*)&App.var10);
-	ImGui::Checkbox("check5", (bool*)&App.var11);
-	ImGui::Checkbox("check6", (bool*)&App.var12);
+	ImGui::Checkbox("ground", (bool*)&App.var7);
+	ImGui::Checkbox("wall", (bool*)&App.var8);
+	ImGui::Checkbox("wallt", (bool*)&App.var9);
+	ImGui::Checkbox("shadow", (bool*)&App.var10);
+	// ImGui::Checkbox("check5", (bool*)&App.var11);
+	// ImGui::Checkbox("check6", (bool*)&App.var12);
 	ImGui::End();
 
 	if (m_visible) {

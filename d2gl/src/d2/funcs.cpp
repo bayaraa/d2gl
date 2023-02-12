@@ -27,13 +27,25 @@ glm::ivec2 getCursorPos()
 
 bool isPerspective()
 {
-	const bool avaiable = *(bool*)(perspective + 4);
-	return *perspective && avaiable;
+	const bool available = *(bool*)(perspective + 4);
+	return *perspective && available;
 }
 
 UnitAny* getPlayerUnit()
 {
 	return (UnitAny*)*(uintptr_t*)player_unit;
+}
+
+UnitAny* findUnit(uint32_t type_id)
+{
+	const uint32_t unit_id = type_id & 0x00FFFFFF;
+	const uint32_t unit_type = type_id >> 24;
+
+	auto unit = findUnitClient(unit_id, unit_type);
+	if (unit)
+		return unit;
+
+	return findUnitServer(unit_id, unit_type);
 }
 
 DWORD getUnitID(UnitAny* unit)
@@ -54,18 +66,6 @@ Path* getUnitPath(UnitAny* unit)
 StaticPath* getUnitStaticPath(UnitAny* unit)
 {
 	return isVer(V_109d) ? unit->v109.pStaticPath : unit->v110.pStaticPath;
-}
-
-UnitAny* findUnit(uint32_t type_id)
-{
-	const uint32_t unit_id = type_id & 0x00FFFFFF;
-	const uint32_t unit_type = type_id >> 24;
-
-	auto unit = findUnitClient(unit_id, unit_type);
-	if (unit)
-		return unit;
-
-	return findUnitServer(unit_id, unit_type);
 }
 
 UnitAny* getHoveredInvItem()
