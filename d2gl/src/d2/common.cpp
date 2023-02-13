@@ -66,12 +66,12 @@ drawImageFast_t drawImageFast = (drawImageFast_t)getProc((DLL_D2GFX), (-10076), 
 drawShadow_t drawShadow = (drawShadow_t)getProc((DLL_D2GFX), (-10075), (-10075), (-10040), (-10032), (-10030), (-10011), (-10084), (0xF6540));
 drawSolidRectEx_t drawSolidRectEx = (drawSolidRectEx_t)getProc((DLL_D2GFX), (-10055), (-10055), (-10028), (-10000), (-10062), (-10014), (-10028), (0xF6300));
 drawLine_t drawLine = (drawLine_t)getProc((DLL_D2GFX), (-10057), (-10057), (-10009), (-10001), (-10031), (-10010), (-10013), (0xF6380));
-
 drawGroundTile_t drawGroundTile = (drawGroundTile_t)getProc((DLL_D2GFX), (-10079), (-10079), (-10080), (-10082), (-10038), (-10076), (-10001), (0xF68E0));
 drawWallTile_t drawWallTile = (drawWallTile_t)getProc((DLL_D2GFX), (-10080), (-10080), (-10065), (-10011), (-10014), (-10001), (-10081), (0xF6920));
 drawTransWallTile_t drawTransWallTile = (drawTransWallTile_t)getProc((DLL_D2GFX), (-10081), (-10081), (-10035), (-10076), (-10075), (-10058), (-10040), (0xF6950));
 drawShadowTile_t drawShadowTile = (drawShadowTile_t)getProc((DLL_D2GFX), (-10082), (-10082), (-10012), (-10043), (-10042), (-10069), (-10060), (0xF6980));
 
+takeScreenShot_t takeScreenShot = (takeScreenShot_t)getProc((DLL_D2WIN), (-10168), (-10168), (-10205), (-10014), (-10196), (-10187), (-10107), (0xFA7A0));
 drawNormalText_t drawNormalText = (drawNormalText_t)getProc((DLL_D2WIN), (-10117), (-10117), (-10020), (-10064), (-10001), (-10150), (-10076), (0x102320));
 drawNormalTextEx_t drawNormalTextEx = (drawNormalTextEx_t)getProc((DLL_D2WIN), (), (), (-10006), (-10043), (-10157), (-10096), (-10084), (0x102360));
 drawFramedText_t drawFramedText = (drawFramedText_t)getProc((DLL_D2WIN), (-10129), (-10129), (-10118), (-10039), (-10031), (-10085), (-10137), (0x102280));
@@ -201,12 +201,12 @@ void initHooks()
 	DetourAttach(&(PVOID&)drawShadow, drawShadowHooked);
 	DetourAttach(&(PVOID&)drawSolidRectEx, drawSolidRectExHooked);
 	DetourAttach(&(PVOID&)drawLine, drawLineHooked);
-
 	DetourAttach(&(PVOID&)drawGroundTile, drawGroundTileHooked);
 	DetourAttach(&(PVOID&)drawWallTile, drawWallTileHooked);
 	DetourAttach(&(PVOID&)drawTransWallTile, drawTransWallTileHooked);
 	DetourAttach(&(PVOID&)drawShadowTile, drawShadowTileHooked);
 
+	DetourAttach(&(PVOID&)takeScreenShot, takeScreenShotHooked);
 	DetourAttach(&(PVOID&)drawNormalText, drawNormalTextHooked);
 	if (isVerNot(V_109d) && isVerNot(V_110f))
 		DetourAttach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
@@ -240,12 +240,12 @@ void destroyHooks()
 	DetourDetach(&(PVOID&)drawShadow, drawShadowHooked);
 	DetourDetach(&(PVOID&)drawSolidRectEx, drawSolidRectExHooked);
 	DetourDetach(&(PVOID&)drawLine, drawLineHooked);
-
 	DetourDetach(&(PVOID&)drawGroundTile, drawGroundTileHooked);
 	DetourDetach(&(PVOID&)drawWallTile, drawWallTileHooked);
 	DetourDetach(&(PVOID&)drawTransWallTile, drawTransWallTileHooked);
 	DetourDetach(&(PVOID&)drawShadowTile, drawShadowTileHooked);
 
+	DetourDetach(&(PVOID&)takeScreenShot, takeScreenShotHooked);
 	DetourDetach(&(PVOID&)drawNormalText, drawNormalTextHooked);
 	if (isVerNot(V_109d) && isVerNot(V_110f))
 		DetourDetach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);

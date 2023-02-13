@@ -75,5 +75,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\pch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\win32.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)vendor\include\stb\stb_image_write.h" />
   </ItemGroup>
 </Project>

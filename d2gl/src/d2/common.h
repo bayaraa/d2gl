@@ -26,7 +26,6 @@ typedef void(__stdcall* drawImageFast_t)(CellContext* cell, int x, int y, uint8_
 typedef void(__stdcall* drawShadow_t)(CellContext* cell, int x, int y);
 typedef void(__stdcall* drawSolidRectEx_t)(int left, int top, int right, int bottom, uint32_t color, int draw_mode);
 typedef void(__stdcall* drawLine_t)(int x_start, int y_start, int x_end, int y_end, uint8_t color, uint8_t alpha);
-
 typedef bool(__stdcall* drawGroundTile_t)(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data);
 typedef bool(__stdcall* drawWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels);
 typedef bool(__stdcall* drawTransWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
@@ -34,6 +33,7 @@ typedef bool(__stdcall* drawShadowTile_t)(TileContext* tile, int x, int y, int d
 
 typedef void(__fastcall* drawRectFrame_t)(uint32_t rect, int);
 
+typedef void(__fastcall* takeScreenShot_t)(void);
 typedef void(__fastcall* drawNormalText_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 typedef void(__fastcall* drawNormalTextEx_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl);
 typedef void(__fastcall* drawFramedText_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
@@ -119,12 +119,12 @@ extern drawImageFast_t drawImageFast;
 extern drawShadow_t drawShadow;
 extern drawSolidRectEx_t drawSolidRectEx;
 extern drawLine_t drawLine;
-
 extern drawGroundTile_t drawGroundTile;
 extern drawWallTile_t drawWallTile;
 extern drawTransWallTile_t drawTransWallTile;
 extern drawShadowTile_t drawShadowTile;
 
+extern takeScreenShot_t takeScreenShot;
 extern drawNormalText_t drawNormalText;
 extern drawNormalTextEx_t drawNormalTextEx;
 extern drawFramedText_t drawFramedText;

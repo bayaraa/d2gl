@@ -5,6 +5,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
+#define __STDC_LIB_EXT1__
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
+
 namespace d2gl::helpers {
 
 std::string getCurrentDir()
@@ -307,6 +311,23 @@ ImageData loadImage(const std::string& file_path, bool flipped)
 void clearImage(ImageData& image)
 {
 	stbi_image_free(image.data);
+}
+
+std::string saveScreenShot(uint8_t* data, int width, int height)
+{
+	static const char* file_name_format = "Screenshot%03d.png";
+	char file_name[30] = { 0 };
+
+	for (size_t i = 1; i < 999; i++) {
+		sprintf_s(file_name, file_name_format, i);
+		if (!fileExists(file_name))
+			break;
+	}
+
+	stbi_flip_vertically_on_write(1);
+	stbi_write_png(file_name, width, height, 4, data, width * 4);
+
+	return file_name;
 }
 
 }

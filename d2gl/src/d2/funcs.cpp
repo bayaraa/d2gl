@@ -207,6 +207,11 @@ bool __stdcall drawShadowTileHooked(TileContext* tile, int x, int y, int draw_mo
 	return drawShadowTile(tile, x - offset.x, y - offset.y, draw_mode, screen_panels);
 }
 
+void __fastcall takeScreenShotHooked()
+{
+	App.context->takeScreenShot();
+}
+
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalText);

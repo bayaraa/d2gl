@@ -265,8 +265,10 @@ void Menu::draw()
 				drawDescription("Radius of the sampling pattern.", m_colors[Color::Gray], 12);
 				ImGui::EndDisabled();
 				childSeparator("##w4");
+				ImGui::BeginDisabled(App.api != Api::Glide);
 				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", lut)
 					saveInt("Graphic", "lut", App.lut.selected);
+				ImGui::EndDisabled();
 				drawSeparator();
 				drawCheckbox_m("FXAA", App.fxaa, "Fast approximate anti-aliasing.", fxaa)
 					saveBool("Graphic", "fxaa", App.fxaa);

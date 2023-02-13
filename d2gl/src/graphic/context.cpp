@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "context.h"
+#include "helpers.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -169,6 +170,7 @@ void Context::presentFrame()
 {
 	flushVertices();
 
+	glFinish();
 	SwapBuffers(App.hdc);
 
 	if (m_limiter.active) {
@@ -272,6 +274,17 @@ void Context::resetFileTime()
 	FILETIME ft = { 0 };
 	GetSystemTimeAsFileTime(&ft);
 	memcpy(&m_limiter.due_time, &ft, sizeof(LARGE_INTEGER));
+}
+
+void Context::takeScreenShot()
+{
+	static uint8_t* data = new GLubyte[App.viewport.size.x * App.viewport.size.y * 4];
+	memset(data, 0, App.viewport.size.x * App.viewport.size.y * 4);
+
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels(App.viewport.offset.x, App.viewport.offset.y, App.viewport.size.x, App.viewport.size.y, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	std::string file_name = helpers::saveScreenShot(data, App.viewport.size.x, App.viewport.size.y);
 }
 
 void Context::imguiInit()

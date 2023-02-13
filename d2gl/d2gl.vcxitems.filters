@@ -44,5 +44,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\texture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\uniform_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\motion_prediction.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)vendor\include\stb\stb_image_write.h" />
   </ItemGroup>
 </Project>

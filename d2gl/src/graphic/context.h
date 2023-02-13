@@ -121,6 +121,7 @@ public:
 
 	void toggleVsync();
 	void setFpsLimit(bool active, int max_fps);
+	void takeScreenShot();
 
 	void imguiStartFrame();
 	void imguiRender();
