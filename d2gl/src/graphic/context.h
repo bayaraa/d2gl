@@ -1,25 +1,36 @@
 #pragma once
 
+#include "types.h"
+
 #include "frame_buffer.h"
+#include "object.h"
 #include "pipeline.h"
 #include "texture.h"
 #include "uniform_buffer.h"
 
 namespace d2gl {
 
-#define MAX_INDICES 6 * 40000
-#define MAX_VERTICES 4 * 40000
+#define MAX_INDICES 6 * 20000
+#define MAX_VERTICES 4 * 20000
 #define FRAMETIME_SAMPLE_COUNT 120
 
-struct Vertex {
-	glm::vec2 position;
-	glm::vec2 tex_coord;
-	uint32_t color1;
-	uint32_t color2;
-	glm::vec<2, int16_t> texture_ids;
-	glm::vec<4, int8_t> flags;
-	glm::vec2 extra;
-};
+#define TEXTURE_SLOT_DEFAULT 0
+#define TEXTURE_SLOT_GAME 1
+#define TEXTURE_SLOT_UPSCALE 2
+#define TEXTURE_SLOT_POSTFX1 3
+#define TEXTURE_SLOT_POSTFX2 4
+
+#define TEXTURE_SLOT_CURSOR 5
+#define TEXTURE_SLOT_FONTS 6
+
+#define TEXTURE_SLOT_MAP 7
+#define TEXTURE_SLOT_LUT 8
+#define TEXTURE_SLOT_PREFX 9
+#define TEXTURE_SLOT_BLOOM1 10
+#define TEXTURE_SLOT_BLOOM2 11
+
+#define IMAGE_UNIT_BLUR 0
+#define IMAGE_UNIT_FXAA 1
 
 struct GlideVertex {
 	float x, y;
@@ -82,6 +93,7 @@ class Context {
 	GLuint m_vertex_buffer;
 
 	Vertices m_vertices;
+	Vertices m_vertices_mod;
 	VertexParams m_vertex_params;
 
 	FrameMetrics m_frame;
@@ -102,6 +114,9 @@ public:
 	void pushVertex(const GlideVertex* vertex, glm::vec2 fix = { 0.0f, 0.0f }, glm::ivec2 offset = { 0, 0 });
 	void pushQuad(int8_t x = 0, int8_t y = 0, int8_t z = 0, int8_t w = 0);
 	void flushVertices();
+
+	void pushObject(const std::unique_ptr<Object>& object);
+	void flushVerticesMod();
 
 	inline void setVertexColor(uint32_t color) { m_vertex_params.color = color; }
 	inline void setVertexTexShift(uint8_t shift) { m_vertex_params.texture_shift = shift; }

@@ -134,6 +134,12 @@ Context::Context()
 
 	m_limiter.timer = CreateWaitableTimer(NULL, TRUE, NULL);
 	setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
+
+	m_vertices_mod.count = 0;
+	m_vertices_mod.ptr = m_vertices_mod.data.data();
+
+	m_frame.vertex_count = 0;
+	m_frame.drawcall_count = 0;
 }
 
 Context::~Context()
@@ -152,9 +158,6 @@ void Context::beginFrame()
 {
 	m_vertices.count = 0;
 	m_vertices.ptr = m_vertices.data.data();
-
-	m_frame.vertex_count = 0;
-	m_frame.drawcall_count = 0;
 }
 
 void Context::bindDefaultFrameBuffer()
@@ -170,6 +173,7 @@ void Context::presentFrame()
 {
 	flushVertices();
 
+	Sleep(1);
 	SwapBuffers(App.hdc);
 
 	if (m_limiter.active) {
@@ -186,6 +190,12 @@ void Context::presentFrame()
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
 	m_frame.frame_count++;
+
+	m_vertices_mod.count = 0;
+	m_vertices_mod.ptr = m_vertices_mod.data.data();
+
+	m_frame.vertex_count = 0;
+	m_frame.drawcall_count = 0;
 }
 
 void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
@@ -201,6 +211,9 @@ void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
 
 void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 offset)
 {
+	if (m_vertices.count >= MAX_VERTICES - 4)
+		flushVertices();
+
 	m_vertices.ptr->position = { vertex->x - (float)offset.x, vertex->y - (float)offset.y };
 	m_vertices.ptr->tex_coord = {
 		((float)((uint32_t)vertex->s >> m_vertex_params.texture_shift) + (float)m_vertex_params.offsets.x) / (512.0f + fix.x),
@@ -244,6 +257,32 @@ void Context::flushVertices()
 
 	m_vertices.count = 0;
 	m_vertices.ptr = m_vertices.data.data();
+	m_frame.drawcall_count++;
+}
+
+void Context::pushObject(const std::unique_ptr<Object>& object)
+{
+	if (m_vertices_mod.count >= MAX_VERTICES - 4)
+		flushVerticesMod();
+
+	const auto vertices = object->getVertices();
+	memcpy(m_vertices_mod.ptr, vertices, sizeof(Vertex) * 4);
+
+	m_vertices_mod.ptr += 4;
+	m_vertices_mod.count += 4;
+	m_frame.vertex_count += 4;
+}
+
+void Context::flushVerticesMod()
+{
+	if (m_vertices_mod.count == 0)
+		return;
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices_mod.count * sizeof(Vertex), m_vertices_mod.data.data());
+	glDrawElements(GL_TRIANGLES, m_vertices_mod.count / 4 * 6, GL_UNSIGNED_INT, 0);
+
+	m_vertices_mod.count = 0;
+	m_vertices_mod.ptr = m_vertices_mod.data.data();
 	m_frame.drawcall_count++;
 }
 

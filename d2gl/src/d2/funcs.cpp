@@ -2,6 +2,7 @@
 #include "funcs.h"
 #include "common.h"
 #include "helpers.h"
+#include "modules/hd_text.h"
 #include "modules/motion_prediction.h"
 #include "stubs.h"
 
@@ -131,6 +132,9 @@ void uiDrawEnd()
 
 void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette)
 {
+	if (App.hd_cursor && App.game.draw_stage >= DrawStage::Cursor)
+		return;
+
 	// if (modules::HDText::Instance().DrawImage(pData, nXpos, nYpos, dwGamma, nDrawMode)) {
 	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image, gamma, draw_mode);
 	drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
@@ -171,10 +175,9 @@ void __stdcall drawShadowHooked(CellContext* cell, int x, int y)
 
 void __stdcall drawSolidRectExHooked(int left, int top, int right, int bottom, uint32_t color, int draw_mode)
 {
-	// const auto offset = modules::MotionPrediction::Instance().drawText(D2DrawFn::SolidRectEx);
 	const auto offset = modules::MotionPrediction::Instance().drawSolidRect();
-	//  if (!modules::HDText::Instance().DrawSolidRect(nXStart + offset.x, nYStart + offset.y, nXEnd + offset.x, nYEnd + offset.y, dwColor, nDrawMode))
-	drawSolidRectEx(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode);
+	if (!modules::HDText::Instance().drawSolidRect(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode))
+		drawSolidRectEx(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode);
 }
 
 void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, uint8_t color, uint8_t alpha)
@@ -215,75 +218,75 @@ void __fastcall takeScreenShotHooked()
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalText);
-	//  if (!modules::HDText::Instance().DrawText(wStr, pos.x, pos.y, dwColor, centered))
-	drawNormalText(str, pos.x, pos.y, color, centered);
+	if (!modules::HDText::Instance().drawText(str, pos.x, pos.y, color, centered))
+		drawNormalText(str, pos.x, pos.y, color, centered);
 }
 
 void __fastcall drawNormalTextExHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalTextEx);
-	//  if (!modules::HDText::Instance().DrawText(wStr, pos.x, pos.y, dwColor, centered))
-	drawNormalTextEx(str, pos.x, pos.y, color, centered, trans_lvl);
+	if (!modules::HDText::Instance().drawText(str, pos.x, pos.y, color, centered))
+		drawNormalTextEx(str, pos.x, pos.y, color, centered, trans_lvl);
 }
 
 void __fastcall drawFramedTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::FramedText);
-	//  if (!modules::HDText::Instance().DrawFramedText(wStr, pos.x, pos.y, dwColor, centered))
-	drawFramedText(str, pos.x, pos.y, color, centered);
+	if (!modules::HDText::Instance().drawFramedText(str, pos.x, pos.y, color, centered))
+		drawFramedText(str, pos.x, pos.y, color, centered);
 }
 
 void __fastcall drawRectangledTextHooked(const wchar_t* str, int x, int y, uint32_t rect_color, uint32_t rect_transparency, uint32_t color)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::RectangledText);
-	//  if (!modules::HDText::Instance().DrawRectangledText(wStr, pos.x, pos.y, rectColor, rectTransparency, dwColor))
-	drawRectangledText(str, pos.x, pos.y, rect_color, rect_transparency, color);
+	if (!modules::HDText::Instance().drawRectangledText(str, pos.x, pos.y, rect_color, rect_transparency, color))
+		drawRectangledText(str, pos.x, pos.y, rect_color, rect_transparency, color);
 }
 
 uint32_t __fastcall getNormalTextWidthHooked(const wchar_t* str)
 {
-	// if (modules::HDText::Instance().IsActive())
-	//	return modules::HDText::Instance().GetNormalTextWidth(wStr, 0);
+	if (modules::HDText::Instance().isActive())
+		return modules::HDText::Instance().getNormalTextWidth(str, 0);
 	return getNormalTextWidth(str);
 }
 
 uint32_t __fastcall getNormalTextNWidthHooked(const wchar_t* str, const int n_chars)
 {
-	// if (modules::HDText::Instance().IsActive())
-	//	return modules::HDText::Instance().GetNormalTextWidth(wStr, nChars);
+	if (modules::HDText::Instance().isActive())
+		return modules::HDText::Instance().getNormalTextWidth(str, n_chars);
 	return getNormalTextNWidth(str, n_chars);
 }
 
 uint32_t __fastcall getFramedTextSizeHooked(const wchar_t* str, uint32_t* width, uint32_t* height)
 {
-	// if (modules::HDText::Instance().IsActive())
-	//	return modules::HDText::Instance().GetFramedTextSize(wStr, dwWidth, dwHeight);
+	if (modules::HDText::Instance().isActive())
+		return modules::HDText::Instance().getFramedTextSize(str, width, height);
 	return getFramedTextSize(str, width, height);
 }
 
 uint16_t __fastcall getFontHeightHooked()
 {
-	// if (modules::HDText::Instance().IsActive())
-	//	return modules::HDText::Instance().GetFontHeight();
+	if (modules::HDText::Instance().isActive())
+		return modules::HDText::Instance().getFontHeight();
 	return getFontHeight();
 }
 
 uint32_t __fastcall setTextSizeHooked(uint32_t size)
 {
-	// modules::HDText::Instance().SetTextSize(dwSize);
+	modules::HDText::Instance().setTextSize(size);
 	return setTextSize(size);
 }
 
 void rectangledTextBegin()
 {
 	modules::MotionPrediction::Instance().textMotion(D2DrawFn::NormalText);
-	//  modules::HDText::Instance().BorderedRect(true);
+	modules::HDText::Instance().borderedRect(true);
 }
 
 void rectangledTextEnd()
 {
 	modules::MotionPrediction::Instance().textMotion(D2DrawFn::None);
-	//  modules::HDText::Instance().BorderedRect(false);
+	modules::HDText::Instance().borderedRect(false);
 }
 
 void unitHoverText()
@@ -315,17 +318,17 @@ void loadUIImage()
 
 void drawSubTextA()
 {
-	// modules::HDText::Instance().DrawSubText(1);
+	modules::HDText::Instance().drawSubText(1);
 }
 
 void drawSubTextB()
 {
-	// modules::HDText::Instance().DrawSubText(2);
+	modules::HDText::Instance().drawSubText(2);
 }
 
 void drawSubTextC()
 {
-	// modules::HDText::Instance().DrawSubText(3);
+	modules::HDText::Instance().drawSubText(3);
 }
 
 }

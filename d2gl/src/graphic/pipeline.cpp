@@ -34,19 +34,29 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 
 	glUseProgram(m_id);
 
-	for (auto& binding : info.bindings) {
-		switch (binding.type) {
-			case BindingType::UniformBuffer: {
-				GLuint ubo_index = glGetUniformBlockIndex(m_id, binding.name.c_str());
-				glUniformBlockBinding(m_id, ubo_index, binding.value);
-				break;
-			}
-			case BindingType::Texture:
-			case BindingType::Image: {
-				setUniform1i(binding.name, binding.value);
-				break;
-			}
-		};
+	if (info.bindings.size() > 0) {
+		for (auto& binding : info.bindings) {
+			switch (binding.type) {
+				case BindingType::UniformBuffer: {
+					GLuint ubo_index = glGetUniformBlockIndex(m_id, binding.name.c_str());
+					glUniformBlockBinding(m_id, ubo_index, binding.value);
+					break;
+				}
+				case BindingType::Texture:
+				case BindingType::Image: {
+					setUniform1i(binding.name, binding.value);
+					break;
+				}
+			};
+		}
+	} else {
+		for (int i = 0; i < 16; i++) {
+			char uf_name[20];
+			sprintf_s(uf_name, "u_Texture[%s]", std::to_string(i).c_str());
+			setUniform1i(uf_name, i);
+			sprintf_s(uf_name, "u_Textures[%s]", std::to_string(i).c_str());
+			setUniform1i(uf_name, i);
+		}
 	}
 
 	glUseProgram(0);
@@ -188,6 +198,10 @@ const char* g_shader_movie = {
 
 const char* g_shader_postfx = {
 #include "shaders/postfx.glsl.h"
+};
+
+const char* g_shader_mod = {
+#include "shaders/mod.glsl.h"
 };
 
 // clang-format off

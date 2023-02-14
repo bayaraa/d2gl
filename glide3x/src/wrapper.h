@@ -10,19 +10,6 @@ namespace d2gl {
 #define GLIDE_MAX_NUM_TMU 2
 #define GLIDE_TEX_MEMORY 16 * 1024 * 1024
 
-#define GL_TEXTURE_SLOT_GAME 1
-#define GL_TEXTURE_SLOT_MAP 2
-#define GL_TEXTURE_SLOT_UPSCALE 3
-#define GL_TEXTURE_SLOT_POSTFX1 4
-#define GL_TEXTURE_SLOT_POSTFX2 5
-#define GL_TEXTURE_SLOT_LUT 6
-#define GL_TEXTURE_SLOT_PREFX 7
-#define GL_TEXTURE_SLOT_BLOOM1 8
-#define GL_TEXTURE_SLOT_BLOOM2 9
-
-#define GL_IMAGE_UNIT_BLUR 0
-#define GL_IMAGE_UNIT_FXAA 1
-
 extern const char* g_shader_game;
 extern const char* g_shader_prefx;
 
@@ -67,6 +54,8 @@ class Wrapper {
 	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
 	std::unique_ptr<Pipeline> m_postfx_pipeline;
 	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
+
+	std::unique_ptr<Pipeline> m_mod_pipeline;
 
 public:
 	Wrapper();

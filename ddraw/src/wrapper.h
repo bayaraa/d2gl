@@ -4,13 +4,6 @@
 
 namespace d2gl {
 
-#define GL_TEXTURE_SLOT_GAME 1
-#define GL_TEXTURE_SLOT_UPSCALE 2
-#define GL_TEXTURE_SLOT_POSTFX1 3
-#define GL_TEXTURE_SLOT_POSTFX2 4
-
-#define GL_IMAGE_UNIT_FXAA 0
-
 extern const char* g_shader_game;
 
 class Wrapper {
@@ -37,6 +30,8 @@ class Wrapper {
 	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
 	std::unique_ptr<Pipeline> m_postfx_pipeline;
 	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
+
+	std::unique_ptr<Pipeline> m_mod_pipeline;
 
 public:
 	Wrapper();

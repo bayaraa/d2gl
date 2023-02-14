@@ -170,16 +170,16 @@ void initHooks()
 		patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0xC7442450), (), (), (0xB754D), (0x5DB8D), (0x775BD), (0x5921D), (0x4E7AD), (0xC0A58, 0xC745BC01)), isVer(V_114d) ? 7 : 8, (uintptr_t)altItemsTextStub);
 	modules::MotionPrediction::Instance().toggle(App.motion_prediction);
 
-	/*patch_hd_text = std::make_unique<Patch>();
+	patch_hd_text = std::make_unique<Patch>();
 	// patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (), (), (), (), (), (), (0x1908C), ()), (uintptr_t)LevelEntryTextStub);
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (isVerMax(V_110) || isVer(V_114d)) ? (uintptr_t)LoadUIImageStubECX : (uintptr_t)LoadUIImageStub);
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (isVerMax(V_110f) || isVer(V_114d)) ? (uintptr_t)loadUIImageStubECX : (uintptr_t)loadUIImageStub);
 	if (isVerNot(V_114d)) {
 		if (isVerMin(V_111a))
-			patch_hd_text->add(PatchType::Nop, getOffset((DLL_D2WIN, 0x66C70458, 0xD1), (), (), (-10134), (-10155, 0, 0x2D1), (-10201, 0, 0x271), (-10019), (-10194), ()), 6);																						   // Get text N chars width fix
-		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x74), (-10118, 0, 0x62), (-10118, 0, 0x62), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)DrawSubTextAStub);													   // Button  black labels
-		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x254), (-10124, 0, 0x35A), (-10124, 0, 0x33A), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, isVerMax(V_110f) ? (uintptr_t)DrawSubTextBStub : (uintptr_t)DrawSubTextAStub); // Default texts & Credits screen
+			patch_hd_text->add(PatchType::Nop, getOffset((DLL_D2WIN, 0x66C70458, 0xD1), (), (), (-10134), (-10155, 0, 0x2D1), (-10201, 0, 0x271), (-10019), (-10194), ()), 6); // Get text N chars width fix
+		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x74), (-10118, 0, 0x62), (-10118, 0, 0x62), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)drawSubTextAStub); // Button  black labels
+		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x254), (-10124, 0, 0x35A), (-10124, 0, 0x33A), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, isVerMax(V_110f) ? (uintptr_t)drawSubTextBStub : (uintptr_t)drawSubTextAStub); // Default texts & Credits screen
 	} else
-		patch_hd_text->add(PatchType::Auto, getOffset((), (), (), (), (), (), (), (), (0x101AC1, 0x8B0883C4)), 5, (uintptr_t)DrawSubTextCStub); // Default texts & Credits screen
+		patch_hd_text->add(PatchType::Auto, getOffset((), (), (), (), (), (), (), (), (0x101AC1, 0x8B0883C4)), 5, (uintptr_t)drawSubTextCStub); // Default texts & Credits screen
 	patch_hd_text->toggle(true);
 	// Game.exe+0x101AB1
 
@@ -212,11 +212,11 @@ void initHooks()
 		DetourAttach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
 	DetourAttach(&(PVOID&)drawFramedText, drawFramedTextHooked);
 	DetourAttach(&(PVOID&)drawRectangledText, drawRectangledTextHooked);
-	/*DetourAttach(&(PVOID&)GetNormalTextWidth, GetNormalTextWidthHooked);
-	DetourAttach(&(PVOID&)GetNormalTextNWidth, GetNormalTextNWidthHooked);
-	DetourAttach(&(PVOID&)GetFramedTextSize, GetFramedTextSizeHooked);
-	DetourAttach(&(PVOID&)GetFontHeight, GetFontHeightHooked);
-	DetourAttach(&(PVOID&)SetTextSize, SetTextSizeHooked);*/
+	DetourAttach(&(PVOID&)getNormalTextWidth, getNormalTextWidthHooked);
+	DetourAttach(&(PVOID&)getNormalTextNWidth, getNormalTextNWidthHooked);
+	DetourAttach(&(PVOID&)getFramedTextSize, getFramedTextSizeHooked);
+	DetourAttach(&(PVOID&)getFontHeight, getFontHeightHooked);
+	DetourAttach(&(PVOID&)setTextSize, setTextSizeHooked);
 	DetourTransactionCommit();
 
 	// Patches[PATCH_BOT_tILE_FIX] = new Patch(PatchType::Nop, getProc(D2GFX, 0x897D, 0x830D), 3);
@@ -251,11 +251,11 @@ void destroyHooks()
 		DetourDetach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
 	DetourDetach(&(PVOID&)drawFramedText, drawFramedTextHooked);
 	DetourDetach(&(PVOID&)drawRectangledText, drawRectangledTextHooked);
-	/*DetourDetach(&(PVOID&)GetNormalTextWidth, GetNormalTextWidthHooked);
-	DetourDetach(&(PVOID&)GetNormalTextNWidth, GetNormalTextNWidthHooked);
-	DetourDetach(&(PVOID&)GetFramedTextSize, GetFramedTextSizeHooked);
-	DetourDetach(&(PVOID&)GetFontHeight, GetFontHeightHooked);
-	DetourDetach(&(PVOID&)SetTextSize, SetTextSizeHooked);*/
+	DetourDetach(&(PVOID&)getNormalTextWidth, getNormalTextWidthHooked);
+	DetourDetach(&(PVOID&)getNormalTextNWidth, getNormalTextNWidthHooked);
+	DetourDetach(&(PVOID&)getFramedTextSize, getFramedTextSizeHooked);
+	DetourDetach(&(PVOID&)getFontHeight, getFontHeightHooked);
+	DetourDetach(&(PVOID&)setTextSize, setTextSizeHooked);
 	DetourTransactionCommit();
 }
 

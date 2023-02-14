@@ -2,6 +2,7 @@
 #include "win32.h"
 #include "d2/common.h"
 #include "helpers.h"
+#include "modules/hd_cursor.h"
 #include "option/menu.h"
 
 #include <detours/detours.h>
@@ -266,7 +267,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			lParam = MAKELPARAM(x, y);
 
-			// modules::HDCursor::Instance().MouseProc(uMsg);
+			modules::HDCursor::Instance().mouseProc(uMsg);
 			break;
 		}
 		case WM_MOUSEWHEEL: {

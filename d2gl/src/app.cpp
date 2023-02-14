@@ -60,7 +60,7 @@ void dllAttach(HMODULE hmodule)
 
 	option::loadIni();
 
-	LoadLibraryA("SGD2FreeRes.dll");
+	LoadLibraryA("SGD2FreeRes.dll"); // TODO
 
 	d2::initHooks();
 	win32::initHooks();

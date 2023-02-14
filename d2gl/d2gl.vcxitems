@@ -21,14 +21,18 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\stubs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\context.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\object.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\pipeline.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\texture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\uniform_buffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\helpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\log.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_cursor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_text.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\motion_prediction.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\ini.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\menu.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\font.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\win32.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)vendor\include\imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -64,17 +68,24 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\stubs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\context.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\object.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\pipeline.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\texture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\uniform_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\helpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_cursor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\motion_prediction.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\option\ini.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\option\menu.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\pch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\font.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\win32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)vendor\include\stb\stb_image_write.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />
   </ItemGroup>
 </Project>

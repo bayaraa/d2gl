@@ -71,6 +71,7 @@ private:
 
 extern const char* g_shader_movie;
 extern const char* g_shader_postfx;
+extern const char* g_shader_mod;
 extern const std::vector<std::pair<std::string, const char*>> g_shader_upscale;
 
 }

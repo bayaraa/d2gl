@@ -2,6 +2,8 @@
 #include "wrapper.h"
 #include "d2/common.h"
 #include "helpers.h"
+#include "modules/hd_cursor.h"
+#include "modules/hd_text.h"
 #include "modules/motion_prediction.h"
 #include "option/menu.h"
 #include "win32.h"
@@ -63,7 +65,7 @@ Wrapper::Wrapper()
 	TextureCreateInfo texture_create_info;
 	texture_create_info.size = { 1024, 32 };
 	texture_create_info.layer_count = 14;
-	texture_create_info.slot = GL_TEXTURE_SLOT_LUT;
+	texture_create_info.slot = TEXTURE_SLOT_LUT;
 	m_lut_texture = Context::createTexture(texture_create_info);
 
 	auto image_data = helpers::loadImage("assets\\textures\\lut.png", false);
@@ -74,8 +76,8 @@ Wrapper::Wrapper()
 		PipelineCreateInfo blur_pipeline_ci;
 		blur_pipeline_ci.shader = g_shader_prefx;
 		blur_pipeline_ci.bindings = {
-			{ BindingType::Texture, "u_InTexture", GL_TEXTURE_SLOT_BLOOM2 },
-			{ BindingType::Image, "u_OutTexture", GL_IMAGE_UNIT_BLUR },
+			{ BindingType::Texture, "u_InTexture", TEXTURE_SLOT_BLOOM2 },
+			{ BindingType::Image, "u_OutTexture", IMAGE_UNIT_BLUR },
 		};
 		blur_pipeline_ci.compute = true;
 		m_blur_compute_pipeline = Context::createPipeline(blur_pipeline_ci);
@@ -92,9 +94,9 @@ Wrapper::Wrapper()
 	prefx_pipeline_ci.shader = g_shader_prefx;
 	prefx_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Metrics", m_bloom_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_PREFX },
-		{ BindingType::Texture, "u_BloomTexture1", GL_TEXTURE_SLOT_BLOOM1 },
-		{ BindingType::Texture, "u_BloomTexture2", GL_TEXTURE_SLOT_BLOOM2 },
+		{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_PREFX },
+		{ BindingType::Texture, "u_BloomTexture1", TEXTURE_SLOT_BLOOM1 },
+		{ BindingType::Texture, "u_BloomTexture2", TEXTURE_SLOT_BLOOM2 },
 		{ BindingType::Texture, "u_LUTTexture", m_lut_texture->getSlot() },
 	};
 	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
@@ -115,8 +117,8 @@ Wrapper::Wrapper()
 	postfx_pipeline_ci.shader = g_shader_postfx;
 	postfx_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
-		{ BindingType::Texture, "u_Textures[0]", GL_TEXTURE_SLOT_POSTFX1 },
-		{ BindingType::Texture, "u_Textures[1]", GL_TEXTURE_SLOT_POSTFX2 },
+		{ BindingType::Texture, "u_Textures[0]", TEXTURE_SLOT_POSTFX1 },
+		{ BindingType::Texture, "u_Textures[1]", TEXTURE_SLOT_POSTFX2 },
 	};
 	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
 	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
@@ -125,12 +127,17 @@ Wrapper::Wrapper()
 		PipelineCreateInfo fxaa_pipeline_ci;
 		fxaa_pipeline_ci.shader = g_shader_postfx;
 		fxaa_pipeline_ci.bindings = {
-			{ BindingType::Texture, "u_InTexture", GL_TEXTURE_SLOT_POSTFX2 },
-			{ BindingType::Image, "u_OutTexture", GL_IMAGE_UNIT_FXAA },
+			{ BindingType::Texture, "u_InTexture", TEXTURE_SLOT_POSTFX2 },
+			{ BindingType::Image, "u_OutTexture", IMAGE_UNIT_FXAA },
 		};
 		fxaa_pipeline_ci.compute = true;
 		m_fxaa_compute_pipeline = Context::createPipeline(fxaa_pipeline_ci);
 	}
+
+	PipelineCreateInfo mod_pipeline_ci;
+	mod_pipeline_ci.shader = g_shader_mod;
+	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
+	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 }
 
 Wrapper::~Wrapper()
@@ -151,7 +158,9 @@ void Wrapper::onResize()
 	App.window.resized = false;
 
 	if (game_resized) {
+		m_mod_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
 		m_game_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
+
 		m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
 		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
@@ -159,8 +168,8 @@ void Wrapper::onResize()
 		FrameBufferCreateInfo game_frambuffer_ci;
 		game_frambuffer_ci.size = game_size;
 		game_frambuffer_ci.attachments = {
-			{ GL_TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
-			{ GL_TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
+			{ TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
+			{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
 		};
 		m_game_framebuffer = Context::createFrameBuffer(game_frambuffer_ci);
 
@@ -169,21 +178,21 @@ void Wrapper::onResize()
 
 		FrameBufferCreateInfo bloom_frambuffer_ci;
 		bloom_frambuffer_ci.size = m_bloom_tex_size;
-		bloom_frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_BLOOM1, {}, GL_LINEAR, GL_LINEAR }, { GL_TEXTURE_SLOT_BLOOM2 } };
+		bloom_frambuffer_ci.attachments = { { TEXTURE_SLOT_BLOOM1, {}, GL_LINEAR, GL_LINEAR }, { TEXTURE_SLOT_BLOOM2 } };
 		m_bloom_framebuffer = Context::createFrameBuffer(bloom_frambuffer_ci);
 		if (App.gl_caps.compute_shader)
-			m_bloom_framebuffer->getTexture()->bindImage(GL_IMAGE_UNIT_BLUR);
+			m_bloom_framebuffer->getTexture()->bindImage(IMAGE_UNIT_BLUR);
 
 		TextureCreateInfo bloom_texture_ci;
 		bloom_texture_ci.size = m_bloom_tex_size;
-		bloom_texture_ci.slot = GL_TEXTURE_SLOT_BLOOM2;
+		bloom_texture_ci.slot = TEXTURE_SLOT_BLOOM2;
 		bloom_texture_ci.min_filter = GL_LINEAR;
 		bloom_texture_ci.mag_filter = GL_LINEAR;
 		m_bloom_texture = Context::createTexture(bloom_texture_ci);
 
 		TextureCreateInfo prefx_texture_ci;
 		prefx_texture_ci.size = game_size;
-		prefx_texture_ci.slot = GL_TEXTURE_SLOT_PREFX;
+		prefx_texture_ci.slot = TEXTURE_SLOT_PREFX;
 		m_prefx_texture = Context::createTexture(prefx_texture_ci);
 	}
 
@@ -198,16 +207,16 @@ void Wrapper::onResize()
 
 	FrameBufferCreateInfo frambuffer_ci;
 	frambuffer_ci.size = App.viewport.size;
-	frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
+	frambuffer_ci.attachments = { { TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
 	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
 	if (App.gl_caps.compute_shader)
-		m_postfx_framebuffer->getTexture()->bindImage(GL_IMAGE_UNIT_FXAA);
+		m_postfx_framebuffer->getTexture()->bindImage(IMAGE_UNIT_FXAA);
 
 	m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
 
 	TextureCreateInfo texture_ci;
 	texture_ci.size = App.viewport.size;
-	texture_ci.slot = GL_TEXTURE_SLOT_POSTFX2;
+	texture_ci.slot = TEXTURE_SLOT_POSTFX2;
 	texture_ci.min_filter = GL_LINEAR;
 	texture_ci.mag_filter = GL_LINEAR;
 	m_postfx_texture = Context::createTexture(texture_ci);
@@ -222,7 +231,7 @@ void Wrapper::onShaderChange(bool texture)
 	if (texture || (m_current_shader != App.shader.selected && (m_current_shader == 0 || App.shader.selected == 0))) {
 		TextureCreateInfo texture_ci;
 		texture_ci.size = App.game.tex_size;
-		texture_ci.slot = GL_TEXTURE_SLOT_UPSCALE;
+		texture_ci.slot = TEXTURE_SLOT_UPSCALE;
 		if (App.shader.selected == 0) {
 			texture_ci.min_filter = GL_LINEAR;
 			texture_ci.mag_filter = GL_LINEAR;
@@ -235,7 +244,7 @@ void Wrapper::onShaderChange(bool texture)
 		pipeline_ci.shader = g_shader_upscale[App.shader.selected].second;
 		pipeline_ci.bindings = {
 			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
-			{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_UPSCALE },
+			{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_UPSCALE },
 		};
 		m_upscale_pipeline = Context::createPipeline(pipeline_ci);
 	}
@@ -309,7 +318,7 @@ void Wrapper::onStageChange()
 		case DrawStage::Cursor:
 			// modules::HDText::Instance().DrawTest();
 			// Renderer::Instance().AppendDelayedObjects();
-			// modules::HDCursor::Instance().Draw();
+			modules::HDCursor::Instance().draw();
 			break;
 	}
 }
@@ -402,6 +411,9 @@ void Wrapper::onBufferSwap()
 			ctx->bindPipeline(m_postfx_pipeline);
 			ctx->pushQuad(1 + App.gl_caps.compute_shader);
 		}
+
+		ctx->bindPipeline(m_mod_pipeline);
+		ctx->flushVerticesMod();
 	}
 
 	App.var1 = m_game_texture->getUsage(256);
