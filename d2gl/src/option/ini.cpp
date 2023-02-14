@@ -172,7 +172,11 @@ void saveIni()
 	  "sharpen_clamp=%.3f\n"
 	  "sharpen_radius=%.3f\n\n"
 	  "; Fast approximate anti-aliasing.\n"
-	  "fxaa=%s\n\n\n";
+	  "fxaa=%s\n\n"
+	  "; Bloom effect.\n"
+	  "bloom=%s\n"
+	  "bloom_exposure=%.3f\n"
+	  "bloom_gamma=%.3f\n\n\n";
 
 	sprintf_s(buf, graphic_setting,
 	  shader_str.c_str(),
@@ -183,7 +187,10 @@ void saveIni()
 	  App.sharpen.strength.value,
 	  App.sharpen.clamp.value,
 	  App.sharpen.radius.value,
-	  boolString(App.fxaa));
+	  boolString(App.fxaa),
+	  boolString(App.bloom.active),
+	  App.bloom.exposure.value,
+	  App.bloom.gamma.value);
 	out_file << buf;
 
 	static const char* feature_setting =
@@ -270,6 +277,10 @@ void loadIni()
 		App.sharpen.strength.value = getFloat("Graphic", "sharpen_strength", App.sharpen.strength);
 		App.sharpen.clamp.value = getFloat("Graphic", "sharpen_clamp", App.sharpen.clamp);
 		App.sharpen.radius.value = getFloat("Graphic", "sharpen_radius", App.sharpen.radius);
+
+		App.bloom.active = getBool("Graphic", "bloom", App.bloom.active);
+		App.bloom.exposure.value = getFloat("Graphic", "bloom_exposure", App.bloom.exposure);
+		App.bloom.gamma.value = getFloat("Graphic", "bloom_gamma", App.bloom.gamma);
 
 		App.hd_cursor = getBool("Feature", "hd_cursor", App.hd_cursor);
 		App.hd_text = getBool("Feature", "hd_text", App.hd_text);

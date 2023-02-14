@@ -1,6 +1,3 @@
-#version 330
-
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;

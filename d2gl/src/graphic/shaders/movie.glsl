@@ -1,5 +1,3 @@
-#version 330
-
 /*
    4xGLSLHqFilter shader
    
@@ -17,7 +15,6 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;
@@ -47,18 +44,18 @@ vec2 u_RelSize = 1.0 / u_TexSize;
 
 #define CoefLuma vec3(0.2126, 0.7152, 0.0722)
 
-float u_Saturation = 1.20; //Saturation 0.0 <=> 1.0
-float u_BlackPoint = 0.06; //Levels Black Point >= 0.0
-float u_WhitePoint = 1.12; //Levels White Point >= 1.0
+const float u_Saturation = 1.50; //Saturation 0.0 <=> 1.0
+const float u_BlackPoint = 0.06; //Levels Black Point >= 0.0
+const float u_WhitePoint = 1.12; //Levels White Point >= 1.0
 
-vec3 SaturationPass(vec3 _rgb)
+vec3 SaturationPass(vec3 rgb)
 {
-	return mix(vec3(dot(_rgb, CoefLuma)), _rgb, u_Saturation);
+	return mix(vec3(dot(rgb, CoefLuma)), rgb, u_Saturation);
 }
 
-vec3 LevelsPass(vec3 _rgb)
+vec3 LevelsPass(vec3 rgb)
 {
-	return _rgb * u_WhitePoint - (u_BlackPoint * u_WhitePoint);
+	return rgb * u_WhitePoint - (u_BlackPoint * u_WhitePoint);
 }
 
 float mx = 1.0; // start smoothing wt.

@@ -9,7 +9,9 @@ namespace d2gl {
 #define GL_TEXTURE_SLOT_POSTFX1 3
 #define GL_TEXTURE_SLOT_POSTFX2 4
 
-extern const ShaderSource g_shader_game;
+#define GL_IMAGE_UNIT_FXAA 0
+
+extern const char* g_shader_game;
 
 class Wrapper {
 	Context* ctx;
@@ -29,11 +31,12 @@ class Wrapper {
 	int m_current_shader = -1;
 
 	glm::vec3 m_sharpen_data;
-
+	glm::uvec2 m_fxaa_work_size = { 0, 0 };
 	std::unique_ptr<UniformBuffer> m_postfx_ubo;
 	std::unique_ptr<Texture> m_postfx_texture;
 	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
 	std::unique_ptr<Pipeline> m_postfx_pipeline;
+	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
 
 public:
 	Wrapper();

@@ -1,5 +1,3 @@
-#version 330
-
 /*
 	Author: rsn8887 (based on TheMaister)
 	License: Public domain
@@ -12,7 +10,6 @@
 	in the vertex shader for speed.
 */
 
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;

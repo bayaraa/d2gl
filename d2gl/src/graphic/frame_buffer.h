@@ -13,7 +13,7 @@ struct FrameBufferAttachment {
 };
 
 struct FrameBufferCreateInfo {
-	glm::uvec2 size;
+	glm::uvec2 size = { 0, 0 };
 	std::vector<FrameBufferAttachment> attachments;
 };
 

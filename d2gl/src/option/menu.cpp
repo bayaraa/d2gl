@@ -89,7 +89,7 @@ Menu::Menu()
 	m_fonts[12] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 12.0f) : io.Fonts->Fonts[0];
 
 	App.menu_title += (App.api == Api::Glide ? " (Glide / " : " (DDraw, ");
-	App.menu_title += "OpenGL: " + App.version + " / D2Lod: " + helpers::getVersionString() + ")";
+	App.menu_title += "OpenGL: " + App.version + " / D2LoD: " + helpers::getVersionString() + ")";
 }
 
 Menu::~Menu()
@@ -135,12 +135,12 @@ void Menu::draw()
 	// ImGui::Text("px: %d", App.var8);
 	//   ImGui::InputInt("ShakeX", &App.var11);
 	//   ImGui::InputInt("ShakeY", &App.var12);
-	ImGui::Checkbox("ground", (bool*)&App.var7);
-	ImGui::Checkbox("wall", (bool*)&App.var8);
-	ImGui::Checkbox("wallt", (bool*)&App.var9);
-	ImGui::Checkbox("shadow", (bool*)&App.var10);
-	// ImGui::Checkbox("check5", (bool*)&App.var11);
-	// ImGui::Checkbox("check6", (bool*)&App.var12);
+	ImGui::Checkbox("check", (bool*)&App.var7);
+	ImGui::Checkbox("blur2", (bool*)&App.var8);
+	// ImGui::Checkbox("wallt", (bool*)&App.var9);
+	// ImGui::Checkbox("shadow", (bool*)&App.var10);
+	//  ImGui::Checkbox("check5", (bool*)&App.var11);
+	//  ImGui::Checkbox("check6", (bool*)&App.var12);
 	ImGui::End();
 
 	if (m_visible) {
@@ -176,33 +176,33 @@ void Menu::draw()
 				drawCheckbox_m("Fullscreen", m_options.window.fullscreen, "Game will run in windowed mode if unchecked.", fullscreen);
 				drawSeparator();
 				ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
-				ImGui::Dummy({ 0.0f, 6.0f });
-				ImGui::BeginDisabled(App.resolutions.selected);
-				drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, App.desktop_resolution);
-				ImGui::EndDisabled();
-				drawSeparator();
-				drawCheckbox_m("Centered Window", m_options.window.centered, "Make window centered to desktop screen.", centered_window);
-				ImGui::BeginDisabled(m_options.window.centered);
-				ImGui::Dummy({ 0.0f, 6.0f });
-				drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { 0, 0 }, App.desktop_resolution);
-				ImGui::EndDisabled();
+					drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
+					ImGui::Dummy({ 0.0f, 6.0f });
+					ImGui::BeginDisabled(App.resolutions.selected);
+						drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, App.desktop_resolution);
+					ImGui::EndDisabled();
+					drawSeparator();
+					drawCheckbox_m("Centered Window", m_options.window.centered, "Make window centered to desktop screen.", centered_window);
+					ImGui::Dummy({ 0.0f, 6.0f });
+					ImGui::BeginDisabled(m_options.window.centered);
+						drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { 0, 0 }, App.desktop_resolution);
+					ImGui::EndDisabled();
 				ImGui::EndDisabled();
 				childSeparator("##w2", true);
 				drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
 				drawSeparator();
 				drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
 				ImGui::BeginDisabled(!m_options.foreground_fps.active);
-				drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
+					drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
 				ImGui::EndDisabled();
 				drawSeparator();
 				drawCheckbox_m("Max Background FPS", m_options.background_fps.active, "", background_fps);
 				ImGui::BeginDisabled(!m_options.background_fps.active);
-				drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
+					drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
 				ImGui::EndDisabled();
 				drawSeparator();
 				ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
+					drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
 				ImGui::EndDisabled();
 				childEnd();
 				if (drawNav("Apply")) {
@@ -254,24 +254,35 @@ void Menu::draw()
 				drawCheckbox_m("Luma Sharpen", App.sharpen.active, "", sharpen)
 					saveBool("Graphic", "sharpen", App.sharpen.active);
 				ImGui::BeginDisabled(!App.sharpen.active);
-				drawSlider_m(float, "", App.sharpen.strength, "%.3f", "", sharpen_strength)
-					saveFloat("Graphic", "sharpen_strength", App.sharpen.strength.value);
-				drawDescription("Strength of the sharpening.", m_colors[Color::Gray], 12);
-				drawSlider_m(float, "", App.sharpen.clamp, "%.3f", "", sharpen_clamp)
-					saveFloat("Graphic", "sharpen_clamp", App.sharpen.clamp.value);
-				drawDescription("Limit maximum amount of sharpening pixel.", m_colors[Color::Gray], 12);
-				drawSlider_m(float, "", App.sharpen.radius, "%.3f", "", sharpen_radius)
-					saveFloat("Graphic", "sharpen_radius", App.sharpen.radius.value);
-				drawDescription("Radius of the sampling pattern.", m_colors[Color::Gray], 12);
-				ImGui::EndDisabled();
-				childSeparator("##w4");
-				ImGui::BeginDisabled(App.api != Api::Glide);
-				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", lut)
-					saveInt("Graphic", "lut", App.lut.selected);
+					drawSlider_m(float, "", App.sharpen.strength, "%.3f", "", sharpen_strength)
+						saveFloat("Graphic", "sharpen_strength", App.sharpen.strength.value);
+					drawDescription("Strength of the sharpening.", m_colors[Color::Gray], 12);
+					drawSlider_m(float, "", App.sharpen.clamp, "%.3f", "", sharpen_clamp)
+						saveFloat("Graphic", "sharpen_clamp", App.sharpen.clamp.value);
+					drawDescription("Limit maximum amount of sharpening pixel.", m_colors[Color::Gray], 12);
+					drawSlider_m(float, "", App.sharpen.radius, "%.3f", "", sharpen_radius)
+						saveFloat("Graphic", "sharpen_radius", App.sharpen.radius.value);
+					drawDescription("Radius of the sampling pattern.", m_colors[Color::Gray], 12);
 				ImGui::EndDisabled();
 				drawSeparator();
 				drawCheckbox_m("FXAA", App.fxaa, "Fast approximate anti-aliasing.", fxaa)
 					saveBool("Graphic", "fxaa", App.fxaa);
+				childSeparator("##w4");
+				ImGui::BeginDisabled(App.api != Api::Glide);
+					drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", lut)
+						saveInt("Graphic", "lut", App.lut.selected);
+					drawSeparator();
+					drawCheckbox_m("Bloom Effect", App.bloom.active, "", bloom)
+						saveBool("Graphic", "bloom", App.bloom.active);
+					ImGui::BeginDisabled(!App.bloom.active);
+						drawSlider_m(float, "", App.bloom.exposure, "%.3f", "", bloom_exposure)
+							saveFloat("Graphic", "bloom_exposure", App.bloom.exposure.value);
+						drawDescription("Bloom exposure setting.", m_colors[Color::Gray], 12);
+						drawSlider_m(float, "", App.bloom.gamma, "%.3f", "", bloom_gamma)
+							saveFloat("Graphic", "bloom_gamma", App.bloom.gamma.value);
+						drawDescription("Bloom Gamma setting.", m_colors[Color::Gray], 12);
+					ImGui::EndDisabled();
+				ImGui::EndDisabled();
 				childEnd();
 				tabEnd();
 			}
@@ -281,29 +292,29 @@ void Menu::draw()
 					saveBool("Feature", "hd_cursor", App.hd_cursor);
 				drawSeparator();
 				ImGui::BeginDisabled(!App.hd_cursor);
-				drawCheckbox_m("HD Text", App.hd_text, "High-definition ingame texts.", hd_text)
-				{
-					//d2::PatchHDText->Toggle(App.hd_text);
-					saveBool("Feature", "hd_text", App.hd_text);
-				}
-				drawSeparator();
-				drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs.", hd_orbs)
-					saveBool("Feature", "hd_orbs", App.hd_orbs.active);
-				ImGui::Spacing();
-				ImGui::Spacing();
-				ImGui::SameLine(36.0f);
-				ImGui::BeginDisabled(!App.hd_orbs.active);
-				drawCheckbox_m("Centered", App.hd_orbs.centered, "", hd_orbs_centered)
-					saveBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
-				ImGui::EndDisabled();
+					drawCheckbox_m("HD Text", App.hd_text, "High-definition ingame texts.", hd_text)
+					{
+						//d2::PatchHDText->Toggle(App.hd_text);
+						saveBool("Feature", "hd_text", App.hd_text);
+					}
+					drawSeparator();
+					drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs.", hd_orbs)
+						saveBool("Feature", "hd_orbs", App.hd_orbs.active);
+					ImGui::Spacing();
+					ImGui::Spacing();
+					ImGui::SameLine(36.0f);
+					ImGui::BeginDisabled(!App.hd_orbs.active);
+						drawCheckbox_m("Centered", App.hd_orbs.centered, "", hd_orbs_centered)
+							saveBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
+					ImGui::EndDisabled();
 				ImGui::EndDisabled();
 				drawSeparator();
 				ImGui::BeginDisabled(!App.hd_cursor || !App.mini_map.available);
-				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on Minimap widget.", mini_map)
-				{
-					//d2::PatchMinimap->Toggle(App.mini_map.active);
-					saveBool("Feature", "mini_map", App.mini_map.active);
-				}
+					drawCheckbox_m("Mini Map", App.mini_map.active, "Always on Minimap widget.", mini_map)
+					{
+						//d2::PatchMinimap->Toggle(App.mini_map.active);
+						saveBool("Feature", "mini_map", App.mini_map.active);
+					}
 				ImGui::EndDisabled();
 				childSeparator("##w6");
 				drawCheckbox_m("Motion Prediction", App.motion_prediction, "D2DX's motion prediction feature.", motion_prediction)

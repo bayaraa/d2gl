@@ -1,5 +1,3 @@
-#version 330
-
 /*
    Copyright (C) 2006 guest(r) - guest.r@gmail.com
 
@@ -17,7 +15,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-
 /*
    The AdvancedAA shader is well used to:
    - AA 2xscaled gfx. to its 4x absolute size,   
@@ -25,7 +22,6 @@
    - AA gfx. back to it's original size (looks nice above 640x480, set scaling to 1.0) 
 */
 
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;

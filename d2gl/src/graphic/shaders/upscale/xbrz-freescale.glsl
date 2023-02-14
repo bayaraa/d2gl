@@ -1,5 +1,3 @@
-#version 330
-
 /*
 	Hyllian's xBR-vertex code and texel mapping
    
@@ -39,7 +37,6 @@
 // * do so, delete this exception statement from your version.                *
 // ****************************************************************************
 
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;

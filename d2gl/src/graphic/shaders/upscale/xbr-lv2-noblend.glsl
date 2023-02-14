@@ -1,5 +1,3 @@
-#version 450
-
 /*
 	Hyllian's xBR-lv2-noblend Shader
    
@@ -22,7 +20,6 @@
 	Incorporates some of the ideas from SABR shader. Thanks to Joshua Street.
 */
 
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;

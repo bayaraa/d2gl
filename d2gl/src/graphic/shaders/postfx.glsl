@@ -1,5 +1,3 @@
-#version 330
-
 /*
  	FXAA @license
  	Copyright (c) 2011 NVIDIA Corporation. All rights reserved.
@@ -23,62 +21,22 @@
 	This is similar to using Unsharp Mask in Photoshop.
 */
 
-// =============================================================
-#ifdef VERTEX
-
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec2 TexCoord;
-layout(location = 5) in ivec4 Flags;
-
-uniform mat4 u_MVP;
-
-out vec2 v_TexCoord;
-flat out ivec4 v_Flags;
-
-void main()
-{
-	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
-	v_TexCoord = TexCoord;
-	v_Flags = Flags;
-}
-
-// =============================================================
-#elif FRAGMENT
-
-layout(location = 0) out vec4 FragColor;
-
-layout(std140) uniform ubo_Metrics {
-	float u_SharpStrength;
-	float u_SharpClamp;
-	float u_Radius;
-	float pad1;
-	vec2 u_RelSize;
-};
-
-uniform sampler2D u_Textures[2];
-
-in vec2 v_TexCoord;
-flat in ivec4 v_Flags;
+#define P(x, y) texture(x, y).rgb
+#define e_t_div 16.0
+#define s_steps 16
 
 float FxaaLuma(vec3 rgb)
 {
 	return rgb.y * (0.587 / 0.299) + rgb.x;
 }
 
-#define P(x) texture(u_Textures[v_Flags.y], x).rgb
-#define e_t_div 16.0
-#define s_steps 16
-
-vec3 FxaaPass(vec3 rgb)
+vec3 FxaaPass(sampler2D tex, vec2 pos, vec2 rs)
 {
-	vec2 pos = v_TexCoord;
-	vec2 rs = u_RelSize;
-
-	vec3 rgbN = P(pos + vec2(0.0, -rs.y));
-	vec3 rgbW = P(pos + vec2(-rs.x, 0.0));
-	vec3 rgbM = rgb;
-	vec3 rgbE = P(pos + vec2( rs.x, 0.0));
-	vec3 rgbS = P(pos + vec2(0.0,  rs.y));
+	vec3 rgbN = P(tex, pos + vec2(0.0, -rs.y));
+	vec3 rgbW = P(tex, pos + vec2(-rs.x, 0.0));
+	vec3 rgbM = P(tex, pos);
+	vec3 rgbE = P(tex, pos + vec2( rs.x, 0.0));
+	vec3 rgbS = P(tex, pos + vec2(0.0,  rs.y));
 	
 	float lumaN = FxaaLuma(rgbN);
 	float lumaW = FxaaLuma(rgbW);
@@ -99,10 +57,10 @@ vec3 FxaaPass(vec3 rgb)
 	float blendL = max(0.0, (rangeL / range) - 0.25) * (1.0 / 0.75); 
 	blendL = min(3.0 / 4.0, blendL);
 
-	vec3 rgbNW = P(pos + vec2(-rs.x, -rs.y));
-	vec3 rgbNE = P(pos + vec2( rs.x, -rs.y));
-	vec3 rgbSW = P(pos + vec2(-rs.x,  rs.y));
-	vec3 rgbSE = P(pos + vec2( rs.x,  rs.y));
+	vec3 rgbNW = P(tex, pos + vec2(-rs.x, -rs.y));
+	vec3 rgbNE = P(tex, pos + vec2( rs.x, -rs.y));
+	vec3 rgbSW = P(tex, pos + vec2(-rs.x,  rs.y));
+	vec3 rgbSE = P(tex, pos + vec2( rs.x,  rs.y));
 
 	rgbL += (rgbNW + rgbNE + rgbSW + rgbSE);
 	rgbL *= vec3(1.0 / 9.0);
@@ -161,10 +119,10 @@ vec3 FxaaPass(vec3 rgb)
 	for (int i = 0; i < s_steps; i++)
 	{
 		if(!doneN)
-			lumaEndN = FxaaLuma(P(posN.xy));
+			lumaEndN = FxaaLuma(P(tex, posN.xy));
 
 		if(!doneP)
-			lumaEndP = FxaaLuma(P(posP.xy));
+			lumaEndP = FxaaLuma(P(tex, posP.xy));
 		
 		doneN = doneN || (abs(lumaEndN - lumaN) >= gradientN);
 		doneP = doneP || (abs(lumaEndP - lumaN) >= gradientN);
@@ -190,17 +148,54 @@ vec3 FxaaPass(vec3 rgb)
 	float spanLength = (dstP + dstN);
 	dstN = directionN ? dstN : dstP;
 	float subPixelOffset = (0.5 + (dstN * (-1.0 / spanLength))) * lengthSign;
-	vec3 rgbF = P(vec2(pos.x + (horzSpan ? 0.0 : subPixelOffset), pos.y + (horzSpan ? subPixelOffset : 0.0)));
+	vec3 rgbF = P(tex, vec2(pos.x + (horzSpan ? 0.0 : subPixelOffset), pos.y + (horzSpan ? subPixelOffset : 0.0)));
 
 	return (vec3(-blendL) * rgbF) + ((rgbL * vec3(blendL)) + rgbF);
 }
 
+#ifdef VERTEX
+
+layout(location = 0) in vec2 Position;
+layout(location = 1) in vec2 TexCoord;
+layout(location = 5) in ivec4 Flags;
+
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
+flat out ivec4 v_Flags;
+
+void main()
+{
+	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
+	v_TexCoord = TexCoord;
+	v_Flags = Flags;
+}
+
+// =============================================================
+#elif FRAGMENT
+
+layout(location = 0) out vec4 FragColor;
+
+layout(std140) uniform ubo_Metrics {
+	float u_SharpStrength;
+	float u_SharpClamp;
+	float u_Radius;
+	float pad1;
+	vec2 u_RelSize;
+};
+
+uniform sampler2D u_Textures[2];
+
+in vec2 v_TexCoord;
+flat in ivec4 v_Flags;
+
 #define CoefLuma vec3(0.2126, 0.7152, 0.0722)
 
-vec3 LumaSharpen(vec3 rgb)
+vec3 LumaSharpen(sampler2D tex, vec2 tc)
 {
-	vec3 p1 = texture(u_Textures[v_Flags.y], v_TexCoord + u_RelSize * u_Radius).rgb;
-	vec3 p2 = texture(u_Textures[v_Flags.y], v_TexCoord - u_RelSize * u_Radius).rgb;
+	vec3 rgb = P(tex, tc);
+	vec3 p1 = P(tex, tc + u_RelSize * u_Radius);
+	vec3 p2 = P(tex, tc - u_RelSize * u_Radius);
 	vec3 color = (p1 + p2) / 2.0;
 
 	vec3 sharp = rgb - color;
@@ -214,12 +209,32 @@ vec3 LumaSharpen(vec3 rgb)
 
 void main()
 {
-	vec3 color = texture(u_Textures[v_Flags.y], v_TexCoord).rgb;
+	switch(v_Flags.x) {
+		case 0: FragColor = vec4(LumaSharpen(u_Textures[v_Flags.y], v_TexCoord), 1.0); break;
+		case 1: FragColor = vec4(FxaaPass(u_Textures[v_Flags.y], v_TexCoord, u_RelSize), 1.0); break;
+		case 2: FragColor = vec4(P(u_Textures[0], v_TexCoord), 1.0); break;
+	}
+}
 
-	if (v_Flags.x == 0)
-		FragColor = vec4(LumaSharpen(color), 1.0);
-	else
-		FragColor = vec4(FxaaPass(color), 1.0);
+// =============================================================
+#elif COMPUTE
+//[
+layout(local_size_x = 16, local_size_y = 16) in;
+//]
+uniform sampler2D u_InTexture;
+uniform image2D u_OutTexture;
+
+uniform int u_Flag = 0;
+
+void main()
+{
+	ivec2 position = ivec2(gl_GlobalInvocationID.xy);
+	vec2 tex_size = vec2(textureSize(u_InTexture, 0));
+	vec2 v_TexCoord = (vec2(position) + vec2(0.5)) / tex_size;
+
+	vec3 color = FxaaPass(u_InTexture, v_TexCoord, vec2(1.0) / tex_size);
+
+	imageStore(u_OutTexture, position, vec4(color, 1.0));
 }
 
 #endif

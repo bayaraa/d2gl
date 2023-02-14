@@ -74,7 +74,7 @@ Context::Context()
 		trace("GL_KHR_debug enabled!");
 	}
 
-	if (glewIsSupported("GL_ARB_compute_shader"))
+	if (glewIsSupported("GL_VERSION_4_3") || glewIsSupported("GL_ARB_compute_shader"))
 		App.gl_caps.compute_shader = true;
 
 	if (glewIsSupported("GL_VERSION_4_0"))
@@ -170,7 +170,6 @@ void Context::presentFrame()
 {
 	flushVertices();
 
-	glFinish();
 	SwapBuffers(App.hdc);
 
 	if (m_limiter.active) {

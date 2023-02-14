@@ -17,9 +17,14 @@ namespace d2gl {
 #define GL_TEXTURE_SLOT_POSTFX2 5
 #define GL_TEXTURE_SLOT_LUT 6
 #define GL_TEXTURE_SLOT_PREFX 7
+#define GL_TEXTURE_SLOT_BLOOM1 8
+#define GL_TEXTURE_SLOT_BLOOM2 9
 
-extern const ShaderSource g_shader_game;
-extern const ShaderSource g_shader_prefx;
+#define GL_IMAGE_UNIT_BLUR 0
+#define GL_IMAGE_UNIT_FXAA 1
+
+extern const char* g_shader_game;
+extern const char* g_shader_prefx;
 
 class Wrapper {
 	Context* ctx;
@@ -38,6 +43,14 @@ class Wrapper {
 	uint32_t m_current_blend_index = 0;
 	bool m_blend_locked = false;
 
+	glm::vec2 m_bloom_data;
+	glm::uvec2 m_bloom_tex_size = { 0, 0 };
+	glm::uvec2 m_bloom_work_size = { 0, 0 };
+	std::unique_ptr<UniformBuffer> m_bloom_ubo;
+	std::unique_ptr<Texture> m_bloom_texture;
+	std::unique_ptr<FrameBuffer> m_bloom_framebuffer;
+	std::unique_ptr<Pipeline> m_blur_compute_pipeline;
+
 	std::unique_ptr<Texture> m_lut_texture;
 	std::unique_ptr<Texture> m_prefx_texture;
 	std::unique_ptr<Pipeline> m_prefx_pipeline;
@@ -48,11 +61,12 @@ class Wrapper {
 	int m_current_shader = -1;
 
 	glm::vec3 m_sharpen_data;
-
+	glm::uvec2 m_fxaa_work_size = { 0, 0 };
 	std::unique_ptr<UniformBuffer> m_postfx_ubo;
 	std::unique_ptr<Texture> m_postfx_texture;
 	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
 	std::unique_ptr<Pipeline> m_postfx_pipeline;
+	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
 
 public:
 	Wrapper();

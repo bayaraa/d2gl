@@ -1,5 +1,3 @@
-#version 330
-
 /*
 	Hyllian's 2xBR v3.8c+ReverseAA (squared) Shader - Dithering preserved
 	Copyright (C) 2011/2012 Hyllian/Jararaca - sergiogdb@gmail.com
@@ -44,7 +42,6 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-// =============================================================
 #ifdef VERTEX
 
 layout(location = 0) in vec2 Position;

@@ -10,11 +10,11 @@ namespace d2gl {
 
 std::unique_ptr<Wrapper> GlideWrapper;
 
-const ShaderSource g_shader_game = {
+const char* g_shader_game = {
 #include "shaders/game.glsl.h"
 };
 
-const ShaderSource g_shader_prefx = {
+const char* g_shader_prefx = {
 #include "shaders/prefx.glsl.h"
 };
 
@@ -38,19 +38,19 @@ Wrapper::Wrapper()
 	m_movie_texture = Context::createTexture(movie_texture_ci);
 
 	PipelineCreateInfo movie_pipeline_ci;
-	movie_pipeline_ci.shader = (ShaderSource*)&g_shader_movie;
+	movie_pipeline_ci.shader = g_shader_movie;
 	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", m_movie_texture->getSlot() } };
 	m_movie_pipeline = Context::createPipeline(movie_pipeline_ci);
 
-	UniformBufferCreateInfo ubo_ci;
-	ubo_ci.variables = { { "palette", 256 * sizeof(glm::vec4) }, { "gamma", 256 * sizeof(glm::vec4) } };
-	m_game_color_ubo = Context::createUniformBuffer(ubo_ci);
+	UniformBufferCreateInfo game_ubo_ci;
+	game_ubo_ci.variables = { { "palette", 256 * sizeof(glm::vec4) }, { "gamma", 256 * sizeof(glm::vec4) } };
+	m_game_color_ubo = Context::createUniformBuffer(game_ubo_ci);
 
 	SubTextureCounts sub_texture_counts = { { 256, 256 }, { 128, 154 }, { 64, 64 }, { 32, 32 }, { 16, 5 }, { 8, 1 } };
 	m_game_texture = std::make_unique<TextureManager>(sub_texture_counts);
 
 	PipelineCreateInfo game_pipeline_ci;
-	game_pipeline_ci.shader = (ShaderSource*)&g_shader_game;
+	game_pipeline_ci.shader = g_shader_game;
 	game_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Colors", m_game_color_ubo->getBinding() },
 		{ BindingType::Texture, "u_Texture", m_game_texture->getTexture()->getSlot() },
@@ -70,10 +70,31 @@ Wrapper::Wrapper()
 	m_lut_texture->fillImage(image_data, 1, 14);
 	helpers::clearImage(image_data);
 
+	if (App.gl_caps.compute_shader) {
+		PipelineCreateInfo blur_pipeline_ci;
+		blur_pipeline_ci.shader = g_shader_prefx;
+		blur_pipeline_ci.bindings = {
+			{ BindingType::Texture, "u_InTexture", GL_TEXTURE_SLOT_BLOOM2 },
+			{ BindingType::Image, "u_OutTexture", GL_IMAGE_UNIT_BLUR },
+		};
+		blur_pipeline_ci.compute = true;
+		m_blur_compute_pipeline = Context::createPipeline(blur_pipeline_ci);
+	}
+
+	UniformBufferCreateInfo bloom_ubo_ci;
+	bloom_ubo_ci.variables = { { "bloom", sizeof(glm::vec2) }, { "rel_size", sizeof(glm::vec2) } };
+	m_bloom_ubo = Context::createUniformBuffer(bloom_ubo_ci);
+
+	m_bloom_data = { App.bloom.exposure.value, App.bloom.gamma.value };
+	m_bloom_ubo->updateDataVec2f("bloom", m_bloom_data);
+
 	PipelineCreateInfo prefx_pipeline_ci;
-	prefx_pipeline_ci.shader = (ShaderSource*)&g_shader_prefx;
+	prefx_pipeline_ci.shader = g_shader_prefx;
 	prefx_pipeline_ci.bindings = {
+		{ BindingType::UniformBuffer, "ubo_Metrics", m_bloom_ubo->getBinding() },
 		{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_PREFX },
+		{ BindingType::Texture, "u_BloomTexture1", GL_TEXTURE_SLOT_BLOOM1 },
+		{ BindingType::Texture, "u_BloomTexture2", GL_TEXTURE_SLOT_BLOOM2 },
 		{ BindingType::Texture, "u_LUTTexture", m_lut_texture->getSlot() },
 	};
 	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
@@ -91,7 +112,7 @@ Wrapper::Wrapper()
 	m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));
 
 	PipelineCreateInfo postfx_pipeline_ci;
-	postfx_pipeline_ci.shader = (ShaderSource*)&g_shader_postfx;
+	postfx_pipeline_ci.shader = g_shader_postfx;
 	postfx_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
 		{ BindingType::Texture, "u_Textures[0]", GL_TEXTURE_SLOT_POSTFX1 },
@@ -99,6 +120,17 @@ Wrapper::Wrapper()
 	};
 	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
 	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
+
+	if (App.gl_caps.compute_shader) {
+		PipelineCreateInfo fxaa_pipeline_ci;
+		fxaa_pipeline_ci.shader = g_shader_postfx;
+		fxaa_pipeline_ci.bindings = {
+			{ BindingType::Texture, "u_InTexture", GL_TEXTURE_SLOT_POSTFX2 },
+			{ BindingType::Image, "u_OutTexture", GL_IMAGE_UNIT_FXAA },
+		};
+		fxaa_pipeline_ci.compute = true;
+		m_fxaa_compute_pipeline = Context::createPipeline(fxaa_pipeline_ci);
+	}
 }
 
 Wrapper::~Wrapper()
@@ -120,18 +152,39 @@ void Wrapper::onResize()
 
 	if (game_resized) {
 		m_game_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
+		m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
 		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
 
-		FrameBufferCreateInfo frambuffer_ci;
-		frambuffer_ci.size = game_size;
-		frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_GAME }, { GL_TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } } };
-		m_game_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+		FrameBufferCreateInfo game_frambuffer_ci;
+		game_frambuffer_ci.size = game_size;
+		game_frambuffer_ci.attachments = {
+			{ GL_TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
+			{ GL_TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
+		};
+		m_game_framebuffer = Context::createFrameBuffer(game_frambuffer_ci);
 
-		TextureCreateInfo texture_ci;
-		texture_ci.size = game_size;
-		texture_ci.slot = GL_TEXTURE_SLOT_PREFX;
-		m_prefx_texture = Context::createTexture(texture_ci);
+		m_bloom_tex_size = { game_size.x / 4, game_size.y / 4 };
+		m_bloom_work_size = { ceil((float)m_bloom_tex_size.x / 16), ceil((float)m_bloom_tex_size.y / 16) };
+
+		FrameBufferCreateInfo bloom_frambuffer_ci;
+		bloom_frambuffer_ci.size = m_bloom_tex_size;
+		bloom_frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_BLOOM1, {}, GL_LINEAR, GL_LINEAR }, { GL_TEXTURE_SLOT_BLOOM2 } };
+		m_bloom_framebuffer = Context::createFrameBuffer(bloom_frambuffer_ci);
+		if (App.gl_caps.compute_shader)
+			m_bloom_framebuffer->getTexture()->bindImage(GL_IMAGE_UNIT_BLUR);
+
+		TextureCreateInfo bloom_texture_ci;
+		bloom_texture_ci.size = m_bloom_tex_size;
+		bloom_texture_ci.slot = GL_TEXTURE_SLOT_BLOOM2;
+		bloom_texture_ci.min_filter = GL_LINEAR;
+		bloom_texture_ci.mag_filter = GL_LINEAR;
+		m_bloom_texture = Context::createTexture(bloom_texture_ci);
+
+		TextureCreateInfo prefx_texture_ci;
+		prefx_texture_ci.size = game_size;
+		prefx_texture_ci.slot = GL_TEXTURE_SLOT_PREFX;
+		m_prefx_texture = Context::createTexture(prefx_texture_ci);
 	}
 
 	if (window_resized) {
@@ -147,6 +200,10 @@ void Wrapper::onResize()
 	frambuffer_ci.size = App.viewport.size;
 	frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
 	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+	if (App.gl_caps.compute_shader)
+		m_postfx_framebuffer->getTexture()->bindImage(GL_IMAGE_UNIT_FXAA);
+
+	m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
 
 	TextureCreateInfo texture_ci;
 	texture_ci.size = App.viewport.size;
@@ -175,7 +232,7 @@ void Wrapper::onShaderChange(bool texture)
 
 	if (m_current_shader != App.shader.selected) {
 		PipelineCreateInfo pipeline_ci;
-		pipeline_ci.shader = (ShaderSource*)&g_shader_upscale[App.shader.selected].second;
+		pipeline_ci.shader = g_shader_upscale[App.shader.selected].second;
 		pipeline_ci.bindings = {
 			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
 			{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_UPSCALE },
@@ -196,11 +253,40 @@ void Wrapper::onStageChange()
 		case DrawStage::World:
 			break;
 		case DrawStage::UI:
-			if (App.lut.selected) {
+			if (App.bloom.active || App.lut.selected) {
 				m_prefx_texture->fillFromBuffer(m_game_framebuffer);
-
 				ctx->bindPipeline(m_prefx_pipeline);
-				ctx->pushQuad(App.lut.selected - 1);
+
+				if (App.bloom.active) {
+					ctx->bindFrameBuffer(m_bloom_framebuffer, false);
+					ctx->setViewport(m_bloom_tex_size);
+					ctx->pushQuad(0);
+
+					if (App.gl_caps.compute_shader) {
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size);
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size);
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size);
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size);
+					} else {
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						ctx->pushQuad(1);
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						ctx->pushQuad(2);
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						ctx->pushQuad(1);
+						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
+						ctx->pushQuad(2);
+					}
+
+					ctx->bindFrameBuffer(m_game_framebuffer, false);
+					ctx->setViewport(App.game.size);
+					ctx->bindPipeline(m_prefx_pipeline);
+				}
+				ctx->pushQuad(3, App.lut.selected, App.bloom.active, App.var7);
 
 				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
 			}
@@ -248,6 +334,14 @@ void Wrapper::onBufferClear()
 	} else {
 		if (m_current_shader != App.shader.selected)
 			onShaderChange();
+
+		if (App.bloom.active) {
+			const auto bloom_data = glm::vec2(App.bloom.exposure.value, App.bloom.gamma.value);
+			if (m_bloom_data != bloom_data) {
+				m_bloom_ubo->updateDataVec2f("bloom", bloom_data);
+				m_bloom_data = bloom_data;
+			}
+		}
 
 		if (App.sharpen.active) {
 			const auto sharpen_data = glm::vec3(App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value);
@@ -299,10 +393,14 @@ void Wrapper::onBufferSwap()
 		}
 
 		if (App.fxaa) {
+			if (App.gl_caps.compute_shader) {
+				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
+				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size);
+			}
 			ctx->bindDefaultFrameBuffer();
 			ctx->setViewport(App.viewport.size, App.viewport.offset);
 			ctx->bindPipeline(m_postfx_pipeline);
-			ctx->pushQuad(1);
+			ctx->pushQuad(1 + App.gl_caps.compute_shader);
 		}
 	}
 

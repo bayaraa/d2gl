@@ -49,6 +49,11 @@ void Texture::bind()
 	current_binded_texture[m_slot] = m_id;
 }
 
+void Texture::bindImage(uint32_t unit)
+{
+	glBindImageTexture(unit, m_id, 0, GL_FALSE, 0, GL_WRITE_ONLY, m_internal_format);
+}
+
 void Texture::fill(const uint8_t* pixels, uint32_t width, uint32_t height, uint32_t offset_x, uint32_t offset_y, uint32_t layer)
 {
 	bind();

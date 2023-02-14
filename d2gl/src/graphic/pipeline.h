@@ -7,6 +7,7 @@ class UniformBuffer;
 enum class BindingType {
 	UniformBuffer,
 	Texture,
+	Image,
 };
 
 enum class BlendType : int8_t {
@@ -17,12 +18,6 @@ enum class BlendType : int8_t {
 	Zero_SColor,
 	One_One,
 	SAlpha_OneMinusSAlpha,
-};
-
-struct ShaderSource {
-	const char* vert;
-	const char* frag;
-	const char* comp;
 };
 
 struct BindingInfo {
@@ -41,23 +36,27 @@ struct BlendFactors {
 typedef std::vector<std::vector<BlendType>> AttachmentBlends;
 
 struct PipelineCreateInfo {
-	ShaderSource* shader;
+	const char* shader = nullptr;
 	std::vector<BindingInfo> bindings;
 	AttachmentBlends attachment_blends = { { BlendType::NoBlend } };
+	bool compute = false;
 };
 
 class Pipeline {
 	GLuint m_id = 0;
 	AttachmentBlends m_attachment_blends;
 	std::unordered_map<std::string, GLint> m_uniform_cache;
+	bool m_compute = true;
 
 public:
 	Pipeline(const PipelineCreateInfo& info);
 	~Pipeline();
 
 	void bind(uint32_t index = 0);
+	void dispatchCompute(int flag, glm::ivec2 work_size);
 
 	void setUniform1i(const std::string& name, int value);
+	void setUniformVec2f(const std::string& name, const glm::vec2& value);
 	void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
 	inline const GLuint getId() const { return m_id; }
@@ -70,8 +69,8 @@ private:
 	static GLuint createShader(const char* source, int type);
 };
 
-extern const ShaderSource g_shader_movie;
-extern const ShaderSource g_shader_postfx;
-extern const std::vector<std::pair<std::string, ShaderSource>> g_shader_upscale;
+extern const char* g_shader_movie;
+extern const char* g_shader_postfx;
+extern const std::vector<std::pair<std::string, const char*>> g_shader_upscale;
 
 }

@@ -10,22 +10,20 @@ GLuint current_program = 0;
 uint32_t current_blend_index = 10;
 
 Pipeline::Pipeline(const PipelineCreateInfo& info)
-	: m_attachment_blends(info.attachment_blends)
+	: m_attachment_blends(info.attachment_blends), m_compute(info.compute)
 {
 	m_id = glCreateProgram();
 
 	GLuint vs = 0, fs = 0, cs = 0;
-	if (info.shader->vert) {
-		vs = createShader(info.shader->vert, GL_VERTEX_SHADER);
-		glAttachShader(m_id, vs);
-	}
-	if (info.shader->frag) {
-		fs = createShader(info.shader->frag, GL_FRAGMENT_SHADER);
-		glAttachShader(m_id, fs);
-	}
-	if (info.shader->comp) {
-		cs = createShader(info.shader->comp, GL_COMPUTE_SHADER);
+	if (m_compute) {
+		cs = createShader(info.shader, GL_COMPUTE_SHADER);
 		glAttachShader(m_id, cs);
+	} else {
+		vs = createShader(info.shader, GL_VERTEX_SHADER);
+		glAttachShader(m_id, vs);
+
+		fs = createShader(info.shader, GL_FRAGMENT_SHADER);
+		glAttachShader(m_id, fs);
 	}
 
 	glLinkProgram(m_id);
@@ -43,7 +41,8 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 				glUniformBlockBinding(m_id, ubo_index, binding.value);
 				break;
 			}
-			case BindingType::Texture: {
+			case BindingType::Texture:
+			case BindingType::Image: {
 				setUniform1i(binding.name, binding.value);
 				break;
 			}
@@ -116,6 +115,12 @@ void Pipeline::setUniform1i(const std::string& name, int value)
 	glUniform1i(getUniformLocation(name), value);
 }
 
+void Pipeline::setUniformVec2f(const std::string& name, const glm::vec2& value)
+{
+	bind();
+	glUniform2fv(getUniformLocation(name), 1, &value.x);
+}
+
 void Pipeline::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
 	bind();
@@ -137,12 +142,28 @@ GLint Pipeline::getUniformLocation(const std::string& name)
 	return location;
 }
 
+void Pipeline::dispatchCompute(int flag, glm::ivec2 work_size)
+{
+	setUniform1i("u_Flag", flag);
+	glDispatchCompute(work_size.x, work_size.y, 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+}
+
 GLuint Pipeline::createShader(const char* source, int type)
 {
-	GLuint id = glCreateShader(type);
-	GLint length = strlen(source);
+	std::string shader_src = "#version ";
+	switch (type) {
+		case GL_VERTEX_SHADER: shader_src += " 330\n#define VERTEX 1\n"; break;
+		case GL_FRAGMENT_SHADER: shader_src += " 330\n#define FRAGMENT 1\n"; break;
+		case GL_COMPUTE_SHADER: shader_src += " 430\n#define COMPUTE 1\n"; break;
+	}
+	shader_src += source;
 
-	glShaderSource(id, 1, &source, &length);
+	GLuint id = glCreateShader(type);
+	GLint length = shader_src.length();
+	const char* src = shader_src.c_str();
+
+	glShaderSource(id, 1, &src, &length);
 	glCompileShader(id);
 
 	int result;
@@ -161,16 +182,16 @@ GLuint Pipeline::createShader(const char* source, int type)
 	return id;
 }
 
-const ShaderSource g_shader_movie = {
+const char* g_shader_movie = {
 #include "shaders/movie.glsl.h"
 };
 
-const ShaderSource g_shader_postfx = {
+const char* g_shader_postfx = {
 #include "shaders/postfx.glsl.h"
 };
 
 // clang-format off
-const std::vector<std::pair<std::string, ShaderSource>> g_shader_upscale = {
+const std::vector<std::pair<std::string, const char*>> g_shader_upscale = {
 	{ "simple-sharp-bilinear", {
 		#include "shaders/upscale/simple-sharp-bilinear.glsl.h"
 	} },

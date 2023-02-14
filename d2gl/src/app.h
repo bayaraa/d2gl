@@ -86,6 +86,12 @@ struct D2GLApp {
 		Range<float> radius = { 0.4f, 0.0f, 6.0f };
 	} sharpen;
 
+	struct {
+		bool active = false;
+		Range<float> exposure = { 1.2f, 1.0f, 2.0f };
+		Range<float> gamma = { 1.0f, 0.5f, 1.2f };
+	} bloom;
+
 	bool motion_prediction = false;
 	bool skip_intro = false;
 	bool no_pickup = false;

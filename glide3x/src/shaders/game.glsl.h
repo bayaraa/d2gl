@@ -1,7 +1,6 @@
 #pragma once
 
-/* GLSL Vertex */
-"#version 330\n"
+"#ifdef VERTEX\n"
 "layout(location=0) in vec2 Position;"
 "layout(location=1) in vec2 TexCoord;"
 "layout(location=2) in vec4 Color1;"
@@ -15,11 +14,14 @@
 "flat out ivec4 v_Flags;"
 "void main()"
 "{"
-  "gl_Position=u_MVP*vec4(Position,0.,1.),v_TexCoord=TexCoord,v_Color1=Color1.zyxw,v_Color2=Color2.wzyx,v_TexIds=TexIds,v_Flags=Flags;"
-"}",
-
-/* GLSL Fragment */
-"#version 330\n"
+  "gl_Position=u_MVP*vec4(Position,0,1);"
+  "v_TexCoord=TexCoord;"
+  "v_Color1=Color1.zyxw;"
+  "v_Color2=Color2.wzyx;"
+  "v_TexIds=TexIds;"
+  "v_Flags=Flags;"
+"}"
+"\n#elif FRAGMENT\n"
 "layout(location=0) out vec4 FragColor;"
 "layout(location=1) out vec4 FragColorMap;layout(std140) uniform ubo_Colors{vec4 u_Palette[256];vec4 u_Gamma[256];};"
 "uniform sampler2DArray u_Texture;"
@@ -41,15 +43,15 @@
   "FragColor.x=u_Gamma[int(FragColor.x*255)].x;"
   "FragColor.y=u_Gamma[int(FragColor.y*255)].y;"
   "FragColor.z=u_Gamma[int(FragColor.z*255)].z;"
-  "FragColor.w=v_Flags.z==1?v_Color2.w:1.;"
-  "FragColorMap=vec4(0.);"
+  "FragColor.w=v_Flags.z==1?"
+    "v_Color2.w:"
+    "1.;"
+  "FragColorMap=vec4(0);"
   "if(v_Flags.w>0)"
     "{"
       "FragColorMap=vec4(FragColor.xyz,.9);"
       "if(v_Flags.w>1)"
-        "FragColor=vec4(0.);"
+        "FragColor=vec4(0);"
     "}"
-"}",
-
-/* GLSL Compute */
-nullptr,
+"}"
+"\n#endif"

@@ -10,7 +10,7 @@ namespace d2gl {
 
 std::unique_ptr<Wrapper> DDrawWrapper;
 
-const ShaderSource g_shader_game = {
+const char* g_shader_game = {
 #include "shaders/game.glsl.h"
 };
 
@@ -18,7 +18,7 @@ Wrapper::Wrapper()
 	: ctx(App.context.get())
 {
 	PipelineCreateInfo movie_pipeline_ci;
-	movie_pipeline_ci.shader = (ShaderSource*)&g_shader_movie;
+	movie_pipeline_ci.shader = g_shader_movie;
 	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", 0 } };
 	m_movie_pipeline = Context::createPipeline(movie_pipeline_ci);
 
@@ -27,7 +27,7 @@ Wrapper::Wrapper()
 	m_game_palette_ubo = Context::createUniformBuffer(ubo_ci);
 
 	PipelineCreateInfo game_pipeline_ci;
-	game_pipeline_ci.shader = (ShaderSource*)&g_shader_game;
+	game_pipeline_ci.shader = g_shader_game;
 	game_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Colors", m_game_palette_ubo->getBinding() },
 		{ BindingType::Texture, "u_Texture", 0 },
@@ -47,7 +47,7 @@ Wrapper::Wrapper()
 	m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));
 
 	PipelineCreateInfo postfx_pipeline_ci;
-	postfx_pipeline_ci.shader = (ShaderSource*)&g_shader_postfx;
+	postfx_pipeline_ci.shader = g_shader_postfx;
 	postfx_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
 		{ BindingType::Texture, "u_Textures[0]", GL_TEXTURE_SLOT_POSTFX1 },
@@ -55,6 +55,17 @@ Wrapper::Wrapper()
 	};
 	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
 	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
+
+	if (App.gl_caps.compute_shader) {
+		PipelineCreateInfo fxaa_pipeline_ci;
+		fxaa_pipeline_ci.shader = g_shader_postfx;
+		fxaa_pipeline_ci.bindings = {
+			{ BindingType::Texture, "u_InTexture", GL_TEXTURE_SLOT_POSTFX2 },
+			{ BindingType::Image, "u_OutTexture", GL_IMAGE_UNIT_FXAA },
+		};
+		fxaa_pipeline_ci.compute = true;
+		m_fxaa_compute_pipeline = Context::createPipeline(fxaa_pipeline_ci);
+	}
 }
 
 void Wrapper::onResize()
@@ -99,6 +110,10 @@ void Wrapper::onResize()
 	frambuffer_ci.size = App.viewport.size;
 	frambuffer_ci.attachments = { { GL_TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
 	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+	if (App.gl_caps.compute_shader)
+		m_postfx_framebuffer->getTexture()->bindImage(GL_IMAGE_UNIT_FXAA);
+
+	m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
 
 	TextureCreateInfo texture_ci;
 	texture_ci.size = App.viewport.size;
@@ -127,7 +142,7 @@ void Wrapper::onShaderChange(bool texture)
 
 	if (m_current_shader != App.shader.selected) {
 		PipelineCreateInfo pipeline_ci;
-		pipeline_ci.shader = (ShaderSource*)&g_shader_upscale[App.shader.selected].second;
+		pipeline_ci.shader = g_shader_upscale[App.shader.selected].second;
 		pipeline_ci.bindings = {
 			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
 			{ BindingType::Texture, "u_Texture", GL_TEXTURE_SLOT_UPSCALE },
@@ -233,10 +248,14 @@ void Wrapper::onBufferSwap(bool flip)
 		}
 
 		if (App.fxaa) {
+			if (App.gl_caps.compute_shader) {
+				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
+				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size);
+			}
 			ctx->bindDefaultFrameBuffer();
 			ctx->setViewport(App.viewport.size, App.viewport.offset);
 			ctx->bindPipeline(m_postfx_pipeline);
-			ctx->pushQuad(1);
+			ctx->pushQuad(1 + App.gl_caps.compute_shader);
 		}
 	}
 
