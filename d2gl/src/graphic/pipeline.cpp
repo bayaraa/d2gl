@@ -131,6 +131,12 @@ void Pipeline::setUniformVec2f(const std::string& name, const glm::vec2& value)
 	glUniform2fv(getUniformLocation(name), 1, &value.x);
 }
 
+void Pipeline::setUniformVec4f(const std::string& name, const glm::vec4& value)
+{
+	bind();
+	glUniform4fv(getUniformLocation(name), 1, &value.x);
+}
+
 void Pipeline::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
 	bind();

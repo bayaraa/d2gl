@@ -88,7 +88,12 @@ void Wrapper::onResize()
 	App.window.resized = false;
 
 	if (game_resized) {
-		m_mod_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
+		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
+		modules::HDText::Instance().setMVP(mvp);
+
+		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
+		m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
 
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
 		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
@@ -178,8 +183,7 @@ void Wrapper::onStageChange()
 		case DrawStage::HUD:
 			break;
 		case DrawStage::Cursor:
-			// modules::HDText::Instance().DrawTest();
-			// Renderer::Instance().AppendDelayedObjects();
+			ctx->appendDelayedObjects();
 			modules::HDCursor::Instance().draw();
 			break;
 	}
@@ -187,27 +191,30 @@ void Wrapper::onStageChange()
 
 void Wrapper::onBufferClear()
 {
-	if (*d2::esc_menu_open)
-		App.game.screen = GameScreen::InGame;
+	if (!m_swapped)
+		return;
+	m_swapped = false;
 
 	if (App.window.resized)
 		onResize();
 
+	modules::HDText::Instance().reset();
 	modules::MotionPrediction::Instance().update();
 
 	ctx->beginFrame();
 
 	App.game.draw_stage = DrawStage::World;
 	onStageChange();
-
-	if (App.game.screen != GameScreen::InGame)
-		onBufferSwap();
 }
 
 void Wrapper::onBufferSwap(bool flip)
 {
-	if (flip && App.game.screen != GameScreen::InGame)
+	if ((!flip && App.game.screen == GameScreen::InGame) || (flip && App.game.screen != GameScreen::InGame))
 		return;
+
+	if (m_swapped)
+		return;
+	m_swapped = true;
 
 	m_ddraw_texture->fill(DDrawSurface->getData(), App.game.size.x, App.game.size.y);
 
@@ -267,23 +274,15 @@ void Wrapper::onBufferSwap(bool flip)
 			ctx->pushQuad(1 + App.gl_caps.compute_shader);
 		}
 
-		if (App.game.screen != GameScreen::Loading) {
-			ctx->bindPipeline(m_mod_pipeline);
-			ctx->flushVerticesMod();
-		}
+		modules::HDText::Instance().update(m_mod_pipeline);
+		ctx->bindPipeline(m_mod_pipeline);
+		ctx->flushVerticesMod();
 	}
 
 	option::Menu::instance().draw();
 
 	ctx->presentFrame();
-
-	if (App.game.screen == GameScreen::InGame)
-		App.game.screen = GameScreen::Loading;
-}
-
-void Wrapper::updatePalette(const glm::vec4* data)
-{
-	m_game_palette_ubo->updateData("palette", data);
+	trace("== SWAP ==");
 }
 
 HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
@@ -298,6 +297,7 @@ HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
 	DDrawWrapper = std::make_unique<Wrapper>();
 
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
+	App.game.onBufferClear = (onBufferClear_t)Wrapper::onGameBufferClear;
 	App.ready = true;
 
 	return DD_OK;
@@ -327,11 +327,6 @@ HRESULT Wrapper::setDisplayMode(DWORD width, DWORD height, DWORD bpp)
 	}
 
 	return DD_OK;
-}
-
-inline void Wrapper::onGameStageChange()
-{
-	DDrawWrapper->onStageChange();
 }
 
 }

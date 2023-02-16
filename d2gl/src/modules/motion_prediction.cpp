@@ -46,7 +46,7 @@ void MotionPrediction::update()
 		return;
 	}
 
-	m_frame_time = *d2::esc_menu_open ? 0.0f : (float)(App.context->getFrameTime() / 1000.0);
+	m_frame_time = d2::isEscMenuOpen() ? 0.0f : (float)(App.context->getFrameTime() / 1000.0);
 
 	const auto frame_time_ms = (int64_t)(App.context->getFrameTime() * (65536.0 / 1000.0));
 	int32_t delta = (int32_t)glm::max((int64_t)INT_MIN, glm::min((int64_t)INT_MAX, frame_time_ms));

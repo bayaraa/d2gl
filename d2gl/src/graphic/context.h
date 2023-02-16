@@ -92,8 +92,10 @@ class Context {
 	GLuint m_vertex_array;
 	GLuint m_vertex_buffer;
 
+	bool m_delay_push = false;
 	Vertices m_vertices;
 	Vertices m_vertices_mod;
+	Vertices m_vertices_late;
 	VertexParams m_vertex_params;
 
 	FrameMetrics m_frame;
@@ -117,6 +119,8 @@ public:
 
 	void pushObject(const std::unique_ptr<Object>& object);
 	void flushVerticesMod();
+	void appendDelayedObjects();
+	inline void toggleDelayPush(bool delay) { m_delay_push = delay; }
 
 	inline void setVertexColor(uint32_t color) { m_vertex_params.color = color; }
 	inline void setVertexTexShift(uint8_t shift) { m_vertex_params.texture_shift = shift; }

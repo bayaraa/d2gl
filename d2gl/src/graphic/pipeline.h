@@ -57,6 +57,7 @@ public:
 
 	void setUniform1i(const std::string& name, int value);
 	void setUniformVec2f(const std::string& name, const glm::vec2& value);
+	void setUniformVec4f(const std::string& name, const glm::vec4& value);
 	void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
 	inline const GLuint getId() const { return m_id; }

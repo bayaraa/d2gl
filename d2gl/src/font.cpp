@@ -47,7 +47,7 @@ const std::array<wchar_t, 18> g_default_colors = {
 // clang-format on
 
 Font::Font(const FontCreateInfo& info)
-	: m_line_height(info.line_height), m_letter_spacing(info.letter_spacing), m_rtrim_size(info.rtrim_size), m_offset(info.offset)
+	: m_rtrim_size(info.rtrim_size), m_offset(info.offset)
 {
 	TextureCreateInfo texture_ci;
 	texture_ci.layer_count = 3;
@@ -122,9 +122,6 @@ glm::vec2 Font::getTextSize(const wchar_t* str, const int max_chars)
 			line_num++;
 		} else if (m_glyphes.find(str[char_num]) != m_glyphes.end()) {
 			const Glyph* glyph = &m_glyphes[str[char_num]];
-			// if (str[char_num] == L' ')
-			//	adv += glyph->advance * scale * font_info_->space_size + ls;
-			// else
 			advance += glyph->advance * m_scale + letter_spacing;
 		}
 		if (max_chars > 0 && max_chars < char_num)
@@ -196,12 +193,10 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 		m_object->setSize(glyph->size * m_scale);
 		m_object->setTexCoord(glyph->tex_coord);
 
-		if (m_shadow && color != 0xFF) {
-			m_object->setPosition(object_pos + glm::min(4.0f * m_scale, 1.2f));
-			m_object->setColor(0x00000099);
-			m_object->setFlags({ 3, 0, m_masking, 0 });
-			App.context->pushObject(m_object);
-		}
+		m_object->setPosition(object_pos + glm::min(4.0f * m_scale, 1.2f));
+		m_object->setColor(color != 0xFF ? 0x000000CC : 0x00000055);
+		m_object->setFlags({ 3, 0, m_masking, 0 });
+		App.context->pushObject(m_object);
 
 		m_object->setPosition(object_pos);
 		m_object->setColor(color);

@@ -32,6 +32,12 @@ bool isPerspective()
 	return *perspective && available;
 }
 
+bool isEscMenuOpen()
+{
+	const bool control = *(bool*)(esc_menu_open + 8);
+	return *esc_menu_open || control;
+}
+
 UnitAny* getPlayerUnit()
 {
 	return (UnitAny*)*(uintptr_t*)player_unit;
@@ -69,9 +75,14 @@ StaticPath* getUnitStaticPath(UnitAny* unit)
 	return isVer(V_109d) ? unit->v109.pStaticPath : unit->v110.pStaticPath;
 }
 
-UnitAny* getHoveredInvItem()
+UnitAny* getSelectedItem()
 {
-	return (UnitAny*)*(uintptr_t*)hovered_inv_item;
+	return (UnitAny*)*(uintptr_t*)selected_item;
+}
+
+bool isUnitDead(UnitAny* unit)
+{
+	return unit && (d2::getUnitFlag(unit) & 0x10000);
 }
 
 CellFile* getCellFile(CellContext* cell)
@@ -135,18 +146,18 @@ void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, 
 	if (App.hd_cursor && App.game.draw_stage >= DrawStage::Cursor)
 		return;
 
-	// if (modules::HDText::Instance().DrawImage(pData, nXpos, nYpos, dwGamma, nDrawMode)) {
-	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image, gamma, draw_mode);
-	drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
-	//}
+	if (modules::HDText::Instance().drawImage(cell, x, y, gamma, draw_mode)) {
+		const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image, gamma, draw_mode);
+		drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
+	}
 }
 
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift)
 {
-	// if (modules::HDText::Instance().DrawShiftedImage(pData, nXpos, nYpos, dwGamma, nDrawMode, nGlobalPaletteShift)) {
-	auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::ShiftedImage);
-	drawShiftedImage(cell, pos.x, pos.y, gamma, draw_mode, global_palette_shift);
-	// }
+	if (modules::HDText::Instance().drawShiftedImage(cell, x, y, gamma, draw_mode)) {
+		auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::ShiftedImage);
+		drawShiftedImage(cell, pos.x, pos.y, gamma, draw_mode, global_palette_shift);
+	}
 }
 
 void __stdcall drawVerticalCropImageHooked(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode)
@@ -313,7 +324,7 @@ void altItemsText()
 
 void loadUIImage()
 {
-	// modules::HDText::Instance().LoadUIImage();
+	modules::HDText::Instance().loadUIImage();
 }
 
 void drawSubTextA()

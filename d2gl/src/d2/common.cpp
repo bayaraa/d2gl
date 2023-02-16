@@ -14,11 +14,11 @@ uint32_t* screen_height = (uint32_t*)getProc((DLL_D2CLIENT), (0xD40E0), (0xD40F0
 uint32_t* screen_shift = (uint32_t*)getProc((DLL_D2CLIENT), (0x115C10), (0x10B9C4), (0x11C1C0), (0x11C3E4), (0x11C1D0), (0x11C414), (0x11D070), (0x3A5210));
 
 bool* perspective = (bool*)getProc((DLL_D2GFX), (0xE188), (0xE198), (0x10C94), (0x10C30), (0x10C8C), (0x10BE0), (0x10BE4), (0x32DA48));
-bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0xFB094), (0x1040E4), (0x102B7C), (0xFADA4), (0x11C8B4), (0x3A27E4));
+bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0xFB094), (0x1040E4), (0x102B7C), (0xFADA4), (0x11C8B4), (0x3A27E4)); // 0xFADAC
 
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
-UnitAny* hovered_inv_item = (UnitAny*)getProc((DLL_D2CLIENT), (), (), (), (), (), (0x11BC38), (0x11CB28), ());
+UnitAny* selected_item = (UnitAny*)getProc((DLL_D2CLIENT), (), (), (), (), (), (0x11BC38), (0x11CB28), (0x680A0));
 
 void* alt_item_pos = nullptr;
 void* sub_text_ptr = nullptr;
@@ -58,6 +58,7 @@ drawUnit_t drawUnit = (drawUnit_t)getProc((DLL_D2CLIENT), (0xB8350), (0xBA720), 
 drawUnit_t drawMissile = (drawUnit_t)getProc((DLL_D2CLIENT), (), (), (0x6CEB0), (0x480A0), (0x949C0), (0x6CC00), (0x60C70), (0x71EC0));
 drawWeatherParticles_t drawWeatherParticles = (drawWeatherParticles_t)getProc((DLL_D2CLIENT), (0x07BC0), (0x08690), (0x4C980), (0x12730), (0x14210), (0x7FE80), (0x4AD90), (0x73470));
 
+clearScreen_t clearScreen = (clearScreen_t)getProc((DLL_D2GFX), (-10058), (-10058), (-10067), (-10037), (-10047), (-10021), (-10010), (0xF63B0));
 drawImage_t drawImage = (drawImage_t)getProc((DLL_D2GFX), (-10072), (-10072), (-10047), (-10044), (-10024), (-10041), (-10042), (0xF6480));
 drawShiftedImage_t drawShiftedImage = (drawShiftedImage_t)getProc((DLL_D2GFX), (-10073), (-10073), (-10079), (-10068), (-10044), (-10019), (-10067), (0xF64B0));
 drawVerticalCropImage_t drawVerticalCropImage = (drawVerticalCropImage_t)getProc((DLL_D2GFX), (-10074), (-10074), (-10005), (-10009), (-10046), (-10074), (-10082), (0xF64E0));
@@ -84,6 +85,9 @@ setTextSize_t setTextSize = (setTextSize_t)getProc((DLL_D2WIN), (-10127), (-1012
 // 1.10 10124 draw popup
 
 getSelectedUnit_t getSelectedUnit = (getSelectedUnit_t)getProc((DLL_D2CLIENT), (0x14CE0), (0x15A20), (0x37CA0), (0x2F950), (0x6ECA0), (0x51A80), (0x17280), (0x67A10));
+getUnitStat_t getUnitStat = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), (-10519), (-11092), (-10061), (-10658), (-10973), (-10550), (0x225480));
+getUnitState_t getUnitState = (getUnitState_t)getProc((DLL_D2COMMON), (-10487), (), (), (-10604), (), (-10494), (-10706), (0x239DF0));
+
 // Offset D2WinUnitHover = getOffset((DLL_D2WIN), (), (-10124, 0xF7E9C1FA, 0x1F3), (-10175, 0x03C2572B, 0x1A3), (-10037, 0x03C2572B, 0x1A3), (-10201, 0x03C2572B, 0x1A3), (-10110, 0x03C2572B, 0x1A3), (-10124, 0x03C2572B, 0x1A3), (0x10318B, 0x03C22BF0));
 // DWORD D2WinUnitHoverRet = helpers::GetProcOffset(D2WinUnitHover) + (isVer(V_110) ? 5 : 6);
 
@@ -116,6 +120,11 @@ std::unique_ptr<Patch> patch_hd_text;
 // CreateTextBox = (CreateTextBox_t)getProc(D2WIN, -10098, -10164);
 
 // DrawLineOnTextBox = (DrawLineOnTextBox_t)getProc(D2WIN, -10022, -10051);
+
+// FUNCPTR(D2COMMON, GetLevelText, D2::Types::LevelTxt* __stdcall, (DWORD levelno), 0x21DB70) // Updated 1.14d //0061DB70-BASE
+// FUNCPTR(D2COMMON, GetUnitStat, DWORD __stdcall, (D2::Types::UnitAny* pUnit, DWORD dwStat, DWORD dwStat2), 0x225480)                // Updated 1.14d //00625480-BASE
+// FUNCPTR(D2COMMON, GetUnitState, int __stdcall, (D2::Types::UnitAny* pUnit, DWORD dwStateNo), 0x239DF0)                             // Updated 1.14d //00639DF0-BASE
+
 
 void initHooks()
 {

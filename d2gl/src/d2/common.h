@@ -18,6 +18,11 @@ typedef uint32_t(__stdcall* drawUnit_t)(UnitAny* unit, uint32_t, uint32_t, uint3
 typedef void* drawWeatherParticles_t;
 typedef UnitAny*(__stdcall* getSelectedUnit_t)(void);
 
+typedef uint32_t(__stdcall* getUnitStat_t)(UnitAny* unit, uint32_t stat, uint32_t stat2);
+typedef uint32_t(__stdcall* getUnitStat109d_t)(UnitAny* unit, uint32_t stat);
+typedef uint32_t(__stdcall* getUnitState_t)(UnitAny* unit, uint32_t state_no);
+
+typedef void(__stdcall* clearScreen_t)(bool partial);
 typedef void(__stdcall* drawImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette);
 typedef void(__stdcall* drawShiftedImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift);
 typedef void(__stdcall* drawVerticalCropImage_t)(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode);
@@ -72,7 +77,7 @@ extern bool* esc_menu_open;
 
 extern uint32_t* is_in_game;
 extern UnitAny* player_unit;
-extern UnitAny* hovered_inv_item;
+extern UnitAny* selected_item;
 
 extern void* alt_item_pos;
 extern void* sub_text_ptr;
@@ -111,6 +116,7 @@ extern drawUnit_t drawUnit;
 extern drawUnit_t drawMissile;
 extern drawWeatherParticles_t drawWeatherParticles;
 
+extern clearScreen_t clearScreen;
 extern drawImage_t drawImage;
 extern drawShiftedImage_t drawShiftedImage;
 extern drawVerticalCropImage_t drawVerticalCropImage;
@@ -139,6 +145,8 @@ extern setTextSize_t setTextSize;
 // extern Offset D2WinUnitHover;
 // extern DWORD D2WinUnitHoverRet;
 extern getSelectedUnit_t getSelectedUnit;
+extern getUnitStat_t getUnitStat;
+extern getUnitState_t getUnitState;
 
 extern UnitAny* currently_drawing_unit;
 extern uint32_t currently_drawing_weather_particles;

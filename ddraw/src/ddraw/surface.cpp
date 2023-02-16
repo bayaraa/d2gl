@@ -440,6 +440,7 @@ HRESULT __stdcall DirectDrawSurface::GetSurfaceDesc(LPDDSURFACEDESC surface_desc
 HRESULT __stdcall DirectDrawSurface::Lock(LPRECT dst_rect, LPDDSURFACEDESC surface_desc, DWORD flags, HANDLE event)
 {
 	DDrawWrapper->onBufferClear();
+
 	return GetSurfaceDesc(surface_desc);
 }
 
@@ -456,6 +457,13 @@ HRESULT __stdcall DirectDrawSurface::SetPalette(LPDIRECTDRAWPALETTE palette)
 		if (m_caps & DDSCAPS_PRIMARYSURFACE)
 			DDrawWrapper->updatePalette(m_palette->getData());
 	}
+
+	return DD_OK;
+}
+
+HRESULT __stdcall DirectDrawSurface::Unlock(LPVOID rect)
+{
+	DDrawWrapper->onBufferSwap();
 
 	return DD_OK;
 }

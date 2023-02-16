@@ -54,6 +54,7 @@ struct D2GLApp {
 		glm::uvec2 tex_size = { 0, 0 };
 		glm::vec2 tex_scale = { 1.0f, 1.0f };
 		onStageChange_t onStageChange = nullptr;
+		onBufferClear_t onBufferClear = nullptr;
 	} game;
 
 	struct {

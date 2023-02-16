@@ -158,6 +158,16 @@ void Context::beginFrame()
 {
 	m_vertices.count = 0;
 	m_vertices.ptr = m_vertices.data.data();
+
+	m_vertices_mod.count = 0;
+	m_vertices_mod.ptr = m_vertices_mod.data.data();
+
+	m_delay_push = false;
+	m_vertices_late.count = 0;
+	m_vertices_late.ptr = m_vertices_late.data.data();
+
+	m_frame.vertex_count = 0;
+	m_frame.drawcall_count = 0;
 }
 
 void Context::bindDefaultFrameBuffer()
@@ -190,12 +200,6 @@ void Context::presentFrame()
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
 	m_frame.frame_count++;
-
-	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data.data();
-
-	m_frame.vertex_count = 0;
-	m_frame.drawcall_count = 0;
 }
 
 void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
@@ -262,14 +266,22 @@ void Context::flushVertices()
 
 void Context::pushObject(const std::unique_ptr<Object>& object)
 {
-	if (m_vertices_mod.count >= MAX_VERTICES - 4)
-		flushVerticesMod();
-
 	const auto vertices = object->getVertices();
-	memcpy(m_vertices_mod.ptr, vertices, sizeof(Vertex) * 4);
 
-	m_vertices_mod.ptr += 4;
-	m_vertices_mod.count += 4;
+	if (m_delay_push) {
+		memcpy(m_vertices_late.ptr, vertices, sizeof(Vertex) * 4);
+
+		m_vertices_late.ptr += 4;
+		m_vertices_late.count += 4;
+	} else {
+		if (m_vertices_mod.count >= MAX_VERTICES - 4)
+			flushVerticesMod();
+
+		memcpy(m_vertices_mod.ptr, vertices, sizeof(Vertex) * 4);
+
+		m_vertices_mod.ptr += 4;
+		m_vertices_mod.count += 4;
+	}
 	m_frame.vertex_count += 4;
 }
 
@@ -284,6 +296,21 @@ void Context::flushVerticesMod()
 	m_vertices_mod.count = 0;
 	m_vertices_mod.ptr = m_vertices_mod.data.data();
 	m_frame.drawcall_count++;
+}
+
+void Context::appendDelayedObjects()
+{
+	if (m_vertices_late.count == 0)
+		return;
+
+	memcpy(m_vertices_mod.ptr, m_vertices_late.data.data(), m_vertices_late.count * sizeof(Vertex));
+
+	m_vertices_mod.count += m_vertices_late.count;
+	m_vertices_mod.ptr += m_vertices_late.count;
+
+	m_delay_push = false;
+	m_vertices_late.count = 0;
+	m_vertices_late.ptr = m_vertices_late.data.data();
 }
 
 void Context::toggleVsync()

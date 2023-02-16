@@ -1,5 +1,6 @@
 #pragma once
 
+#include "d2/structs.h"
 #include "font.h"
 
 namespace d2gl::modules {
@@ -9,13 +10,6 @@ enum class FramedTextType {
 	InvItem,
 	Skill,
 	Monster,
-};
-
-struct D2FontInfo {
-	uint8_t id;
-	float size;
-	float weight;
-	wchar_t color = 0;
 };
 
 struct D2PopupInfo {
@@ -40,7 +34,9 @@ private:
 	bool m_draw_sub_text = true;
 	bool m_is_player_dead = false;
 
+	glm::mat4 m_mvp = glm::mat4(0.0f);
 	glm::vec4 m_text_mask = glm::vec4(0.0f);
+	bool m_masking = false;
 
 	const uint32_t m_bg_color = 0x000000CC;
 	const uint32_t m_border_color = 0x222222DD;
@@ -57,9 +53,10 @@ public:
 	}
 
 	inline bool isActive() { return App.hd_cursor && App.hd_text; }
+	inline void setMVP(const glm::mat4& mvp) { m_mvp = mvp; }
 
 	void reset();
-	void update(std::unique_ptr<Pipeline>& shader);
+	void update(const std::unique_ptr<Pipeline>& pipeline);
 
 	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 	bool drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
@@ -74,9 +71,9 @@ public:
 	inline void borderedRect(bool draw = true) { m_bordered_rect = draw; }
 
 	void drawSubText(uint8_t fn = 1);
-	// bool drawImage(d2::CellContext* pData, int nXpos, int nYpos, DWORD dwGamma, int nDrawMode);
-	// bool drawShiftedImage(d2::CellContext* pData, int nXpos, int nYpos, DWORD dwGamma, int nDrawMode, int nGlobalPaletteShift);
-	// void loadUIImage();
+	bool drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
+	bool drawShiftedImage(d2::CellContext* cell, int x, int y, DWORD gamma, int draw_mode);
+	void loadUIImage();
 
 	void drawTest();
 
@@ -84,9 +81,5 @@ private:
 	inline wchar_t getColor(uint32_t color);
 	inline const D2FontInfo& getFont(uint32_t size);
 };
-
-void drawText(glm::vec2 position, uint32_t color);
-void drawText2();
-void drawSubText(uint8_t fn);
 
 }

@@ -158,8 +158,13 @@ void Wrapper::onResize()
 	App.window.resized = false;
 
 	if (game_resized) {
-		m_mod_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
-		m_game_pipeline->setUniformMat4f("u_MVP", glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f));
+		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
+		m_game_pipeline->setUniformMat4f("u_MVP", mvp);
+		modules::HDText::Instance().setMVP(mvp);
+
+		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
+		m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
 
 		m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
@@ -316,8 +321,7 @@ void Wrapper::onStageChange()
 			}*/
 			break;
 		case DrawStage::Cursor:
-			// modules::HDText::Instance().DrawTest();
-			// Renderer::Instance().AppendDelayedObjects();
+			ctx->appendDelayedObjects();
 			modules::HDCursor::Instance().draw();
 			break;
 	}
@@ -360,6 +364,7 @@ void Wrapper::onBufferClear()
 			}
 		}
 
+		modules::HDText::Instance().reset();
 		modules::MotionPrediction::Instance().update();
 
 		ctx->beginFrame();
@@ -412,6 +417,7 @@ void Wrapper::onBufferSwap()
 			ctx->pushQuad(1 + App.gl_caps.compute_shader);
 		}
 
+		modules::HDText::Instance().update(m_mod_pipeline);
 		ctx->bindPipeline(m_mod_pipeline);
 		ctx->flushVerticesMod();
 	}

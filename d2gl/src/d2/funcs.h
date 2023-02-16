@@ -7,6 +7,7 @@ namespace d2gl::d2 {
 uint32_t mpqLoad(const char* mpqfile);
 glm::ivec2 getCursorPos();
 bool isPerspective();
+bool isEscMenuOpen();
 
 UnitAny* getPlayerUnit();
 UnitAny* findUnit(uint32_t type_id);
@@ -14,7 +15,8 @@ DWORD getUnitID(UnitAny* unit);
 DWORD getUnitFlag(UnitAny* unit);
 Path* getUnitPath(UnitAny* unit);
 StaticPath* getUnitStaticPath(UnitAny* unit);
-UnitAny* getHoveredInvItem();
+UnitAny* getSelectedItem();
+bool isUnitDead(UnitAny* unit);
 
 CellFile* getCellFile(CellContext* cell);
 DWORD getCellNo(CellContext* cell);

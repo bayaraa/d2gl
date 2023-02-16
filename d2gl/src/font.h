@@ -8,6 +8,15 @@ enum class TextAlign {
 	Center,
 };
 
+struct D2FontInfo {
+	uint8_t id;
+	float size;
+	float weight;
+	float line_height;
+	float letter_spacing;
+	wchar_t color = 0;
+};
+
 struct Glyph {
 	glm::vec2 size = { 0.0f, 0.0f };
 	glm::vec2 offset = { 0.0f, 0.0f };
@@ -17,8 +26,6 @@ struct Glyph {
 
 struct FontCreateInfo {
 	std::string path;
-	float line_height = 1.0f;
-	float letter_spacing = 0.0f;
 	float rtrim_size = 0.0f;
 	glm::vec2 offset = { 0.0f, 0.0f };
 };
@@ -32,17 +39,17 @@ class Font {
 	std::map<wchar_t, Glyph> m_glyphes;
 	std::unique_ptr<Object> m_object;
 
-	float m_line_height;
-	float m_letter_spacing;
 	float m_rtrim_size;
 	glm::vec2 m_offset;
 
 	float m_size = 10.0f;
 	float m_scale = 1.0f;
 	float m_weight = 1.0f;
+	float m_line_height = 1.0f;
+	float m_letter_spacing = 0.0f;
 	float m_smoothness = 5.0f;
 	TextAlign m_align = TextAlign::Left;
-	bool m_shadow = false;
+
 	bool m_boxed = false;
 	bool m_masking = false;
 
@@ -58,8 +65,9 @@ public:
 	inline void setLineHeight(float line_height) { m_line_height = line_height; }
 	inline void setLetterSpacing(float letter_spacing) { m_letter_spacing = letter_spacing; }
 	inline void setWeight(float weight) { m_weight = weight; }
+	inline void setMetrics(const D2FontInfo& font) { m_weight = font.weight, m_line_height = font.line_height, m_letter_spacing = font.letter_spacing; }
+
 	inline void setAlign(TextAlign align) { m_align = align; }
-	inline void setShadow(bool shadow) { m_shadow = shadow; }
 	inline void setBoxed(bool boxed) { m_boxed = boxed; }
 	inline void setMasking(bool masking) { m_masking = masking; }
 

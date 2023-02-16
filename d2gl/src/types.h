@@ -105,5 +105,6 @@ struct Range {
 };
 
 typedef void (*onStageChange_t)(void);
+typedef void (*onBufferClear_t)(void);
 
 }

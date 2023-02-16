@@ -4,7 +4,10 @@
 
 namespace d2gl {
 
+class Wrapper;
+
 extern const char* g_shader_game;
+extern std::unique_ptr<Wrapper> DDrawWrapper;
 
 class Wrapper {
 	Context* ctx;
@@ -43,14 +46,13 @@ public:
 	void onBufferClear();
 	void onBufferSwap(bool flip = false);
 
-	void updatePalette(const glm::vec4* data);
+	inline void updatePalette(const glm::vec4* data) { m_game_palette_ubo->updateData("palette", data); }
 
 	static HRESULT setCooperativeLevel(HWND hwnd, DWORD flags);
 	static HRESULT setDisplayMode(DWORD width, DWORD height, DWORD bpp);
 
-	static inline void onGameStageChange();
+	static inline void onGameStageChange() { DDrawWrapper->onStageChange(); }
+	static inline void onGameBufferClear() { DDrawWrapper->onBufferClear(); }
 };
-
-extern std::unique_ptr<Wrapper> DDrawWrapper;
 
 }

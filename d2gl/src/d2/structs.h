@@ -29,44 +29,44 @@ struct Room1;
 
 #pragma pack(push, 1)
 struct DT1SubBlock {
-	WORD xPos;			// 0x00
-	WORD yPos;			// 0x02
-	WORD _1;			// 0x04
-	BYTE gridX;			// 0x06
-	BYTE gridY;			// 0x07
-	WORD wTileFormat;	// 0x08
-	DWORD dwSubLength;	// 0x0A
-	WORD _2;			// 0x0E
+	WORD xPos; // 0x00
+	WORD yPos; // 0x02
+	WORD _1; // 0x04
+	BYTE gridX; // 0x06
+	BYTE gridY; // 0x07
+	WORD wTileFormat; // 0x08
+	DWORD dwSubLength; // 0x0A
+	WORD _2; // 0x0E
 	DWORD* pDataOffset; // 0x10
 };
 #pragma pack(pop)
 
 struct TileContext {
-	DWORD dwDirection;	  // 0x00
-	WORD wRoofIndex;	  // 0x04
-	BYTE bSound;		  // 0x06
-	BYTE bAnimated;		  // 0x07
-	DWORD dwSizeY;		  // 0x08
-	DWORD dwSizeX;		  // 0x0C
-	DWORD dwZeros1;		  // 0x10
-	DWORD dwOrientation;  // 0x14
-	DWORD dwMainIndex;	  // 0x18
-	DWORD dwSubIndex;	  // 0x1C
-	DWORD dwFrame;		  // 0x20
-	BYTE _1a;			  // 0x24 DT1's unknown_a ...
-	BYTE _1c;			  // 0x25
-	BYTE _1b;			  // 0x26
-	BYTE _1d;			  // 0x27
-	BYTE bFlags[25];	  // 0x28 For each tile <not sure>
-	BYTE _2;			  // 0x39
-	WORD sCacheIndex;	  // 0x40
-	DWORD _18;			  // 0x44
-	DWORD dwDataPtr;	  // 0x48 pointer to sub-block headers
-	DWORD dwSize;		  // 0x4C length of the sub-blocks
-	DWORD dwSubBlocks;	  // 0x50
+	DWORD dwDirection; // 0x00
+	WORD wRoofIndex; // 0x04
+	BYTE bSound; // 0x06
+	BYTE bAnimated; // 0x07
+	DWORD dwSizeY; // 0x08
+	DWORD dwSizeX; // 0x0C
+	DWORD dwZeros1; // 0x10
+	DWORD dwOrientation; // 0x14
+	DWORD dwMainIndex; // 0x18
+	DWORD dwSubIndex; // 0x1C
+	DWORD dwFrame; // 0x20
+	BYTE _1a; // 0x24 DT1's unknown_a ...
+	BYTE _1c; // 0x25
+	BYTE _1b; // 0x26
+	BYTE _1d; // 0x27
+	BYTE bFlags[25]; // 0x28 For each tile <not sure>
+	BYTE _2; // 0x39
+	WORD sCacheIndex; // 0x40
+	DWORD _18; // 0x44
+	DWORD dwDataPtr; // 0x48 pointer to sub-block headers
+	DWORD dwSize; // 0x4C length of the sub-blocks
+	DWORD dwSubBlocks; // 0x50
 	DT1SubBlock* pBlocks; // 0x54
-	char* szTileName;	  // 0x58
-	DWORD** ptBlock;	  // 0x5C <not sure - maybe its a struct>
+	char* szTileName; // 0x58
+	DWORD** ptBlock; // 0x5C <not sure - maybe its a struct>
 };
 
 struct GFXLight {
@@ -186,7 +186,7 @@ struct MonStatsTxt {
 	BYTE bAlign;
 };
 
-struct MonsterData {
+struct MonsterData110 {
 	MonStatsTxt* pMonStatsTxt;
 	BYTE Components[16];
 	WORD NameSeed;
@@ -204,8 +204,19 @@ struct MonsterData {
 	DWORD dwDuriel;
 	BYTE anEnchants[9];
 	WORD wUniqueNo;
-	DWORD _5;
-	wchar_t wName[28];
+	DWORD _1;
+	wchar_t* wName;
+};
+
+struct MonsterData109 {
+	struct {
+		WORD fBoss : 1;
+		WORD fMinion : 1;
+		WORD fChamp : 1;
+	};
+	wchar_t* wName;
+	DWORD _1[52];
+	DWORD anEnchants[9];
 };
 
 struct ItemData {
@@ -250,7 +261,7 @@ struct UnitAny {
 			union {
 				void* pPlayerData;
 				ItemData* pItemData;
-				MonsterData* pMonsterData;
+				MonsterData110* pMonsterData;
 				void* pObjectData;
 			};
 			DWORD dwAct;
@@ -291,7 +302,7 @@ struct UnitAny {
 			union {
 				void* pPlayerData;
 				ItemData* pItemData;
-				MonsterData* pMonsterData;
+				MonsterData109* pMonsterData;
 				void* pObjectData;
 			};
 			DWORD _4[29];
