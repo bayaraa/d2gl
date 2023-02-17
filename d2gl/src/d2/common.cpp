@@ -60,6 +60,7 @@ drawWeatherParticles_t drawWeatherParticles = (drawWeatherParticles_t)getProc((D
 
 clearScreen_t clearScreen = (clearScreen_t)getProc((DLL_D2GFX), (-10058), (-10058), (-10067), (-10037), (-10047), (-10021), (-10010), (0xF63B0));
 drawImage_t drawImage = (drawImage_t)getProc((DLL_D2GFX), (-10072), (-10072), (-10047), (-10044), (-10024), (-10041), (-10042), (0xF6480));
+drawPerspectiveImage_t drawPerspectiveImage = (drawPerspectiveImage_t)getProc((DLL_D2GFX), (-10071), (-10071), (-10082), (-10047), (-10063), (-10016), (-10009), (0xF6450));
 drawShiftedImage_t drawShiftedImage = (drawShiftedImage_t)getProc((DLL_D2GFX), (-10073), (-10073), (-10079), (-10068), (-10044), (-10019), (-10067), (0xF64B0));
 drawVerticalCropImage_t drawVerticalCropImage = (drawVerticalCropImage_t)getProc((DLL_D2GFX), (-10074), (-10074), (-10005), (-10009), (-10046), (-10074), (-10082), (0xF64E0));
 drawClippedImage_t drawClippedImage = (drawClippedImage_t)getProc((DLL_D2GFX), (-10077), (-10077), (-10023), (-10005), (-10061), (-10079), (-10015), (0xF6510));
@@ -85,8 +86,8 @@ setTextSize_t setTextSize = (setTextSize_t)getProc((DLL_D2WIN), (-10127), (-1012
 // 1.10 10124 draw popup
 
 getSelectedUnit_t getSelectedUnit = (getSelectedUnit_t)getProc((DLL_D2CLIENT), (0x14CE0), (0x15A20), (0x37CA0), (0x2F950), (0x6ECA0), (0x51A80), (0x17280), (0x67A10));
-getUnitStat_t getUnitStat = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), (-10519), (-11092), (-10061), (-10658), (-10973), (-10550), (0x225480));
-getUnitState_t getUnitState = (getUnitState_t)getProc((DLL_D2COMMON), (-10487), (), (), (-10604), (), (-10494), (-10706), (0x239DF0));
+getUnitStat_t getUnitStat_Fn = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), (-10519), (-11092), (-10061), (-10658), (-10973), (-10550), (0x225480));
+getUnitState_t getUnitState_Fn = (getUnitState_t)getProc((DLL_D2COMMON), (-10487), (), (), (-10604), (), (-10494), (-10706), (0x239DF0));
 
 // Offset D2WinUnitHover = getOffset((DLL_D2WIN), (), (-10124, 0xF7E9C1FA, 0x1F3), (-10175, 0x03C2572B, 0x1A3), (-10037, 0x03C2572B, 0x1A3), (-10201, 0x03C2572B, 0x1A3), (-10110, 0x03C2572B, 0x1A3), (-10124, 0x03C2572B, 0x1A3), (0x10318B, 0x03C22BF0));
 // DWORD D2WinUnitHoverRet = helpers::GetProcOffset(D2WinUnitHover) + (isVer(V_110) ? 5 : 6);
@@ -203,6 +204,7 @@ void initHooks()
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach(&(PVOID&)drawImage, drawImageHooked);
+	DetourAttach(&(PVOID&)drawPerspectiveImage, drawPerspectiveImageHooked);
 	DetourAttach(&(PVOID&)drawShiftedImage, drawShiftedImageHooked);
 	DetourAttach(&(PVOID&)drawVerticalCropImage, drawVerticalCropImageHooked);
 	DetourAttach(&(PVOID&)drawClippedImage, drawClippedImageHooked);
@@ -242,6 +244,7 @@ void destroyHooks()
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourDetach(&(PVOID&)drawImage, drawImageHooked);
+	DetourDetach(&(PVOID&)drawPerspectiveImage, drawPerspectiveImageHooked);
 	DetourDetach(&(PVOID&)drawShiftedImage, drawShiftedImageHooked);
 	DetourDetach(&(PVOID&)drawVerticalCropImage, drawVerticalCropImageHooked);
 	DetourDetach(&(PVOID&)drawClippedImage, drawClippedImageHooked);

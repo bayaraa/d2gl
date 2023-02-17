@@ -24,6 +24,15 @@ enum class ItemQuiality {
 	Craft,
 };
 
+enum class MonsterType {
+	Normal,
+	SuperUnique,
+	Boss,
+	Champion,
+	Possesed,
+	Ghostly,
+};
+
 struct UnitAny;
 struct Room1;
 
@@ -214,7 +223,7 @@ struct MonsterData109 {
 		WORD fMinion : 1;
 		WORD fChamp : 1;
 	};
-	wchar_t* wName;
+	wchar_t wName[1];
 	DWORD _1[52];
 	DWORD anEnchants[9];
 };

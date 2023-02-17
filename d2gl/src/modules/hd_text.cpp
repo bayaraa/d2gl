@@ -138,8 +138,8 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 		switch (m_text_size) {
 			case 1:
 				if (x == 113 || x == 385) {
-					pos.y += isVer(V_109d) ? -2.0f : 9.0f;
-					if (color == 2) {
+					pos.y += isVer(V_109d) ? -5.0f : 8.0f;
+					if (color == 0 || color == 2) {
 						font = getFont(6);
 						m_fonts[font.id]->setSize(font.size);
 						m_fonts[font.id]->setMetrics(font);
@@ -173,14 +173,12 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	//	trace("item: %d", hover_item->pItemData->dwQuality);
 	// }
 
-	auto unit = d2::getSelectedUnit();
-	if (unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
-		auto name = unit->v110.pMonsterData->wName;
-		// const wchar_t* name = L"aaa";
-		auto hp = d2::getUnitStat(unit, 6, 0);
-		auto max_hp = d2::getUnitStat(unit, 7, 0);
-		trace("%dx%d | %d | %d | %d/%d | %S", centered, y, unit->dwType, d2::getUnitID(unit), hp, max_hp, name);
-		return true;
+	if (isVerMin(V_111a)) {
+		auto unit = d2::getSelectedUnit();
+		if (unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
+			drawMonsterHealthBar(unit);
+			return true;
+		}
 	}
 
 	auto font = getFont(1);
@@ -292,34 +290,25 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (!isActive())
 		return false;
 
-	auto unit = d2::getSelectedUnit();
-	if (unit && unit->dwType == d2::UnitType::Monster && top == 18 && bottom == 34) {
-		auto name = unit->v109.pMonsterData->wName;
-		auto hp = ((d2::getUnitStat109d_t)d2::getUnitStat)(unit, 6);
-		auto max_hp = ((d2::getUnitStat109d_t)d2::getUnitStat)(unit, 7);
-		trace("%d | %d | %d/%d | %S", unit->dwType, d2::getUnitID(unit), hp, max_hp, name);
+	if (isVerMax(V_110f)) {
+		static bool monster_hp = false;
+		auto unit = d2::getSelectedUnit();
+		if (unit && unit->dwType == d2::UnitType::Monster && top == 18 && bottom == 34) {
+			if (!monster_hp) {
+				drawMonsterHealthBar(unit);
+				monster_hp = true;
+			}
+			return true;
+		}
+		monster_hp = false;
 	}
-	// static bool monster_hp = false;
-	// auto unit = d2::getSelectedUnit();
-	// if (unit && unit->dwType == d2::UnitType::Monster && top == 18 && bottom == 34) {
-	//	if (!monster_hp) {
-	//		auto name = unit->v110.pMonsterData->wName;
-	//		// const wchar_t* name = L"aaa";
-	//		auto hp = d2::getUnitStat(unit, 6, 0);
-	//		auto max_hp = d2::getUnitStat(unit, 7, 0);
-	//		trace("%dx%d | %d | %d | %d/%d | %S", top, bottom, unit->dwType, d2::getUnitID(unit), hp, max_hp, name);
-	//		monster_hp = true;
-	//	}
-	//	return true;
-	// }
-	// monster_hp = false;
 
 	// if (nDrawMode == 2 && dwColor == 0)
 	//	trace("%dx%d <> %dx%d | %d | %d", nXStart, nYStart, nXEnd, nYEnd, draw_mode, dwColor);
 
 	if (((draw_mode == 2 && color == 0) || m_bordered_rect) && !d2::isEscMenuOpen()) {
-		// const glm::vec2 padding = bordered_rect_ ? glm::vec2(5.0f, 5.0f) : glm::vec2(4.0f, 2.0f);
-		const glm::vec2 padding = { 0.0f, 0.0f };
+		const glm::vec2 padding = m_bordered_rect ? glm::vec2(5.0f, 5.0f) : glm::vec2(4.0f, 2.0f);
+		// const glm::vec2 padding = { 0.0f, 0.0f };
 		const glm::vec2 pos = { (float)left - padding.x, (float)top - padding.y };
 		const glm::vec2 size = glm::vec2((float)right + padding.x, (float)bottom + padding.y) - pos;
 
@@ -523,6 +512,58 @@ void HDText::loadUIImage()
 			}
 		}
 	}
+}
+
+void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
+{
+	const auto name = d2::getMonsterName(unit);
+	const auto hp = d2::getUnitStat(unit, 6);
+	const auto max_hp = d2::getUnitStat(unit, 7);
+	const auto type = d2::getMonsterType(unit);
+
+	auto font = getFont(1);
+	m_fonts[font.id]->setSize(font.size);
+	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setBoxed(false);
+	m_fonts[font.id]->setMasking(false);
+	m_fonts[font.id]->setAlign(TextAlign::Center);
+
+	float center = (float)(*d2::screen_width / 2);
+	if (*d2::screen_shift == 1)
+		center = (float)(*d2::screen_width / 4);
+	else if (*d2::screen_shift == 2)
+		center = (float)(*d2::screen_width / 4 * 3);
+
+	const auto text_size = m_fonts[font.id]->getTextSize(name);
+	float hp_percent = (float)hp / (float)max_hp;
+
+	glm::vec2 bar_size = { 120.0f, 18.0f };
+	if (text_size.x + 40.0f > bar_size.x)
+		bar_size.x = text_size.x + 40.0f;
+
+	m_object_bg->setFlags({ 2, 0, 0, 0 });
+	glm::vec2 bar_pos = { center - bar_size.x / 2, 18.0f };
+
+	m_object_bg->setPosition(bar_pos);
+	m_object_bg->setSize({ bar_size.x * hp_percent, bar_size.y });
+	m_object_bg->setColor(m_monster_hp, 1);
+	App.context->pushObject(m_object_bg);
+
+	m_object_bg->setPosition({ bar_pos.x + bar_size.x * hp_percent, bar_pos.y });
+	m_object_bg->setSize({ bar_size.x * (1.0f - hp_percent), bar_size.y });
+	m_object_bg->setColor(m_bg_color, 1);
+	App.context->pushObject(m_object_bg);
+
+	wchar_t text_color = L'\x30';
+	if (type == d2::MonsterType::Boss || type == d2::MonsterType::SuperUnique)
+		text_color = L'\x34';
+	else if (type == d2::MonsterType::Champion)
+		text_color = L'\x33';
+	if (hp == 0)
+		text_color = L'\x31';
+
+	glm::vec2 text_pos = { center - text_size.x / 2, 32.5f };
+	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(text_color));
 }
 
 inline const D2FontInfo& HDText::getFont(uint32_t size)

@@ -38,6 +38,7 @@ private:
 	bool m_perspective = false;
 
 	D2DrawFn m_text_fn = D2DrawFn::None;
+	D2DrawFn m_draw_fn = D2DrawFn::None;
 
 	std::array<ParticleMotion, 512> m_particles;
 	uint32_t m_last_particle_index = 0;
@@ -57,6 +58,7 @@ public:
 	void update();
 
 	glm::ivec2 getGlobalOffset(bool skip = false);
+	glm::ivec2 getGlobalOffsetPerspective();
 
 	glm::ivec2 drawImage(int x, int y, D2DrawFn fn, uint32_t gamma = 0, int draw_mode = 0);
 	glm::ivec2 drawLine(int start_x, int start_y);

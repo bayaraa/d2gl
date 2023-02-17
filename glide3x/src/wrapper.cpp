@@ -300,7 +300,7 @@ void Wrapper::onStageChange()
 					ctx->setViewport(App.game.size);
 					ctx->bindPipeline(m_prefx_pipeline);
 				}
-				ctx->pushQuad(3, App.lut.selected, App.bloom.active, App.var7);
+				ctx->pushQuad(3, App.lut.selected, App.bloom.active);
 
 				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
 			}
@@ -489,8 +489,9 @@ void Wrapper::grDrawVertexArray(FxU32 mode, FxU32 count, void** pointers)
 
 void Wrapper::grDrawVertexArrayContiguous(FxU32 mode, FxU32 count, void* pointers)
 {
+	const auto offset = modules::MotionPrediction::Instance().getGlobalOffsetPerspective();
 	for (FxU32 i = 0; i < count; i++)
-		ctx->pushVertex(&((const GlideVertex*)pointers)[i]);
+		ctx->pushVertex(&((const GlideVertex*)pointers)[i], { 0.0f, 0.0f }, offset);
 }
 
 void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)

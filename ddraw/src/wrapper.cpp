@@ -282,7 +282,6 @@ void Wrapper::onBufferSwap(bool flip)
 	option::Menu::instance().draw();
 
 	ctx->presentFrame();
-	trace("== SWAP ==");
 }
 
 HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)

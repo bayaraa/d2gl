@@ -75,6 +75,11 @@ StaticPath* getUnitStaticPath(UnitAny* unit)
 	return isVer(V_109d) ? unit->v109.pStaticPath : unit->v110.pStaticPath;
 }
 
+uint32_t getUnitStat(UnitAny* unit, uint32_t stat)
+{
+	return isVer(V_109d) ? ((getUnitStat109d_t)getUnitStat_Fn)(unit, stat) : getUnitStat_Fn(unit, stat, 0);
+}
+
 UnitAny* getSelectedItem()
 {
 	return (UnitAny*)*(uintptr_t*)selected_item;
@@ -83,6 +88,30 @@ UnitAny* getSelectedItem()
 bool isUnitDead(UnitAny* unit)
 {
 	return unit && (d2::getUnitFlag(unit) & 0x10000);
+}
+
+MonsterType getMonsterType(UnitAny* unit)
+{
+	if (isVer(V_109d)) {
+		if (unit->v109.pMonsterData->fChamp)
+			return MonsterType::Champion;
+		else if (unit->v109.pMonsterData->fBoss)
+			return MonsterType::Boss;
+	} else {
+		if (unit->v110.pMonsterData->fSuperUniq)
+			return MonsterType::SuperUnique;
+		else if (unit->v110.pMonsterData->fChamp || unit->v110.pMonsterData->fPossesed || unit->v110.pMonsterData->fGhostly)
+			return MonsterType::Champion;
+		else if (unit->v110.pMonsterData->fBoss)
+			return MonsterType::Boss;
+	}
+
+	return MonsterType::Normal;
+}
+
+wchar_t* getMonsterName(UnitAny* unit)
+{
+	return isVer(V_109d) ? unit->v109.pMonsterData->wName : unit->v110.pMonsterData->wName;
 }
 
 CellFile* getCellFile(CellContext* cell)
@@ -152,6 +181,12 @@ void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, 
 	}
 }
 
+void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int screen_mode, uint8_t* palette)
+{
+	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::PerspectiveImage);
+	drawPerspectiveImage(cell, pos.x, pos.y, gamma, draw_mode, screen_mode, palette);
+}
+
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift)
 {
 	if (modules::HDText::Instance().drawShiftedImage(cell, x, y, gamma, draw_mode)) {
@@ -199,24 +234,32 @@ void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, ui
 
 bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data)
 {
+	if (App.var7)
+		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset();
 	return drawGroundTile(tile, light, x - offset.x, y - offset.y, world_x, world_y, alpha, screen_panels, tile_data);
 }
 
 bool __stdcall drawWallTileHooked(TileContext* tile, int x, int y, GFXLight* light, int screen_panels)
 {
+	if (App.var7)
+		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset(true);
 	return drawWallTile(tile, x - offset.x, y - offset.y, light, screen_panels);
 }
 
 bool __stdcall drawTransWallTileHooked(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha)
 {
+	if (App.var7)
+		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset(true);
 	return drawTransWallTile(tile, x - offset.x, y - offset.y, light, screen_panels, alpha);
 }
 
 bool __stdcall drawShadowTileHooked(TileContext* tile, int x, int y, int draw_mode, int screen_panels)
 {
+	if (App.var7)
+		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset(true);
 	return drawShadowTile(tile, x - offset.x, y - offset.y, draw_mode, screen_panels);
 }

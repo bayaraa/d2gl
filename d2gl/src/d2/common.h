@@ -24,6 +24,7 @@ typedef uint32_t(__stdcall* getUnitState_t)(UnitAny* unit, uint32_t state_no);
 
 typedef void(__stdcall* clearScreen_t)(bool partial);
 typedef void(__stdcall* drawImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette);
+typedef void(__stdcall* drawPerspectiveImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int screen_mode, uint8_t* palette);
 typedef void(__stdcall* drawShiftedImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift);
 typedef void(__stdcall* drawVerticalCropImage_t)(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode);
 typedef void(__stdcall* drawClippedImage_t)(CellContext* cell, int x, int y, void* crop_rect, int draw_mode);
@@ -118,6 +119,7 @@ extern drawWeatherParticles_t drawWeatherParticles;
 
 extern clearScreen_t clearScreen;
 extern drawImage_t drawImage;
+extern drawPerspectiveImage_t drawPerspectiveImage;
 extern drawShiftedImage_t drawShiftedImage;
 extern drawVerticalCropImage_t drawVerticalCropImage;
 extern drawClippedImage_t drawClippedImage;
@@ -145,8 +147,8 @@ extern setTextSize_t setTextSize;
 // extern Offset D2WinUnitHover;
 // extern DWORD D2WinUnitHoverRet;
 extern getSelectedUnit_t getSelectedUnit;
-extern getUnitStat_t getUnitStat;
-extern getUnitState_t getUnitState;
+extern getUnitStat_t getUnitStat_Fn;
+extern getUnitState_t getUnitState_Fn;
 
 extern UnitAny* currently_drawing_unit;
 extern uint32_t currently_drawing_weather_particles;

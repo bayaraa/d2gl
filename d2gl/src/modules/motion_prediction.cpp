@@ -79,10 +79,20 @@ glm::ivec2 MotionPrediction::getGlobalOffset(bool skip)
 	return { 0, 0 };
 }
 
+glm::ivec2 MotionPrediction::getGlobalOffsetPerspective()
+{
+	if (App.game.draw_stage == DrawStage::World && m_draw_fn == D2DrawFn::PerspectiveImage)
+		return m_global_offset;
+
+	return { 0, 0 };
+}
+
 glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn, uint32_t gamma, int draw_mode)
 {
 	glm::ivec2 pos = { x, y };
-	if (!isAvailable())
+	m_draw_fn = fn;
+
+	if (!isAvailable() || fn == D2DrawFn::PerspectiveImage)
 		return pos;
 
 	if (fn == D2DrawFn::Shadow || fn == D2DrawFn::ImageFast) {
@@ -120,7 +130,7 @@ glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn, uint32_t gamma
 			return pos - m_global_offset;
 		}
 	} else {
-		if (App.game.draw_stage == DrawStage::World && fn == D2DrawFn::Image && draw_mode == 3 && gamma == 0xffffffff)
+		if (App.game.draw_stage == DrawStage::World && fn == D2DrawFn::Image && draw_mode == 3 && gamma == 0xFFFFFFFF)
 			return pos - m_global_offset;
 	}
 

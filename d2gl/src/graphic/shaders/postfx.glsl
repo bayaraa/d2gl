@@ -221,8 +221,8 @@ void main()
 //[
 layout(local_size_x = 16, local_size_y = 16) in;
 //]
-uniform sampler2D u_InTexture;
-uniform image2D u_OutTexture;
+readonly uniform sampler2D u_InTexture;
+writeonly uniform image2D u_OutTexture;
 
 uniform int u_Flag = 0;
 

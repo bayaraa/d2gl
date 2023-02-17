@@ -42,6 +42,7 @@ private:
 	const uint32_t m_border_color = 0x222222DD;
 	const uint32_t m_alt_bg_color = 0x00000099;
 	const uint32_t m_alt_bg_hovered = 0x213F98DD;
+	const uint32_t m_monster_hp = 0x56110BDD;
 
 	HDText();
 
@@ -75,9 +76,9 @@ public:
 	bool drawShiftedImage(d2::CellContext* cell, int x, int y, DWORD gamma, int draw_mode);
 	void loadUIImage();
 
-	void drawTest();
-
 private:
+	void drawMonsterHealthBar(d2::UnitAny* unit);
+
 	inline wchar_t getColor(uint32_t color);
 	inline const D2FontInfo& getFont(uint32_t size);
 };

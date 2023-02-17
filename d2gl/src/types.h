@@ -38,6 +38,7 @@ enum class DrawStage : uint8_t {
 enum class D2DrawFn {
 	None,
 	Image,
+	PerspectiveImage,
 	ShiftedImage,
 	VerticalCropImage,
 	ClippedImage,

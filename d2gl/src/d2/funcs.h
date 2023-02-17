@@ -15,8 +15,11 @@ DWORD getUnitID(UnitAny* unit);
 DWORD getUnitFlag(UnitAny* unit);
 Path* getUnitPath(UnitAny* unit);
 StaticPath* getUnitStaticPath(UnitAny* unit);
+uint32_t getUnitStat(UnitAny* unit, uint32_t stat);
 UnitAny* getSelectedItem();
 bool isUnitDead(UnitAny* unit);
+MonsterType getMonsterType(UnitAny* unit);
+wchar_t* getMonsterName(UnitAny* unit);
 
 CellFile* getCellFile(CellContext* cell);
 DWORD getCellNo(CellContext* cell);
@@ -28,6 +31,7 @@ void uiDrawBegin();
 void uiDrawEnd();
 
 void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette);
+void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int screen_mode, uint8_t* palette);
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift);
 void __stdcall drawVerticalCropImageHooked(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode);
 void __stdcall drawClippedImageHooked(CellContext* cell, int x, int y, void* crop_rect, int draw_mode);

@@ -114,10 +114,7 @@ void main()
 				vec3 bloom_color = texture(u_BloomTexture1, v_TexCoord).rgb;
 				bloom_color = vec3(1.0) - exp(-bloom_color * u_BloomExp);
 				bloom_color = pow(bloom_color, vec3(1.0 / u_BloomGamma));
-				if (v_Flags.w == 1)
-					out_color = clamp(bloom_color, 0.0, 1.0);
-				else
-					out_color = clamp(out_color + bloom_color, 0.0, 1.0);
+				out_color = clamp(out_color + bloom_color, 0.0, 1.0);
 			}
 
 			FragColor = vec4(out_color, 1.0);
@@ -133,8 +130,8 @@ void main()
 //[
 layout(local_size_x = 16, local_size_y = 16) in;
 //]
-uniform sampler2D u_InTexture;
-uniform image2D u_OutTexture;
+readonly uniform sampler2D u_InTexture;
+writeonly uniform image2D u_OutTexture;
 
 uniform int u_Flag = 0;
 
@@ -155,16 +152,16 @@ vec4 BlurPass17(sampler2D tex, ivec2 tc, int dir)
 			pos[i + 8] = ivec2(tc.x, clamp(tc.y + i, 1, max_size.y));
 	}
 
-	res += texelFetch(tex, pos[0], 0) * 0.00007775057148979088;
-	res += texelFetch(tex, pos[1], 0) * 0.0004886523773990668;
-	res += texelFetch(tex, pos[2], 0) * 0.002402783593203998;
-	res += texelFetch(tex, pos[3], 0) * 0.009244812937837047;
-	res += texelFetch(tex, pos[4], 0) * 0.027835276522173394;
-	res += texelFetch(tex, pos[5], 0) * 0.06559213033177563;
-	res += texelFetch(tex, pos[6], 0) * 0.12098003019548202;
-	res += texelFetch(tex, pos[7], 0) * 0.17467018127877265;
-	res += texelFetch(tex, pos[8], 0) * 0.1974167643837327;
-	res += texelFetch(tex, pos[9], 0) * 0.17467018127877265;
+	res += texelFetch(tex, pos[ 0], 0) * 0.00007775057148979088;
+	res += texelFetch(tex, pos[ 1], 0) * 0.0004886523773990668;
+	res += texelFetch(tex, pos[ 2], 0) * 0.002402783593203998;
+	res += texelFetch(tex, pos[ 3], 0) * 0.009244812937837047;
+	res += texelFetch(tex, pos[ 4], 0) * 0.027835276522173394;
+	res += texelFetch(tex, pos[ 5], 0) * 0.06559213033177563;
+	res += texelFetch(tex, pos[ 6], 0) * 0.12098003019548202;
+	res += texelFetch(tex, pos[ 7], 0) * 0.17467018127877265;
+	res += texelFetch(tex, pos[ 8], 0) * 0.1974167643837327;
+	res += texelFetch(tex, pos[ 9], 0) * 0.17467018127877265;
 	res += texelFetch(tex, pos[10], 0) * 0.12098003019548202;
 	res += texelFetch(tex, pos[11], 0) * 0.06559213033177563;
 	res += texelFetch(tex, pos[12], 0) * 0.027835276522173394;
@@ -181,8 +178,7 @@ void main()
 	ivec2 v_TexCoord = ivec2(gl_GlobalInvocationID.xy);
 	vec4 color = vec4(0.0);
 
-	switch (u_Flag)
-	{
+	switch (u_Flag) {
 		case 0: color = BlurPass17(u_InTexture, v_TexCoord, 0); break;
 		case 1: color = BlurPass17(u_InTexture, v_TexCoord, 1); break;
 	}
