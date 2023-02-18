@@ -266,7 +266,7 @@ void Wrapper::onBufferSwap(bool flip)
 		if (App.fxaa) {
 			if (App.gl_caps.compute_shader) {
 				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
-				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size);
+				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			}
 			ctx->bindDefaultFrameBuffer();
 			ctx->setViewport(App.viewport.size, App.viewport.offset);

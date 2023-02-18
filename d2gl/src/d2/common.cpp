@@ -18,7 +18,7 @@ bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0x
 
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
-UnitAny* selected_item = (UnitAny*)getProc((DLL_D2CLIENT), (), (), (), (), (), (0x11BC38), (0x11CB28), (0x680A0));
+UnitAny* selected_item = (UnitAny*)getProc((DLL_D2CLIENT), (0x11FBB8), (0x1158F0), (0x11BA40), (0x11BBDC), (0x11B9FC), (0x11BC38), (0x11CB28), (0x3BCBF4));
 
 void* alt_item_pos = nullptr;
 void* sub_text_ptr = nullptr;
@@ -72,6 +72,8 @@ drawGroundTile_t drawGroundTile = (drawGroundTile_t)getProc((DLL_D2GFX), (-10079
 drawWallTile_t drawWallTile = (drawWallTile_t)getProc((DLL_D2GFX), (-10080), (-10080), (-10065), (-10011), (-10014), (-10001), (-10081), (0xF6920));
 drawTransWallTile_t drawTransWallTile = (drawTransWallTile_t)getProc((DLL_D2GFX), (-10081), (-10081), (-10035), (-10076), (-10075), (-10058), (-10040), (0xF6950));
 drawShadowTile_t drawShadowTile = (drawShadowTile_t)getProc((DLL_D2GFX), (-10082), (-10082), (-10012), (-10043), (-10042), (-10069), (-10060), (0xF6980));
+
+// drawRectFrame_t drawRectFrame = (drawRectFrame_t)getProc((DLL_D2CLIENT), (), (), (), (), (), (0xBE4C0), (0x17D10), ());
 
 takeScreenShot_t takeScreenShot = (takeScreenShot_t)getProc((DLL_D2WIN), (-10168), (-10168), (-10205), (-10014), (-10196), (-10187), (-10107), (0xFA7A0));
 drawNormalText_t drawNormalText = (drawNormalText_t)getProc((DLL_D2WIN), (-10117), (-10117), (-10020), (-10064), (-10001), (-10150), (-10076), (0x102320));
@@ -182,6 +184,7 @@ void initHooks()
 
 	patch_hd_text = std::make_unique<Patch>();
 	// patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (), (), (), (), (), (), (0x1908C), ()), (uintptr_t)LevelEntryTextStub);
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT), (), (), (), (), (), (0xBE4C0), (), ()), 5, (uintptr_t)drawRectFrameStub);
 	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (isVerMax(V_110f) || isVer(V_114d)) ? (uintptr_t)loadUIImageStubECX : (uintptr_t)loadUIImageStub);
 	if (isVerNot(V_114d)) {
 		if (isVerMin(V_111a))

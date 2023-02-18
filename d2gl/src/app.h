@@ -49,6 +49,7 @@ struct D2GLApp {
 	struct {
 		uint32_t bpp = 8;
 		glm::uvec2 size = { 0, 0 };
+		glm::uvec2 custom_size = { 0, 0 };
 		GameScreen screen = GameScreen::Movie;
 		DrawStage draw_stage = DrawStage::World;
 		glm::uvec2 tex_size = { 0, 0 };

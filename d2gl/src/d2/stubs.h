@@ -21,7 +21,7 @@ void drawWeatherParticlesStub114d();
 // void ObjectHoverBeginStub();
 void rectangledTextBeginStub();
 void rectangledTextEndStub();
-// void DrawRectFrameStub();
+void drawRectFrameStub();
 // void DrawFramedBoxStub();
 void unitHoverTextStub();
 void altItemsTextStub();

@@ -12,7 +12,7 @@ enum class UnitType {
 	Count,
 };
 
-enum class ItemQuiality {
+enum class ItemQuality {
 	None,
 	Inferior,
 	Normal,
@@ -229,7 +229,7 @@ struct MonsterData109 {
 };
 
 struct ItemData {
-	ItemQuiality dwQuality;
+	ItemQuality dwQuality;
 	DWORD _1[2];
 	DWORD dwItemFlags;
 	DWORD _2[2];
@@ -248,14 +248,14 @@ struct ItemData {
 	BYTE EarLevel;
 	BYTE VarGfx;
 	CHAR personalizedName[16];
-	WORD _10;
+	WORD _4;
 	void* pOwnerInventory;
 	UnitAny* pPrevInvItem;
 	UnitAny* pNextInvItem;
-	BYTE _11;
+	BYTE _5;
 	BYTE NodePage;
-	WORD _12;
-	DWORD _13[6];
+	WORD _6;
+	DWORD _7[6];
 	UnitAny* pOwner;
 };
 

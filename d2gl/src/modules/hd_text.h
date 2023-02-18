@@ -29,6 +29,7 @@ private:
 	std::map<uint8_t, std::unique_ptr<Font>> m_fonts;
 	std::unique_ptr<Object> m_object_bg;
 	uint32_t m_text_size = 1;
+	uint32_t m_last_text_height = 0;
 
 	bool m_bordered_rect = false;
 	bool m_draw_sub_text = true;
@@ -73,7 +74,8 @@ public:
 
 	void drawSubText(uint8_t fn = 1);
 	bool drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
-	bool drawShiftedImage(d2::CellContext* cell, int x, int y, DWORD gamma, int draw_mode);
+	bool drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
+	void drawRectFrame();
 	void loadUIImage();
 
 private:

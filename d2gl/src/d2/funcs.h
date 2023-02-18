@@ -20,6 +20,7 @@ UnitAny* getSelectedItem();
 bool isUnitDead(UnitAny* unit);
 MonsterType getMonsterType(UnitAny* unit);
 wchar_t* getMonsterName(UnitAny* unit);
+ItemQuality getItemQuality(UnitAny* unit);
 
 CellFile* getCellFile(CellContext* cell);
 DWORD getCellNo(CellContext* cell);
@@ -44,6 +45,8 @@ bool __stdcall drawWallTileHooked(TileContext* tile, int x, int y, GFXLight* lig
 bool __stdcall drawTransWallTileHooked(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
 bool __stdcall drawShadowTileHooked(TileContext* tile, int x, int y, int draw_mode, int screen_panels);
 
+void __fastcall drawRectFrameHooked(RECT* rect);
+
 void __fastcall takeScreenShotHooked();
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 void __fastcall drawNormalTextExHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl);
@@ -59,7 +62,7 @@ void rectangledTextBegin();
 void rectangledTextEnd();
 void unitHoverText();
 void altItemsText();
-// void DrawRectFrameBegin();
+void drawRectFrame();
 
 void loadUIImage();
 void drawSubTextA();

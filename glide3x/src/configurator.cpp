@@ -56,6 +56,7 @@ public:
 	STDMETHOD(SetCustomResolution)
 	(int32_t width, int32_t height) noexcept
 	{
+		d2gl::App.game.custom_size = { width, height };
 		return S_OK;
 	}
 

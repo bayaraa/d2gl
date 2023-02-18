@@ -66,7 +66,7 @@ void main()
 		case 2: FragColor = v_Color1; break;
 		case 3:
 			if (v_Flags.w == 1) {
-				float opacity1 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, v_Extra.y + 0.1);
+				float opacity1 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, v_Extra.y + 0.05);
 				float opacity2 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, 0.95);
 				FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
 			} else {
@@ -82,11 +82,13 @@ void main()
 		break;
 	}
 
+	float border = 1.00001;
+	vec2 size = vec2(border / u_Scale.x / v_Extra.x, border / u_Scale.y / v_Extra.y);
 	switch (v_Flags.y) {
-		case 1: break;
+		case 1:
+			if(v_TexCoord.x < size.x || v_TexCoord.x > 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y > 1.0 - size.y)
+				FragColor = v_Color2;
 		case 2:
-			float border = 1.0001;
-			vec2 size = vec2(border / u_Scale.x / v_Extra.x, border / u_Scale.y / v_Extra.y);
 			vec2 size2 = size * 2.0, size3 = size * 3.0;
 			if ((v_TexCoord.x > size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x > 1.0 - size3.x) ||
 				(v_TexCoord.y > size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y > 1.0 - size3.y))

@@ -49,6 +49,7 @@ class Font {
 	float m_letter_spacing = 0.0f;
 	float m_smoothness = 5.0f;
 	TextAlign m_align = TextAlign::Left;
+	uint32_t m_shadow_color = 0;
 
 	bool m_boxed = false;
 	bool m_masking = false;

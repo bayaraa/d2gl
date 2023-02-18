@@ -53,7 +53,7 @@ public:
 	~Pipeline();
 
 	void bind(uint32_t index = 0);
-	void dispatchCompute(int flag, glm::ivec2 work_size);
+	void dispatchCompute(int flag, glm::ivec2 work_size, GLbitfield barrier = 0);
 
 	void setUniform1i(const std::string& name, int value);
 	void setUniformVec2f(const std::string& name, const glm::vec2& value);

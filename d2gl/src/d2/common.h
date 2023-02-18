@@ -37,7 +37,7 @@ typedef bool(__stdcall* drawWallTile_t)(TileContext* tile, int x, int y, GFXLigh
 typedef bool(__stdcall* drawTransWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
 typedef bool(__stdcall* drawShadowTile_t)(TileContext* tile, int x, int y, int draw_mode, int screen_panels);
 
-typedef void(__fastcall* drawRectFrame_t)(uint32_t rect, int);
+// typedef void(__fastcall* drawRectFrame_t)(RECT* rect);
 
 typedef void(__fastcall* takeScreenShot_t)(void);
 typedef void(__fastcall* drawNormalText_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
@@ -131,6 +131,8 @@ extern drawGroundTile_t drawGroundTile;
 extern drawWallTile_t drawWallTile;
 extern drawTransWallTile_t drawTransWallTile;
 extern drawShadowTile_t drawShadowTile;
+
+// extern drawRectFrame_t drawRectFrame;
 
 extern takeScreenShot_t takeScreenShot;
 extern drawNormalText_t drawNormalText;

@@ -163,7 +163,6 @@ void Wrapper::onResize()
 		modules::HDText::Instance().setMVP(mvp);
 
 		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
-		m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
 		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
 
 		m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
@@ -229,6 +228,7 @@ void Wrapper::onResize()
 	onShaderChange(game_resized);
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
+	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
 }
 
 void Wrapper::onShaderChange(bool texture)
@@ -278,13 +278,13 @@ void Wrapper::onStageChange()
 
 					if (App.gl_caps.compute_shader) {
 						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size);
+						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
 						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size);
+						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
 						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size);
+						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
 						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size);
+						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 					} else {
 						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
 						ctx->pushQuad(1);
@@ -409,7 +409,7 @@ void Wrapper::onBufferSwap()
 		if (App.fxaa) {
 			if (App.gl_caps.compute_shader) {
 				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
-				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size);
+				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			}
 			ctx->bindDefaultFrameBuffer();
 			ctx->setViewport(App.viewport.size, App.viewport.offset);
@@ -629,7 +629,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 	else if (screen_resolution == GR_RESOLUTION_800x600)
 		App.game.size = { 800, 600 };
 	else
-		App.game.size = { *d2::screen_width, *d2::screen_height };
+		App.game.size = App.game.custom_size;
 	trace("Game requested screen size: %d x %d\n", App.game.size.x, App.game.size.y);
 
 	if (App.hwnd) {

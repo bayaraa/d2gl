@@ -8,9 +8,6 @@ namespace d2gl::modules {
 // clang-format off
 const std::map<uint32_t, D2FontInfo> g_font_sizes = {
 	{  1, { 0, 14.3f, 1.02f, 1.1f, -0.022f, } }, // All Normal texts
-	{  2, { 0, 27.0f, 1.06f, 1.1f, -0.022f, L'\x01' } }, // Char create screen title, Resolution text eg:800x600
-	{  3, { 0, 36.0f, 1.06f, 1.1f, -0.022f, L'\x01' } }, // Char selection title (selected char name)
-	{  7, { 0, 20.9f, 1.06f, 1.1f, -0.022f, L'\x01' } }, // Menu screen popup title
 	{  9, { 0, 16.4f, 1.10f, 1.1f, -0.022f, L'\x02' } }, // Menu Button label
 	{ 10, { 0, 12.0f, 1.14f, 1.1f, -0.022f, L'\x02' } }, // Menu Button label (smaller)
 	{ 11, { 0, 12.2f, 1.06f, 1.1f, -0.022f, } }, // ?
@@ -23,6 +20,10 @@ const std::map<uint32_t, D2FontInfo> g_font_sizes = {
 	{  8, { 1, 12.4f, 1.14f, 1.0f,  0.115f } }, // Talking Text
 	{ 12, { 1,  8.8f, 1.14f, 1.0f,  0.115f } }, // ?
 	{ 13, { 1, 11.6f, 1.14f, 1.0f,  0.090f } }, // Message, Shrine, Keybind config
+
+	{  2, { 2, 27.0f, 1.10f, 1.0f, -0.022f, L'\x01' } }, // Char create screen title, Resolution text eg:800x600
+	{  3, { 2, 36.0f, 1.10f, 1.0f, -0.022f, L'\x01' } }, // Char selection title (selected char name)
+	{  7, { 2, 20.9f, 1.10f, 1.0f, -0.022f, L'\x01' } }, // Menu screen popup title
 };
 
 const std::vector<D2PopupInfo> g_popups = {
@@ -94,10 +95,13 @@ HDText::HDText()
 {
 	m_object_bg = std::make_unique<Object>();
 
-	FontCreateInfo font_ci1 = { "ExocetBlizzardMedium", 0.022f, { 0.00f, App.api == Api::Glide ? -0.16f : -0.12f } };
-	FontCreateInfo font_ci2 = { "Formal436BT", 0.012f, { 0.01f, App.api == Api::Glide ? -0.18f : -0.15f } };
+	FontCreateInfo font_ci1 = { "ExocetBlizzardMedium", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } };
+	FontCreateInfo font_ci2 = { "Formal436BT", 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } };
+	FontCreateInfo font_ci3 = { "ExocetReaperMedium", 0.0f, { 0.0f, App.api == Api::Glide ? -0.14f : -0.10f } };
+
 	m_fonts[0] = std::make_unique<Font>(font_ci1);
 	m_fonts[1] = std::make_unique<Font>(font_ci2);
+	m_fonts[2] = std::make_unique<Font>(font_ci3);
 }
 
 void HDText::reset()
@@ -152,6 +156,9 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			case 9: pos.y -= font.size * 0.06f; break;
 			case 10: pos.y += font.size * 0.06f; break;
 		}
+	} else {
+		if (m_text_size == 13 && App.api == Api::Glide)
+			pos.y += font.size * 0.08f;
 	}
 
 	m_fonts[font.id]->setBoxed(false);
@@ -167,14 +174,8 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	if (!isActive() || !str)
 		return false;
 
-	// auto hover_item = d2::GetHoveredInvItem();
-	// if (hover_item && hover_item->dwType == d2::UnitType::Item)
-	//{
-	//	trace("item: %d", hover_item->pItemData->dwQuality);
-	// }
-
 	if (isVerMin(V_111a)) {
-		auto unit = d2::getSelectedUnit();
+		const auto unit = d2::getSelectedUnit();
 		if (unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
 			drawMonsterHealthBar(unit);
 			return true;
@@ -192,10 +193,23 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 
 	m_fonts[font.id]->setMetrics(font);
 	const uint32_t text_color = g_text_colors.at(font.color ? font.color : getColor(color));
+	const int line_count = m_fonts[font.id]->getLineCount();
 
 	const glm::vec2 padding = { 10.0f, 5.0f };
-	glm::vec2 pos = { (float)x - size.x / 2.0f - padding.x, (float)y - size.y - padding.y };
+	glm::vec2 pos = { (float)x - padding.x, (float)y - size.y - padding.y };
 	glm::vec2 box_size = size + padding * 2.0f;
+
+	if (centered)
+		pos.x -= size.x / 2.0f;
+	else if (line_count > 1)
+		pos.x -= size.x / 2.0f - 24.0f;
+
+	const int mid_y = (int)(pos.y + box_size.y / 2);
+	const int cursor_y = d2::getCursorPos().y;
+	if (mid_y > cursor_y)
+		pos.y = (float)(y - m_last_text_height);
+	else
+		pos.y = (float)y - box_size.y;
 
 	const float margin = 5.0f;
 	if (pos.x + box_size.x > (float)App.game.size.x - margin)
@@ -209,16 +223,31 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 
 	App.context->toggleDelayPush(true);
 
+	const auto item = d2::getSelectedItem();
+	if (item && item->dwType == d2::UnitType::Item) {
+		const auto quality = d2::getItemQuality(item);
+		uint32_t border_color = m_border_color;
+		switch (quality) {
+			case d2::ItemQuality::Unique: border_color = 0x2b2215DD; break;
+			case d2::ItemQuality::Set: border_color = 0x1c3418DD; break;
+			case d2::ItemQuality::Rare: border_color = 0x31311eDD; break;
+			case d2::ItemQuality::Craft: border_color = 0x2f2102DD; break;
+			case d2::ItemQuality::Magic: border_color = 0x1d1d31DD; break;
+		}
+		m_object_bg->setColor(border_color, 2);
+	} else
+		m_object_bg->setColor(m_border_color, 2);
+
 	m_object_bg->setPosition(pos);
 	m_object_bg->setSize(box_size);
 	m_object_bg->setColor(m_bg_color, 1);
-	m_object_bg->setColor(m_border_color, 2);
 	m_object_bg->setFlags({ 2, 2, 0, 0 });
 	m_object_bg->setExtra(box_size);
 	App.context->pushObject(m_object_bg);
 
+	static float lh_diff = App.api == Api::Glide ? 0.06f : 0.12f;
 	const auto line_height = m_fonts[font.id]->getLineHeight();
-	pos.y += line_height - line_height * 0.12f;
+	pos.y += line_height - line_height * lh_diff;
 
 	m_fonts[font.id]->setBoxed(true);
 	m_fonts[font.id]->setMasking(false);
@@ -232,7 +261,7 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	return true;
 }
 
-bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_color, uint32_t rect_transparency, uint32_t color)
+bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_color, uint32_t rect_transparency, uint32_t color) // TODO: remove rect_color
 {
 	if (!isActive() || !str)
 		return false;
@@ -253,11 +282,12 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 	uint32_t bg_color = m_bg_color;
 	glm::vec2 padding = { 3.4f, font.size * 0.05f * line_count };
 
+	static float lh_diff = App.api == Api::Glide ? 0.0f : 0.08f;
 	glm::vec2 back_pos = { (float)x + 3.2f, (float)y - size.y + 1.6f / line_count };
-	glm::vec2 text_pos = { back_pos.x, back_pos.y + font.size - font.size * 0.08f };
+	glm::vec2 text_pos = { back_pos.x, back_pos.y + font.size - font.size * lh_diff };
 
 	if (rect_transparency == 2) {
-		padding = { 10.0f, 5.0f };
+		padding = { 10.0f, 6.0f };
 		m_object_bg->setColor(m_border_color, 2);
 		m_object_bg->setFlags({ 2, 2, 0, 0 });
 		m_object_bg->setExtra(size + padding * 2.0f);
@@ -267,7 +297,6 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 		else if (rect_transparency == 5)
 			bg_color = m_alt_bg_hovered;
 
-		// back_pos += glm::vec2(3.7f, 2.4f);
 		m_object_bg->setFlags({ 2, 0, 0, 0 });
 	}
 
@@ -286,13 +315,12 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 
 bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t color, int draw_mode)
 {
-	// trace("%dx%d <> %dx%d | %d | %d", nXStart, nYStart, nXEnd, nYEnd, draw_mode, dwColor);
 	if (!isActive())
 		return false;
 
 	if (isVerMax(V_110f)) {
 		static bool monster_hp = false;
-		auto unit = d2::getSelectedUnit();
+		const auto unit = d2::getSelectedUnit();
 		if (unit && unit->dwType == d2::UnitType::Monster && top == 18 && bottom == 34) {
 			if (!monster_hp) {
 				drawMonsterHealthBar(unit);
@@ -308,8 +336,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 
 	if (((draw_mode == 2 && color == 0) || m_bordered_rect) && !d2::isEscMenuOpen()) {
 		const glm::vec2 padding = m_bordered_rect ? glm::vec2(5.0f, 5.0f) : glm::vec2(4.0f, 2.0f);
-		// const glm::vec2 padding = { 0.0f, 0.0f };
-		const glm::vec2 pos = { (float)left - padding.x, (float)top - padding.y };
+		const glm::vec2 pos = { (float)left - padding.x, (float)top - padding.y - (App.api == Api::Glide ? (m_bordered_rect ? 1.0f : 2.0f) : 0.0f) };
 		const glm::vec2 size = glm::vec2((float)right + padding.x, (float)bottom + padding.y) - pos;
 
 		m_object_bg->setPosition(pos);
@@ -323,6 +350,16 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 		return true;
 	}
 
+	if (color == 0 && right - left < App.game.size.x && bottom - top < App.game.size.y) {
+		m_object_bg->setPosition({ (float)left, (float)top });
+		m_object_bg->setSize({ (float)(right - left), (float)(bottom - top) });
+		m_object_bg->setColor(0x000000AA, 1);
+		m_object_bg->setFlags({ 2, 0, 0, 0 });
+		App.context->pushObject(m_object_bg);
+		// trace("%dx%d <> %dx%d | %d | %d", left, top, right, bottom, draw_mode, color);
+		return true;
+	}
+
 	return false;
 }
 
@@ -330,6 +367,7 @@ uint32_t HDText::getNormalTextWidth(const wchar_t* str, const int n_chars)
 {
 	const auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
+	m_fonts[font.id]->setMetrics(font);
 
 	const auto size = m_fonts[font.id]->getTextSize(str, n_chars);
 
@@ -340,10 +378,12 @@ uint32_t HDText::getFramedTextSize(const wchar_t* str, uint32_t* width, uint32_t
 {
 	const auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
+	m_fonts[font.id]->setMetrics(font);
 
 	const auto size = m_fonts[font.id]->getTextSize(str);
 	*width = (uint32_t)size.x;
 	*height = (uint32_t)(size.y * 1.11888f);
+	m_last_text_height = *height;
 
 	return *height;
 }
@@ -362,11 +402,6 @@ void HDText::drawSubText(uint8_t fn)
 {
 	if (!isActive() || !d2::sub_text_ptr)
 		return;
-
-	if (!m_draw_sub_text) {
-		m_draw_sub_text = true;
-		return;
-	}
 
 	const uintptr_t ptr = (uintptr_t)d2::sub_text_ptr;
 	static const wchar_t* str;
@@ -399,7 +434,7 @@ void HDText::drawSubText(uint8_t fn)
 	}
 }
 
-bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode)
+bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode) // TODO: remove gamma
 {
 	if (!isActive() || !cell)
 		return true;
@@ -463,9 +498,9 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int 
 	return true;
 }
 
-bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, DWORD gamma, int draw_mode)
+bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode) // TODO: remove gamma, draw_mode
 {
-	if (App.game.draw_stage == DrawStage::HUD && m_is_player_dead) {
+	if (isActive() && App.game.draw_stage == DrawStage::HUD && m_is_player_dead) {
 		const auto cell_file = d2::getCellFile(cell);
 		if (!cell_file)
 			return true;
@@ -492,6 +527,30 @@ bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, DWORD gamma, 
 	}
 
 	return true;
+}
+
+void HDText::drawRectFrame()
+{
+	if (!isActive() || !d2::currently_drawing_rect)
+		return;
+
+	auto rect = d2::currently_drawing_rect;
+	glm::vec2 pos = { (float)rect->left, (float)rect->top };
+	glm::vec2 size = { (float)(rect->right - rect->left + 1), (float)(rect->bottom - rect->top + 1) };
+
+	if (*(bool*)(d2::esc_menu_open + 8)) {
+		pos.y -= 3.0f;
+		size += glm::vec2(2.0f, 3.0f);
+	}
+	m_object_bg->setPosition(pos);
+	m_object_bg->setSize(size);
+	m_object_bg->setColor(0x00000000, 1);
+	m_object_bg->setColor(0x333333FF, 2);
+	m_object_bg->setFlags({ 2, 1, 0, 0 });
+	m_object_bg->setExtra(size);
+	App.context->pushObject(m_object_bg);
+
+	rect->left = rect->top = rect->right = rect->bottom = -10;
 }
 
 void HDText::loadUIImage()
@@ -562,7 +621,7 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	if (hp == 0)
 		text_color = L'\x31';
 
-	glm::vec2 text_pos = { center - text_size.x / 2, 32.5f };
+	glm::vec2 text_pos = { center - text_size.x / 2, App.api == Api::Glide ? 33.2f : 32.5f };
 	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(text_color));
 }
 

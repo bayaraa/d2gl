@@ -158,11 +158,13 @@ GLint Pipeline::getUniformLocation(const std::string& name)
 	return location;
 }
 
-void Pipeline::dispatchCompute(int flag, glm::ivec2 work_size)
+void Pipeline::dispatchCompute(int flag, glm::ivec2 work_size, GLbitfield barrier)
 {
 	setUniform1i("u_Flag", flag);
 	glDispatchCompute(work_size.x, work_size.y, 1);
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	if (barrier)
+		glMemoryBarrier(barrier);
 }
 
 GLuint Pipeline::createShader(const char* source, int type)

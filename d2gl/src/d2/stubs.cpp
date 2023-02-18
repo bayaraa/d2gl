@@ -297,20 +297,20 @@ __declspec(naked) void rectangledTextEndStub()
 	}
 }
 
-//__declspec(naked) void DrawRectFrameStub()
-//{
-//	__asm
-//	{
-//		push edx
-//		lea edx, CurrentDrawingRect
-//		mov dword ptr[edx], eax
-//		pop edx
-//		pushad
-//		call DrawRectFrameBegin
-//		popad
-//		ret
-//	}
-//}
+__declspec(naked) void drawRectFrameStub()
+{
+	__asm
+	{
+		push edx
+		lea edx, currently_drawing_rect
+		mov dword ptr[edx], eax
+		pop edx
+		pushad
+		call drawRectFrame
+		popad
+		ret
+	}
+}
 
 __declspec(naked) void unitHoverTextStub()
 {

@@ -114,6 +114,11 @@ wchar_t* getMonsterName(UnitAny* unit)
 	return isVer(V_109d) ? unit->v109.pMonsterData->wName : unit->v110.pMonsterData->wName;
 }
 
+ItemQuality getItemQuality(UnitAny* unit)
+{
+	return isVer(V_109d) ? unit->v109.pItemData->dwQuality : unit->v110.pItemData->dwQuality;
+}
+
 CellFile* getCellFile(CellContext* cell)
 {
 	if (isVerMin(V_113c))
@@ -234,32 +239,24 @@ void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, ui
 
 bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data)
 {
-	if (App.var7)
-		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset();
 	return drawGroundTile(tile, light, x - offset.x, y - offset.y, world_x, world_y, alpha, screen_panels, tile_data);
 }
 
 bool __stdcall drawWallTileHooked(TileContext* tile, int x, int y, GFXLight* light, int screen_panels)
 {
-	if (App.var7)
-		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset(true);
 	return drawWallTile(tile, x - offset.x, y - offset.y, light, screen_panels);
 }
 
 bool __stdcall drawTransWallTileHooked(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha)
 {
-	if (App.var7)
-		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset(true);
 	return drawTransWallTile(tile, x - offset.x, y - offset.y, light, screen_panels, alpha);
 }
 
 bool __stdcall drawShadowTileHooked(TileContext* tile, int x, int y, int draw_mode, int screen_panels)
 {
-	if (App.var7)
-		return false;
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset(true);
 	return drawShadowTile(tile, x - offset.x, y - offset.y, draw_mode, screen_panels);
 }
@@ -353,17 +350,10 @@ void altItemsText()
 	modules::MotionPrediction::Instance().altItemsTextMotion();
 }
 
-// void DrawRectFrameBegin()
-//{
-//	if (CurrentDrawingRect)
-//	{
-//		modules::MotionPrediction::Instance().DrawFrameBegin(CurrentDrawingRect);
-//		CurrentDrawingRect->left = -10;
-//		CurrentDrawingRect->top = -10;
-//		CurrentDrawingRect->right = -10;
-//		CurrentDrawingRect->bottom = -10;
-//	}
-// }
+void drawRectFrame()
+{
+	modules::HDText::Instance().drawRectFrame();
+}
 
 void loadUIImage()
 {

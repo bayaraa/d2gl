@@ -6,7 +6,7 @@ namespace d2gl {
 
 // clang-format off
 const std::map<wchar_t, uint32_t> g_text_colors = {
-	{ L'\x01', 0xBC9051FF }, { L'\x02', 0x000000FF }, { L'\x03', 0xBC905166 }, { L'\x04', 0xC22121FF },
+	{ L'\x01', 0xDFB679FF }, { L'\x02', 0x000000FF }, { L'\x03', 0xDFB67966 }, { L'\x04', 0xC22121FF },
 	{ L'\x05', 0x959595FF }, { L'\x06', 0xE09595FF }, { L'\x07', 0xB6E12EFF }, { L'\x08', 0x9EA0A0FF },
 	{ L'\x09', 0x5CA6A4FF }, { L'\x0A', 0xA2AAA5FF }, { L'\x0B', 0xA6E0A7FF }, { L'\x0C', 0xA9A9B0FF },
 	{ L'\x0D', 0xA9B1B1FF }, { L'\x0E', 0xE2ABE2FF }, { L'\x0F', 0xEB2EAEFF }, { L'\x10', 0xB0B2E2FF },
@@ -140,8 +140,18 @@ glm::vec2 Font::getTextSize(const wchar_t* str, const int max_chars)
 void Font::drawText(const wchar_t* str, glm::vec2 pos, uint32_t color)
 {
 	uint32_t char_color = color;
+	uint32_t border_color = 0x443B29FF;
+	m_shadow_color = 0x000000CC;
 
-	m_object->setColor(color == 0xC22121FF ? 0x4A1515FF : 0x443B29FF, 2);
+	if (color == 0xC22121FF)
+		border_color = 0x4A1515FF;
+	else if (color == 0xDFB67966) {
+		border_color = 0x443B2966;
+		m_shadow_color = 0x00000055;
+	} else if (color == 0xFF)
+		m_shadow_color = 0x00000055;
+
+	m_object->setColor(border_color, 2);
 	m_object->setExtra({ m_smoothness, m_weight });
 
 	const float line_height = getLineHeight();
@@ -194,7 +204,7 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 		m_object->setTexCoord(glyph->tex_coord);
 
 		m_object->setPosition(object_pos + glm::min(4.0f * m_scale, 1.2f));
-		m_object->setColor(color != 0xFF ? 0x000000CC : 0x00000055);
+		m_object->setColor(m_shadow_color);
 		m_object->setFlags({ 3, 0, m_masking, 0 });
 		App.context->pushObject(m_object);
 
