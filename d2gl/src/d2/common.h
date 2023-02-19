@@ -21,6 +21,8 @@ typedef UnitAny*(__stdcall* getSelectedUnit_t)(void);
 typedef uint32_t(__stdcall* getUnitStat_t)(UnitAny* unit, uint32_t stat, uint32_t stat2);
 typedef uint32_t(__stdcall* getUnitStat109d_t)(UnitAny* unit, uint32_t stat);
 typedef uint32_t(__stdcall* getUnitState_t)(UnitAny* unit, uint32_t state_no);
+typedef Room1*(__stdcall* getUnitRoom_t)(UnitAny* unit);
+typedef int(__stdcall* getLevelNoByRoom_t)(Room1* room);
 
 typedef void(__stdcall* clearScreen_t)(bool partial);
 typedef void(__stdcall* drawImage_t)(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette);
@@ -151,6 +153,8 @@ extern setTextSize_t setTextSize;
 extern getSelectedUnit_t getSelectedUnit;
 extern getUnitStat_t getUnitStat_Fn;
 extern getUnitState_t getUnitState_Fn;
+extern getUnitRoom_t getUnitRoom;
+extern getLevelNoByRoom_t getLevelNoByRoom;
 
 extern UnitAny* currently_drawing_unit;
 extern uint32_t currently_drawing_weather_particles;

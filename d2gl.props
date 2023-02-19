@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <GameDir>C:\Games\Diablo II\ProjectD2\</GameDir>
+    <GameDir>C:\Games\Diablo II 1.13d\</GameDir>
     <Game114d>C:\Games\Diablo II 1.14d\</Game114d>
     <Game113d>C:\Games\Diablo II 1.13d\</Game113d>
     <Game113c>C:\Games\Diablo II 1.13c\</Game113c>

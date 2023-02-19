@@ -80,18 +80,28 @@ void main()
 					FragColor.a *= 0.7;
 			}
 		break;
+		case 4: FragColor = vec4(0.0); break;
 	}
 
 	float border = 1.00001;
 	vec2 size = vec2(border / u_Scale.x / v_Extra.x, border / u_Scale.y / v_Extra.y);
+	vec2 size2 = size * 2.0, size3 = size * 3.0;
 	switch (v_Flags.y) {
 		case 1:
 			if(v_TexCoord.x < size.x || v_TexCoord.x > 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y > 1.0 - size.y)
 				FragColor = v_Color2;
 		case 2:
-			vec2 size2 = size * 2.0, size3 = size * 3.0;
 			if ((v_TexCoord.x > size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x > 1.0 - size3.x) ||
 				(v_TexCoord.y > size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y > 1.0 - size3.y))
+				FragColor = v_Color2;
+		break;
+		case 3:
+			if(v_TexCoord.x < size3.x || v_TexCoord.x >= 1.0 - size3.x || v_TexCoord.y < size3.y || v_TexCoord.y >= 1.0 - size3.y)
+				FragColor = v_Color1;
+			if(v_TexCoord.x < size.x || v_TexCoord.x >= 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y >= 1.0 - size.y)
+				FragColor = v_Color2;
+			if ((v_TexCoord.x >= size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x >= 1.0 - size3.x) ||
+				(v_TexCoord.y >= size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y >= 1.0 - size3.y))
 				FragColor = v_Color2;
 		break;
 	}

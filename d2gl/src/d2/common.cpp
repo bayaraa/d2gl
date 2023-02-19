@@ -90,6 +90,8 @@ setTextSize_t setTextSize = (setTextSize_t)getProc((DLL_D2WIN), (-10127), (-1012
 getSelectedUnit_t getSelectedUnit = (getSelectedUnit_t)getProc((DLL_D2CLIENT), (0x14CE0), (0x15A20), (0x37CA0), (0x2F950), (0x6ECA0), (0x51A80), (0x17280), (0x67A10));
 getUnitStat_t getUnitStat_Fn = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), (-10519), (-11092), (-10061), (-10658), (-10973), (-10550), (0x225480));
 getUnitState_t getUnitState_Fn = (getUnitState_t)getProc((DLL_D2COMMON), (-10487), (), (), (-10604), (), (-10494), (-10706), (0x239DF0));
+getUnitRoom_t getUnitRoom = (getUnitRoom_t)getProc((DLL_D2COMMON), (), (), (), (), (), (), (-10846), ());
+getLevelNoByRoom_t getLevelNoByRoom = (getLevelNoByRoom_t)getProc((DLL_D2COMMON), (), (), (), (), (), (), (-10691), ());
 
 // Offset D2WinUnitHover = getOffset((DLL_D2WIN), (), (-10124, 0xF7E9C1FA, 0x1F3), (-10175, 0x03C2572B, 0x1A3), (-10037, 0x03C2572B, 0x1A3), (-10201, 0x03C2572B, 0x1A3), (-10110, 0x03C2572B, 0x1A3), (-10124, 0x03C2572B, 0x1A3), (0x10318B, 0x03C22BF0));
 // DWORD D2WinUnitHoverRet = helpers::GetProcOffset(D2WinUnitHover) + (isVer(V_110) ? 5 : 6);
@@ -177,22 +179,25 @@ void initHooks()
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5D5B83C4), (0x7FE50), (0x7B650), (0x9431A), (0x15DAA), (0x71ABA), (0x7CB6A), (0x7629A), (0xA0B1B, 0x5E5B8BE5)), 5, (uintptr_t)rectangledTextEndStub);
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8B450083), (0x85629), (0x80B1E, 0x8B0683F8), (0xA05C5), (0x63E45), (0x8D595), (0xC0E25), (0x1A825), (0x5501E, 0x8B0683F8)), (isVer(V_110f) || isVer(V_114d)) ? 5 : 6, (uintptr_t)unitHoverTextStub);
 	if (isVer(V_109d) || isVer(V_110f))
-		patch_motion_prediction->add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x63D95, 0x33FF8944), (0x6A19E, 0x89442430), (), (), (), (), (), ()), 6, isVer(V_110f) ? (uintptr_t)altItemsTextStub110f : (uintptr_t)altItemsTextStub109d);
+		patch_motion_prediction->add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x63D95, 0x33FF8944), (0x6A19E, 0x89442430), (), (), (), (), (), ()), 6, (uintptr_t)(isVer(V_110f) ? altItemsTextStub110f : altItemsTextStub109d));
 	else
 		patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0xC7442450), (), (), (0xB754D), (0x5DB8D), (0x775BD), (0x5921D), (0x4E7AD), (0xC0A58, 0xC745BC01)), isVer(V_114d) ? 7 : 8, (uintptr_t)altItemsTextStub);
 	modules::MotionPrediction::Instance().toggle(App.motion_prediction);
 
 	patch_hd_text = std::make_unique<Patch>();
 	// patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (), (), (), (), (), (), (0x1908C), ()), (uintptr_t)LevelEntryTextStub);
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT), (), (), (), (), (), (0xBE4C0), (), ()), 5, (uintptr_t)drawRectFrameStub);
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (isVerMax(V_110f) || isVer(V_114d)) ? (uintptr_t)loadUIImageStubECX : (uintptr_t)loadUIImageStub);
-	if (isVerNot(V_114d)) {
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT), (), (), (), (), (), (), (0x19095), ()), 5, (uintptr_t)levelEntryTextBeginStub);
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2WIN), (), (), (), (), (), (), (-10172, 0, 0xD0), ()), 5, (uintptr_t)levelEntryTextEndStub);
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC5C8B), (0x86330), (0x81790), (0x9DDF0), (0x61440), (0x8AB50), (0xBE4C0), (0x17D10), (0x52E51, 0x8BEC83EC)), 5, (uintptr_t)(isVerMax(V_110f) || isVer(V_114d) ? drawRectFrameStubECX : drawRectFrameStub));
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (uintptr_t)(isVerMax(V_110f) || isVer(V_114d) ? loadUIImageStubECX : loadUIImageStub));
+	if (isVer(V_114d))
+		patch_hd_text->add(PatchType::Auto, getOffset((), (), (), (), (), (), (), (), (0x101AC1, 0x8B0883C4)), 5, (uintptr_t)drawSubTextCStub); // Default texts & Credits screen
+	else {
+		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x254), (-10124, 0, 0x35A), (-10124, 0, 0x33A), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)(isVerMax(V_110f) ? drawSubTextBStub : drawSubTextAStub)); // Default texts & Credits screen
+		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x74), (-10118, 0, 0x62), (-10118, 0, 0x62), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)drawSubTextAStub); // Button black labels
 		if (isVerMin(V_111a))
 			patch_hd_text->add(PatchType::Nop, getOffset((DLL_D2WIN, 0x66C70458, 0xD1), (), (), (-10134), (-10155, 0, 0x2D1), (-10201, 0, 0x271), (-10019), (-10194), ()), 6); // Get text N chars width fix
-		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x74), (-10118, 0, 0x62), (-10118, 0, 0x62), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)drawSubTextAStub); // Button  black labels
-		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x254), (-10124, 0, 0x35A), (-10124, 0, 0x33A), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, isVerMax(V_110f) ? (uintptr_t)drawSubTextBStub : (uintptr_t)drawSubTextAStub); // Default texts & Credits screen
-	} else
-		patch_hd_text->add(PatchType::Auto, getOffset((), (), (), (), (), (), (), (), (0x101AC1, 0x8B0883C4)), 5, (uintptr_t)drawSubTextCStub); // Default texts & Credits screen
+	}
 	patch_hd_text->toggle(true);
 	// Game.exe+0x101AB1
 

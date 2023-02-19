@@ -22,6 +22,7 @@ void drawWeatherParticlesStub114d();
 void rectangledTextBeginStub();
 void rectangledTextEndStub();
 void drawRectFrameStub();
+void drawRectFrameStubECX();
 // void DrawFramedBoxStub();
 void unitHoverTextStub();
 void altItemsTextStub();
@@ -33,5 +34,8 @@ void loadUIImageStubECX();
 void drawSubTextAStub();
 void drawSubTextBStub();
 void drawSubTextCStub();
+
+void levelEntryTextBeginStub();
+void levelEntryTextEndStub();
 
 }

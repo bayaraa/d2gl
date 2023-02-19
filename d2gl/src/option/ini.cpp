@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ini.h"
+#include "extra.h"
 #include "helpers.h"
 
 namespace d2gl::option {
@@ -224,13 +225,22 @@ void saveIni()
 
 	static const char* other_setting =
 	  "[Other]\n\n"
-	  "; Preferred OpenGL Version.\n"
-	  "gl_major=%d\n"
-	  "gl_minor=%d";
+	  "; Preferred OpenGL Version (must be 3.3 or between 4.0 to 4.6).\n"
+	  "gl_ver_major=%d\n"
+	  "gl_ver_minor=%d\n\n"
+	  "; Comma(,) delimitered DLL(s) to load (early: right after attached).\n"
+	  "load_dlls_early=%s\n\n"
+	  "; Comma(,) delimitered DLL(s) to load (late: right after window created).\n"
+	  "load_dlls_late=%s\n\n"
+	  "; Apply fix some glide crash with Project Diablo 2.\n"
+	  "pd2_fix=%s\n";
 
 	sprintf_s(buf, other_setting,
-	  4,
-	  6);
+	  App.gl_ver_major,
+	  App.gl_ver_minor,
+	  App.dlls_early.c_str(),
+	  App.dlls_late.c_str(),
+	  boolString(App.pd2_fix));
 	out_file << buf;
 
 	out_file.close();
@@ -292,10 +302,15 @@ void loadIni()
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);
 		App.no_pickup = getBool("Feature", "no_pickup", App.no_pickup);
 
-		// App.api.major = GetInt("Other", "gl_major", App.api.major, 3, 4);
-		// App.api.minor = GetInt("Other", "gl_minor", App.api.minor, 0, 6);
-		// if (App.api.major == 3)
-		//	App.api.minor = 3;
+		App.gl_ver_major = getInt("Other", "gl_ver_major", App.gl_ver_major, 3, 4);
+		App.gl_ver_minor = getInt("Other", "gl_ver_minor", App.gl_ver_minor, 0, 6);
+		if (App.gl_ver_major == 3)
+			App.gl_ver_minor = 3;
+
+		App.dlls_early = getString("Other", "load_dlls_early", App.dlls_early);
+		App.dlls_late = getString("Other", "load_dlls_late", App.dlls_late);
+
+		App.pd2_fix = isPD2() && getBool("Other", "pd2_fix", App.pd2_fix);
 	}
 
 	// clang-format off

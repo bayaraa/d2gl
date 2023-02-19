@@ -296,8 +296,9 @@ HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
 	DDrawWrapper = std::make_unique<Wrapper>();
 
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
-	App.game.onBufferClear = (onBufferClear_t)Wrapper::onGameBufferClear;
 	App.ready = true;
+
+	helpers::loadDlls(App.dlls_late);
 
 	return DD_OK;
 }

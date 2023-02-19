@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)src\app.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\funcs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\patch.cpp" />
@@ -66,6 +67,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\patch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\structs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\stubs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\context.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\object.h" />

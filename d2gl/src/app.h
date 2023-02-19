@@ -22,12 +22,16 @@ struct D2GLApp {
 	std::string version = "";
 	bool vsync = true;
 	GLCaps gl_caps;
+	uint8_t gl_ver_major = 4;
+	uint8_t gl_ver_minor = 6;
 
 	bool ready = false;
 	HMODULE hmodule = 0;
 	WNDPROC wndproc = 0;
 	HWND hwnd = 0;
 	HDC hdc = 0;
+	std::string dlls_early = "";
+	std::string dlls_late = "";
 
 	struct Window {
 		DWORD style = 0;
@@ -109,6 +113,8 @@ struct D2GLApp {
 		bool active = false;
 		bool available = true;
 	} mini_map;
+
+	bool pd2_fix = false;
 
 	int var1 = 0;
 	int var2 = 0;

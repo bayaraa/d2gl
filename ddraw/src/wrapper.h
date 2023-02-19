@@ -52,7 +52,6 @@ public:
 	static HRESULT setDisplayMode(DWORD width, DWORD height, DWORD bpp);
 
 	static inline void onGameStageChange() { DDrawWrapper->onStageChange(); }
-	static inline void onGameBufferClear() { DDrawWrapper->onBufferClear(); }
 };
 
 }

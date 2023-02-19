@@ -34,6 +34,7 @@ private:
 	bool m_bordered_rect = false;
 	bool m_draw_sub_text = true;
 	bool m_is_player_dead = false;
+	bool m_entry_text = false;
 
 	glm::mat4 m_mvp = glm::mat4(0.0f);
 	glm::vec4 m_text_mask = glm::vec4(0.0f);
@@ -77,6 +78,9 @@ public:
 	bool drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
 	void drawRectFrame();
 	void loadUIImage();
+	void drawEntryText(bool draw);
+
+	void test();
 
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);

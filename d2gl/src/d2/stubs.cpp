@@ -312,6 +312,21 @@ __declspec(naked) void drawRectFrameStub()
 	}
 }
 
+__declspec(naked) void drawRectFrameStubECX()
+{
+	__asm
+	{
+		push edx
+		lea edx, currently_drawing_rect
+		mov dword ptr[edx], ecx
+		pop edx
+		pushad
+		call drawRectFrame
+		popad
+		ret
+	}
+}
+
 __declspec(naked) void unitHoverTextStub()
 {
 	__asm
@@ -441,6 +456,28 @@ __declspec(naked) void drawSubTextCStub()
 		pop eax
 		pushad
 		call drawSubTextC
+		popad
+		ret
+	}
+}
+
+__declspec(naked) void levelEntryTextBeginStub()
+{
+	__asm
+	{
+		pushad
+		call levelEntryTextBegin
+		popad
+		ret
+	}
+}
+
+__declspec(naked) void levelEntryTextEndStub()
+{
+	__asm
+	{
+		pushad
+		call levelEntryTextEnd
 		popad
 		ret
 	}

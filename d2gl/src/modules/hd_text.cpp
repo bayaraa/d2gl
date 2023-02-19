@@ -157,7 +157,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			case 10: pos.y += font.size * 0.06f; break;
 		}
 	} else {
-		if (m_text_size == 13 && App.api == Api::Glide)
+		if (App.api == Api::Glide && (m_text_size == 13 || m_text_size == 0))
 			pos.y += font.size * 0.08f;
 	}
 
@@ -331,36 +331,43 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 		monster_hp = false;
 	}
 
-	// if (nDrawMode == 2 && dwColor == 0)
-	//	trace("%dx%d <> %dx%d | %d | %d", nXStart, nYStart, nXEnd, nYEnd, draw_mode, dwColor);
+	if (color != 0)
+		return false;
 
-	if (((draw_mode == 2 && color == 0) || m_bordered_rect) && !d2::isEscMenuOpen()) {
-		const glm::vec2 padding = m_bordered_rect ? glm::vec2(5.0f, 5.0f) : glm::vec2(4.0f, 2.0f);
-		const glm::vec2 pos = { (float)left - padding.x, (float)top - padding.y - (App.api == Api::Glide ? (m_bordered_rect ? 1.0f : 2.0f) : 0.0f) };
-		const glm::vec2 size = glm::vec2((float)right + padding.x, (float)bottom + padding.y) - pos;
+	const int width = right - left;
+	const int height = bottom - top;
 
-		m_object_bg->setPosition(pos);
-		m_object_bg->setSize(size);
-		m_object_bg->setColor(m_bg_color, 1);
-		m_object_bg->setColor(m_border_color, 2);
-		m_object_bg->setFlags({ 2, 2, 0, 0 });
-		m_object_bg->setExtra(size);
-		App.context->pushObject(m_object_bg);
+	if (draw_mode == 5 && height == 5 && top == 14) // hireling & summon hp
+		return false;
 
-		return true;
+	if (right - left == App.game.size.x || bottom - top == App.game.size.y) // FreeRes black bars
+		return false;
+
+	if ((*d2::screen_shift == 2 || *d2::screen_shift == 3) && width == 320 && height == 432) // Plugy stats panel bg
+		return false;
+
+	uint32_t bg_color = 0x000000FF;
+	switch (draw_mode) {
+		case 0: bg_color = 0x00000066; break;
+		case 1: bg_color = 0x00000099; break;
+		case 2: bg_color = 0x000000CC; break;
+		case 3: bg_color = 0x000000DD; break;
 	}
+	// draw_mode == 1 : NPC/Hire/Talk dialog bg & Key binding bg & option slider bg && BH settings btn/panel bg & message input bg & shrine text bg && message panel bg & message bg
+	// draw_mode == 2 : PD2 buff timer bg & stat panel popup(hit chance) bg & small button label
+	// draw_mode == 4 : PD2 stat panel bg
+	// draw_mode == 5 : BH setting header bg
+	// draw_mode == 5 : skill tab 1,2,3 etc & D2HD bottom panel bg(full width)/left(half width)/right(half width) & Plugy stats panel(320x432 left panel open)
+	// draw_mode == 7 : BH setting tab bg
+	// draw_mode == 8 : BH setting checkbox bg
 
-	if (color == 0 && right - left < App.game.size.x && bottom - top < App.game.size.y) {
-		m_object_bg->setPosition({ (float)left, (float)top });
-		m_object_bg->setSize({ (float)(right - left), (float)(bottom - top) });
-		m_object_bg->setColor(0x000000AA, 1);
-		m_object_bg->setFlags({ 2, 0, 0, 0 });
-		App.context->pushObject(m_object_bg);
-		// trace("%dx%d <> %dx%d | %d | %d", left, top, right, bottom, draw_mode, color);
-		return true;
-	}
+	m_object_bg->setPosition({ (float)left, (float)top });
+	m_object_bg->setSize({ (float)width, (float)height });
+	m_object_bg->setColor(bg_color, 1);
+	m_object_bg->setFlags({ 2, 0, 0, 0 });
+	App.context->pushObject(m_object_bg);
 
-	return false;
+	return true;
 }
 
 uint32_t HDText::getNormalTextWidth(const wchar_t* str, const int n_chars)
@@ -438,6 +445,9 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int 
 {
 	if (!isActive() || !cell)
 		return true;
+
+	if (m_entry_text)
+		return false;
 
 	if (App.game.screen == GameScreen::Menu) {
 		const auto cell_file = d2::getCellFile(cell);
@@ -538,15 +548,19 @@ void HDText::drawRectFrame()
 	glm::vec2 pos = { (float)rect->left, (float)rect->top };
 	glm::vec2 size = { (float)(rect->right - rect->left + 1), (float)(rect->bottom - rect->top + 1) };
 
+	if (rect->top == 6 && rect->right - rect->left == 327) // talking text
+		size.x -= 1.0f;
+
 	if (*(bool*)(d2::esc_menu_open + 8)) {
 		pos.y -= 3.0f;
 		size += glm::vec2(2.0f, 3.0f);
 	}
+
 	m_object_bg->setPosition(pos);
 	m_object_bg->setSize(size);
-	m_object_bg->setColor(0x00000000, 1);
+	m_object_bg->setColor(0x000000CC, 1);
 	m_object_bg->setColor(0x333333FF, 2);
-	m_object_bg->setFlags({ 2, 1, 0, 0 });
+	m_object_bg->setFlags({ 4, 3, 0, 0 });
 	m_object_bg->setExtra(size);
 	App.context->pushObject(m_object_bg);
 
@@ -573,9 +587,22 @@ void HDText::loadUIImage()
 	}
 }
 
+void HDText::drawEntryText(bool draw)
+{
+	m_entry_text = draw;
+
+	if (!isActive() || !draw)
+		return;
+
+	trace("drawing");
+}
+
 void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 {
 	const auto name = d2::getMonsterName(unit);
+	if (!name)
+		return;
+
 	const auto hp = d2::getUnitStat(unit, 6);
 	const auto max_hp = d2::getUnitStat(unit, 7);
 	const auto type = d2::getMonsterType(unit);
@@ -633,6 +660,15 @@ inline const D2FontInfo& HDText::getFont(uint32_t size)
 inline wchar_t HDText::getColor(uint32_t color)
 {
 	return (color < g_default_colors.size()) ? g_default_colors[color] : g_default_colors[0];
+}
+
+void HDText::test()
+{
+	int st = 100;
+	for (int i = 0; i < 16; i++) {
+		st += 30;
+		d2::drawSolidRectEx(st, 100, st + 20, 120, 0, i);
+	}
 }
 
 }

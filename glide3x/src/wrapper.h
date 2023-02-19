@@ -10,8 +10,11 @@ namespace d2gl {
 #define GLIDE_MAX_NUM_TMU 2
 #define GLIDE_TEX_MEMORY 16 * 1024 * 1024
 
+class Wrapper;
+
 extern const char* g_shader_game;
 extern const char* g_shader_prefx;
+extern std::unique_ptr<Wrapper> GlideWrapper;
 
 class Wrapper {
 	Context* ctx;
@@ -89,9 +92,7 @@ public:
 	static const char* grGetString(FxU32 pname);
 
 	static uint32_t getTexSize(GrTexInfo* info, uint32_t& width, uint32_t& height);
-	static inline void onGameStageChange();
+	static inline void onGameStageChange() { GlideWrapper->onStageChange(); }
 };
-
-extern std::unique_ptr<Wrapper> GlideWrapper;
 
 }

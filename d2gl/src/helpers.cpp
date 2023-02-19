@@ -330,4 +330,18 @@ std::string saveScreenShot(uint8_t* data, int width, int height)
 	return file_name;
 }
 
+void loadDlls(const std::string& dlls)
+{
+	auto ss = std::stringstream(dlls);
+
+	for (std::string dll; std::getline(ss, dll, ',');) {
+		dll.erase(remove_if(dll.begin(), dll.end(), isspace), dll.end());
+
+		if (dll != "") {
+			trace("load: %s", dll.c_str());
+			LoadLibraryA(dll.c_str());
+		}
+	}
+}
+
 }

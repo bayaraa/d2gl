@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "funcs.h"
 #include "common.h"
+#include "extra.h"
 #include "helpers.h"
 #include "modules/hd_text.h"
 #include "modules/motion_prediction.h"
@@ -194,6 +195,9 @@ void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint3
 
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift)
 {
+	if (fixPD2drawShiftedImage(cell))
+		return;
+
 	if (modules::HDText::Instance().drawShiftedImage(cell, x, y, gamma, draw_mode)) {
 		auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::ShiftedImage);
 		drawShiftedImage(cell, pos.x, pos.y, gamma, draw_mode, global_palette_shift);
@@ -239,6 +243,9 @@ void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, ui
 
 bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data)
 {
+	if (fixPD2drawGroundTile(tile))
+		return true;
+
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset();
 	return drawGroundTile(tile, light, x - offset.x, y - offset.y, world_x, world_y, alpha, screen_panels, tile_data);
 }
@@ -373,6 +380,16 @@ void drawSubTextB()
 void drawSubTextC()
 {
 	modules::HDText::Instance().drawSubText(3);
+}
+
+void levelEntryTextBegin()
+{
+	modules::HDText::Instance().drawEntryText(true);
+}
+
+void levelEntryTextEnd()
+{
+	modules::HDText::Instance().drawEntryText(false);
 }
 
 }

@@ -652,6 +652,8 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
+	helpers::loadDlls(App.dlls_late);
+
 	return 1;
 }
 
@@ -694,11 +696,6 @@ uint32_t Wrapper::getTexSize(GrTexInfo* info, uint32_t& width, uint32_t& height)
 		height = width >> info->aspectRatioLog2;
 		return width;
 	}
-}
-
-inline void Wrapper::onGameStageChange()
-{
-	GlideWrapper->onStageChange();
 }
 
 }

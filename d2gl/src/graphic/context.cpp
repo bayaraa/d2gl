@@ -36,6 +36,11 @@ Context::Context()
 
 	std::vector<glm::vec<2, uint8_t>> versions = { { 4, 6 }, { 4, 5 }, { 4, 4 }, { 4, 3 }, { 4, 2 }, { 4, 1 }, { 4, 0 }, { 3, 3 } };
 	for (auto& version : versions) {
+		if (App.gl_ver_major < version.x)
+			continue;
+		if (App.gl_ver_minor < version.y)
+			continue;
+
 		int attribs[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, version.x,
 			WGL_CONTEXT_MINOR_VERSION_ARB, version.y,
@@ -50,7 +55,7 @@ Context::Context()
 	}
 
 	if (!m_context) {
-		MessageBoxA(NULL, "Requires OpenGL 3.3 or newer!", "Unsupported OpenGL version!", MB_OK);
+		MessageBoxA(App.hwnd, "Requires OpenGL 3.3 or newer!", "Unsupported OpenGL version!", MB_OK | MB_ICONERROR);
 		exit(1);
 	}
 

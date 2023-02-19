@@ -52,15 +52,14 @@ void dllAttach(HMODULE hmodule)
 	checkDPIAwareness();
 
 	if (helpers::getVersion() == Version::Unknown) {
-		MessageBoxA(NULL, "Game version is not supported!", "Unsupported version!", MB_OK);
+		MessageBoxA(NULL, "Game version is not supported!", "Unsupported version!", MB_OK | MB_ICONERROR);
 		error("Game version is not supported!");
 		exit(1);
 	}
 	trace("Game version %s detected.", helpers::getVersionString().c_str());
 
 	option::loadIni();
-
-	LoadLibraryA("SGD2FreeRes.dll"); // TODO
+	helpers::loadDlls(App.dlls_early);
 
 	d2::initHooks();
 	win32::initHooks();

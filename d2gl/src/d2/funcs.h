@@ -45,8 +45,6 @@ bool __stdcall drawWallTileHooked(TileContext* tile, int x, int y, GFXLight* lig
 bool __stdcall drawTransWallTileHooked(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
 bool __stdcall drawShadowTileHooked(TileContext* tile, int x, int y, int draw_mode, int screen_panels);
 
-void __fastcall drawRectFrameHooked(RECT* rect);
-
 void __fastcall takeScreenShotHooked();
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 void __fastcall drawNormalTextExHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl);
@@ -68,4 +66,8 @@ void loadUIImage();
 void drawSubTextA();
 void drawSubTextB();
 void drawSubTextC();
+
+void levelEntryTextBegin();
+void levelEntryTextEnd();
+
 }
