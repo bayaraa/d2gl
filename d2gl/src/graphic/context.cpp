@@ -56,6 +56,7 @@ Context::Context()
 
 	if (!m_context) {
 		MessageBoxA(App.hwnd, "Requires OpenGL 3.3 or newer!", "Unsupported OpenGL version!", MB_OK | MB_ICONERROR);
+		error_log("Requires OpenGL 3.3 or newer! exiting.");
 		exit(1);
 	}
 
@@ -68,8 +69,12 @@ Context::Context()
 
 	char version_str[50] = { 0 };
 	sprintf_s(version_str, "%d.%d", major_version, minor_version);
-	trace("OpenGL: %s", version_str);
+	trace_log("OpenGL: %s", version_str);
 	App.version = version_str;
+
+	GLint max_texture_unit;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_unit);
+	trace_log("OpenGL: GL_MAX_TEXTURE_IMAGE_UNITS = %d", max_texture_unit);
 
 	if (App.debug && glewIsSupported("GL_KHR_debug")) {
 		glEnable(GL_DEBUG_OUTPUT);
@@ -79,11 +84,15 @@ Context::Context()
 		trace("GL_KHR_debug enabled!");
 	}
 
-	if (glewIsSupported("GL_VERSION_4_3") || glewIsSupported("GL_ARB_compute_shader"))
+	if (glewIsSupported("GL_VERSION_4_3") || glewIsSupported("GL_ARB_compute_shader")) {
 		App.gl_caps.compute_shader = true;
+		trace_log("OpenGL: Compute shader available.");
+	}
 
-	if (glewIsSupported("GL_VERSION_4_0"))
+	if (glewIsSupported("GL_VERSION_4_0")) {
 		App.gl_caps.independent_blending = true;
+		trace_log("OpenGL: Independent blending available.");
+	}
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);

@@ -28,7 +28,6 @@ struct ParticleMotion {
 };
 
 class MotionPrediction {
-private:
 	bool m_active = false;
 	float m_frame_time = 0.0f;
 	glm::ivec2 m_global_offset = { 0, 0 };

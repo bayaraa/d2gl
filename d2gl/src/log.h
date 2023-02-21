@@ -6,6 +6,10 @@ void logInit();
 void logTrace(WORD color, bool newline, const char* format, ...);
 void logTraceDef(uint8_t type, const char* format, ...);
 
+bool logFileOpen(const char* mode);
+void logFileWrite(uint8_t type, const char* format, ...);
+void logFileClose();
+
 // clang-format off
 #define C_GRAY    FOREGROUND_INTENSITY
 #define C_WHITE   FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
@@ -24,6 +28,10 @@ void logTraceDef(uint8_t type, const char* format, ...);
 #define error(format, ...)
 #define warn(format, ...)
 #endif
+
+#define trace_log(format, ...) { logFileWrite(0, format, ##__VA_ARGS__);trace(format, ##__VA_ARGS__); }
+#define error_log(format, ...) { logFileWrite(1, format, ##__VA_ARGS__);error(format, ##__VA_ARGS__); }
+#define warn_log(format, ...) { logFileWrite(2, format, ##__VA_ARGS__);warn(format, ##__VA_ARGS__); }
 // clang-format on
 
 }

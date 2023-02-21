@@ -8,6 +8,7 @@ enum class BindingType {
 	UniformBuffer,
 	Texture,
 	Image,
+	TextureArray,
 };
 
 enum class BlendType : int8_t {
@@ -22,8 +23,8 @@ enum class BlendType : int8_t {
 
 struct BindingInfo {
 	BindingType type;
-	std::string name;
-	uint32_t value;
+	std::string name = "";
+	uint32_t value = 0;
 };
 
 struct BlendFactors {

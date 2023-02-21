@@ -382,14 +382,9 @@ void drawSubTextC()
 	modules::HDText::Instance().drawSubText(3);
 }
 
-void levelEntryTextBegin()
+void levelEntryText()
 {
-	modules::HDText::Instance().drawEntryText(true);
-}
-
-void levelEntryTextEnd()
-{
-	modules::HDText::Instance().drawEntryText(false);
+	modules::HDText::Instance().startEntryText();
 }
 
 }

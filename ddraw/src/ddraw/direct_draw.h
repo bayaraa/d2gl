@@ -42,6 +42,4 @@ public:
 };
 // clang-format on
 
-// extern DirectDraw* DDraw;
-
 }

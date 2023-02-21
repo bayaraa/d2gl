@@ -47,15 +47,15 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 					setUniform1i(binding.name, binding.value);
 					break;
 				}
+				case BindingType::TextureArray: {
+					for (int i = 0; i < 4; i++) {
+						char uf_name[20];
+						sprintf_s(uf_name, "u_Textures[%d]", i);
+						setUniform1i(uf_name, i);
+					}
+					break;
+				}
 			};
-		}
-	} else {
-		for (int i = 0; i < 16; i++) {
-			char uf_name[20];
-			sprintf_s(uf_name, "u_Texture[%s]", std::to_string(i).c_str());
-			setUniform1i(uf_name, i);
-			sprintf_s(uf_name, "u_Textures[%s]", std::to_string(i).c_str());
-			setUniform1i(uf_name, i);
 		}
 	}
 
@@ -169,7 +169,7 @@ void Pipeline::dispatchCompute(int flag, glm::ivec2 work_size, GLbitfield barrie
 
 GLuint Pipeline::createShader(const char* source, int type)
 {
-	std::string shader_src = "#version ";
+	std::string shader_src = "#version";
 	switch (type) {
 		case GL_VERTEX_SHADER: shader_src += " 330\n#define VERTEX 1\n"; break;
 		case GL_FRAGMENT_SHADER: shader_src += " 330\n#define FRAGMENT 1\n"; break;
@@ -191,7 +191,7 @@ GLuint Pipeline::createShader(const char* source, int type)
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &lenght);
 		char* message = (char*)_malloca(lenght * sizeof(char));
 		glGetShaderInfoLog(id, lenght, &lenght, message);
-		error("Shader compile failed! (%s) | %s", (type == GL_VERTEX_SHADER ? "VERTEX" : (type == GL_FRAGMENT_SHADER ? "FRAGMENT" : "COMPUTE")), message);
+		error_log("Shader compile failed! (%s) | %s", (type == GL_VERTEX_SHADER ? "VERTEX" : (type == GL_FRAGMENT_SHADER ? "FRAGMENT" : "COMPUTE")), message);
 
 		glDeleteShader(id);
 		return 0;

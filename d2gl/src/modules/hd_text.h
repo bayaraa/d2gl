@@ -25,20 +25,24 @@ struct D2TextInfo {
 };
 
 class HDText {
-private:
 	std::map<uint8_t, std::unique_ptr<Font>> m_fonts;
 	std::unique_ptr<Object> m_object_bg;
 	uint32_t m_text_size = 1;
 	uint32_t m_last_text_height = 0;
+	uint32_t m_map_text_line = 1;
 
 	bool m_bordered_rect = false;
 	bool m_draw_sub_text = true;
 	bool m_is_player_dead = false;
-	bool m_entry_text = false;
 
 	glm::mat4 m_mvp = glm::mat4(0.0f);
 	glm::vec4 m_text_mask = glm::vec4(0.0f);
 	bool m_masking = false;
+
+	bool m_entry_text = false;
+	bool m_entry_text_draw = false;
+	clock_t m_entry_timer = 0;
+	int m_cur_level_no = 0;
 
 	const uint32_t m_bg_color = 0x000000CC;
 	const uint32_t m_border_color = 0x222222DD;
@@ -78,9 +82,9 @@ public:
 	bool drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
 	void drawRectFrame();
 	void loadUIImage();
-	void drawEntryText(bool draw);
 
-	void test();
+	void startEntryText();
+	void drawEntryText();
 
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);

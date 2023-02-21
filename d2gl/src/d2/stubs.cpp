@@ -461,26 +461,28 @@ __declspec(naked) void drawSubTextCStub()
 	}
 }
 
-__declspec(naked) void levelEntryTextBeginStub()
+__declspec(naked) void levelEntryTextStub()
 {
 	__asm
 	{
 		pushad
-		call levelEntryTextBegin
+		call levelEntryText
 		popad
 		ret
 	}
 }
 
-__declspec(naked) void levelEntryTextEndStub()
+__declspec(naked) wchar_t* __fastcall getLevelName(int Level_no)
 {
 	__asm
 	{
-		pushad
-		call levelEntryTextEnd
-		popad
+		push esi
+		mov  esi,ecx
+		call getLevelName_Fn
+		pop esi
 		ret
 	}
 }
 // clang-format on
+
 }

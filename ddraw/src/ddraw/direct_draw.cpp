@@ -6,8 +6,6 @@
 
 namespace d2gl {
 
-// DirectDraw* DDraw = nullptr;
-
 ULONG __stdcall DirectDraw::AddRef()
 {
 	m_ref++;

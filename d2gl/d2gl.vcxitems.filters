@@ -28,6 +28,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_text.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\font.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\extra.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\mini_map.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\app.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\font.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\extra.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\mini_map.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />

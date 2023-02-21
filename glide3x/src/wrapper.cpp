@@ -4,6 +4,7 @@
 #include "helpers.h"
 #include "modules/hd_cursor.h"
 #include "modules/hd_text.h"
+#include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 #include "option/menu.h"
 #include "win32.h"
@@ -136,6 +137,10 @@ Wrapper::Wrapper()
 
 	PipelineCreateInfo mod_pipeline_ci;
 	mod_pipeline_ci.shader = g_shader_mod;
+	mod_pipeline_ci.bindings = {
+		{ BindingType::Texture, "u_MapTexture", TEXTURE_SLOT_MAP },
+		{ BindingType::TextureArray },
+	};
 	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 }
@@ -229,6 +234,8 @@ void Wrapper::onResize()
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+
+	modules::MiniMap::Instance().resize();
 }
 
 void Wrapper::onShaderChange(bool texture)
@@ -306,22 +313,28 @@ void Wrapper::onStageChange()
 			}
 			break;
 		case DrawStage::Map:
-			// m_blend_locked = true;
-			// ctx->bindPipeline(m_game_pipeline, 3);
-			// ctx->setVertexFlagW(2);
+			if (App.mini_map.active && App.hd_cursor) {
+				ctx->flushVertices();
+
+				m_blend_locked = true;
+				ctx->bindPipeline(m_game_pipeline, 3);
+				ctx->setVertexFlagW(1 + !*d2::automap_on);
+			}
 			break;
 		case DrawStage::HUD:
-			// m_blend_locked = false;
-			// ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
-			// ctx->setVertexFlagW(0);
-			/*if (App.feature.mini_map.active) {
-			Renderer::Instance().Flush();
-			modules::Minimap::Instance().FillTexture(buffer_game_);
-			modules::Minimap::Instance().Draw();
-			}*/
+			if (App.mini_map.active && App.hd_cursor) {
+				ctx->flushVertices();
+
+				m_blend_locked = false;
+				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
+				ctx->setVertexFlagW(0);
+
+				modules::MiniMap::Instance().draw();
+			}
 			break;
 		case DrawStage::Cursor:
 			ctx->appendDelayedObjects();
+			modules::HDText::Instance().drawEntryText();
 			modules::HDCursor::Instance().draw();
 			break;
 	}
@@ -628,9 +641,14 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 		App.game.size = { 640, 480 };
 	else if (screen_resolution == GR_RESOLUTION_800x600)
 		App.game.size = { 800, 600 };
-	else
-		App.game.size = App.game.custom_size;
-	trace("Game requested screen size: %d x %d\n", App.game.size.x, App.game.size.y);
+	else {
+		if (App.game.custom_size.x != 0) {
+			App.game.size = App.game.custom_size;
+			trace_log("Applying custom size.");
+		} else
+			App.game.size = { *d2::screen_width, *d2::screen_height };
+	}
+	trace_log("Game requested screen size: %d x %d", App.game.size.x, App.game.size.y);
 
 	if (App.hwnd) {
 		if (old_size != App.game.size) {
@@ -652,6 +670,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
+	trace_log("Loading late DLLs.");
 	helpers::loadDlls(App.dlls_late);
 
 	return 1;

@@ -66,8 +66,6 @@ void loadUIImage();
 void drawSubTextA();
 void drawSubTextB();
 void drawSubTextC();
-
-void levelEntryTextBegin();
-void levelEntryTextEnd();
+void levelEntryText();
 
 }

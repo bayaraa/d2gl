@@ -24,24 +24,24 @@ const std::map<wchar_t, uint32_t> g_text_colors = {
 };
 
 const std::array<wchar_t, 18> g_default_colors = {
-	L'\x30', // White (Item Descriptions)
-	L'\x31', // Red
-	L'\x32', // Bright Green (Set Items)
-	L'\x33', // Blue (Magic Items)
-	L'\x34', // Gold (Unique Items)
-	L'\x35', // Dark Gray (Socketed / Ethereal Items)
-	L'\x36', // Black
-	L'\x37', // Tan
-	L'\x38', // Orange (Crafted Items)
-	L'\x39', // Yellow (Rare Items)
-	L'\x3A', // Dark Green
-	L'\x3B', // Purple
-	L'\x2F', // White (Brighter than Light Gray)
-	L'\x2E', // Messed Up White (Same as above but text is messed up)
-	L'\x09', // Teal
-	L'\x0C', // Light Gray
-	L'\x03', // Options (Half transparent)
-	L'\x04', // Red (Death texts)
+	L'\x30', // 0.White (Item Descriptions)
+	L'\x31', // 1.Red
+	L'\x32', // 2.Bright Green (Set Items)
+	L'\x33', // 3.Blue (Magic Items)
+	L'\x34', // 4.Gold (Unique Items)
+	L'\x35', // 5.Dark Gray (Socketed / Ethereal Items)
+	L'\x36', // 6.Black
+	L'\x37', // 7.Tan
+	L'\x38', // 8.Orange (Crafted Items)
+	L'\x39', // 9.Yellow (Rare Items)
+	L'\x3A', // 10.Dark Green
+	L'\x3B', // 11.Purple
+	L'\x2F', // 12.White (Brighter than Light Gray)
+	L'\x2E', // 13.Messed Up White (Same as above but text is messed up)
+	L'\x09', // 14.Teal
+	L'\x0C', // 15.Light Gray
+	L'\x03', // 16.Options (Half transparent) //Custom
+	L'\x04', // 17.Red (Death texts) //Custom
 };
 
 // clang-format on

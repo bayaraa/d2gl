@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "hd_text.h"
 #include "d2/common.h"
+#include "d2/stubs.h"
 #include "font.h"
 
 namespace d2gl::modules {
@@ -88,7 +89,6 @@ const std::vector<D2TextInfo> g_death_texts = {
 	{ 1, { 175, 36 }, TextAlign::Center, L"Press ESC to continue." },
 	{ 1, {  23, 36 }, TextAlign::Center, L"You lost gold" },
 };
-
 // clang-format on
 
 HDText::HDText()
@@ -108,6 +108,7 @@ void HDText::reset()
 {
 	m_masking = false;
 	m_is_player_dead = d2::isUnitDead(d2::getPlayerUnit());
+	m_map_text_line = 1;
 }
 
 void HDText::update(const std::unique_ptr<Pipeline>& pipeline)
@@ -118,18 +119,13 @@ void HDText::update(const std::unique_ptr<Pipeline>& pipeline)
 		pipeline->setUniform1i("u_IsMasking", m_masking);
 		mask = m_masking;
 	}
+	m_cur_level_no = App.game.screen == GameScreen::InGame ? *d2::level_no : 0;
 }
 
 bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
 	if (!isActive() || !str)
 		return false;
-
-	// if (text_size_ == 11 || text_size_ == 12)
-	//{
-	//	trace("text: %S | %d", wStr, text_size_);
-	//	color = 0xFF0000FF;
-	// }
 
 	auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
@@ -161,10 +157,36 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			pos.y += font.size * 0.08f;
 	}
 
+	static bool map_text = false;
+	if (App.mini_map.active && App.hd_cursor && App.game.draw_stage == DrawStage::Map) {
+		if (m_text_size == 6 && !*d2::automap_on)
+			return true;
+		else if (m_text_size != 6) {
+			if (*d2::screen_shift != 0)
+				return true;
+
+			map_text = true;
+			App.context->toggleDelayPush(true);
+
+			font = getFont(6);
+			m_fonts[font.id]->setSize(font.size);
+			m_fonts[font.id]->setMetrics(font);
+			const auto size = m_fonts[font.id]->getTextSize(str);
+			pos.x = App.game.size.x - 12.0f - size.x;
+			pos.y = 9.0f + m_map_text_line * font.size * 1.3f;
+			m_map_text_line++;
+		}
+	}
+
 	m_fonts[font.id]->setBoxed(false);
 	m_fonts[font.id]->setMasking(m_masking);
 	m_fonts[font.id]->setAlign(centered ? TextAlign::Center : TextAlign::Left);
 	m_fonts[font.id]->drawText(str, pos, text_color);
+
+	if (map_text) {
+		App.context->toggleDelayPush(false);
+		map_text = false;
+	}
 
 	return true;
 }
@@ -446,9 +468,6 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int 
 	if (!isActive() || !cell)
 		return true;
 
-	if (m_entry_text)
-		return false;
-
 	if (App.game.screen == GameScreen::Menu) {
 		const auto cell_file = d2::getCellFile(cell);
 		if (!cell_file)
@@ -510,7 +529,10 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int 
 
 bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode) // TODO: remove gamma, draw_mode
 {
-	if (isActive() && App.game.draw_stage == DrawStage::HUD && m_is_player_dead) {
+	if (!isActive())
+		return true;
+
+	if (App.game.draw_stage == DrawStage::HUD && m_is_player_dead) {
 		const auto cell_file = d2::getCellFile(cell);
 		if (!cell_file)
 			return true;
@@ -535,6 +557,10 @@ bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamm
 			}
 		}
 	}
+
+	if (m_entry_text && y == 160)
+		return false;
+	m_entry_text = false;
 
 	return true;
 }
@@ -587,14 +613,47 @@ void HDText::loadUIImage()
 	}
 }
 
-void HDText::drawEntryText(bool draw)
+void HDText::startEntryText()
 {
-	m_entry_text = draw;
-
-	if (!isActive() || !draw)
+	if (!isActive() || App.game.screen != GameScreen::InGame)
 		return;
 
-	trace("drawing");
+	m_entry_text = true;
+	if (isVerMax(V_110f)) {
+		static int level = 0;
+		if (level != *d2::level_no) {
+			m_entry_text_draw = true;
+			m_entry_timer = std::clock() + 3000;
+			level = *d2::level_no;
+		}
+	} else {
+		if (m_cur_level_no != *d2::level_no) {
+			m_entry_text_draw = true;
+			m_entry_timer = std::clock() + 3000;
+		}
+	}
+}
+
+void HDText::drawEntryText()
+{
+	if (!m_entry_text_draw)
+		return;
+
+	if (m_entry_timer < std::clock())
+		m_entry_text_draw = false;
+
+	if (App.game.screen != GameScreen::InGame)
+		return;
+
+	const auto level_name = d2::getLevelName(*d2::level_no);
+	std::wstring text = L"Entering ";
+	if (wcsncmp(level_name, L"The ", 4) != 0)
+		text += L"The ";
+	text += level_name;
+
+	setTextSize(2);
+	auto text_width = getNormalTextWidth(text.c_str(), 0);
+	drawText(text.c_str(), *d2::screen_width / 2 - text_width / 2, 160, 17, 0);
 }
 
 void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
@@ -660,15 +719,6 @@ inline const D2FontInfo& HDText::getFont(uint32_t size)
 inline wchar_t HDText::getColor(uint32_t color)
 {
 	return (color < g_default_colors.size()) ? g_default_colors[color] : g_default_colors[0];
-}
-
-void HDText::test()
-{
-	int st = 100;
-	for (int i = 0; i < 16; i++) {
-		st += 30;
-		d2::drawSolidRectEx(st, 100, st + 20, 120, 0, i);
-	}
 }
 
 }

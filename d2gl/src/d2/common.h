@@ -81,6 +81,7 @@ extern bool* esc_menu_open;
 extern uint32_t* is_in_game;
 extern UnitAny* player_unit;
 extern UnitAny* selected_item;
+extern int* level_no;
 
 extern void* alt_item_pos;
 extern void* sub_text_ptr;
@@ -155,6 +156,7 @@ extern getUnitStat_t getUnitStat_Fn;
 extern getUnitState_t getUnitState_Fn;
 extern getUnitRoom_t getUnitRoom;
 extern getLevelNoByRoom_t getLevelNoByRoom;
+extern uintptr_t getLevelName_Fn;
 
 extern UnitAny* currently_drawing_unit;
 extern uint32_t currently_drawing_weather_particles;

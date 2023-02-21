@@ -34,8 +34,8 @@ void loadUIImageStubECX();
 void drawSubTextAStub();
 void drawSubTextBStub();
 void drawSubTextCStub();
+void levelEntryTextStub();
 
-void levelEntryTextBeginStub();
-void levelEntryTextEndStub();
+wchar_t* __fastcall getLevelName(int Level_no);
 
 }

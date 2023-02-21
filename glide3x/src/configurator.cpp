@@ -57,6 +57,7 @@ public:
 	(int32_t width, int32_t height) noexcept
 	{
 		d2gl::App.game.custom_size = { width, height };
+		d2gl::trace("FreeRes Custom size: %d x %d", width, height);
 		return S_OK;
 	}
 

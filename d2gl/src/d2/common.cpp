@@ -19,6 +19,7 @@ bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0x
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
 UnitAny* selected_item = (UnitAny*)getProc((DLL_D2CLIENT), (0x11FBB8), (0x1158F0), (0x11BA40), (0x11BBDC), (0x11B9FC), (0x11BC38), (0x11CB28), (0x3BCBF4));
+int* level_no = (int*)getProc((DLL_D2CLIENT), (0x1201B4), (0x115EF0), (0x11C17C), (0x11B99C), (0x11BCEC), (0x11C310), (0x11CDE8), (0x3A3140));
 
 void* alt_item_pos = nullptr;
 void* sub_text_ptr = nullptr;
@@ -92,6 +93,7 @@ getUnitStat_t getUnitStat_Fn = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), 
 getUnitState_t getUnitState_Fn = (getUnitState_t)getProc((DLL_D2COMMON), (-10487), (), (), (-10604), (), (-10494), (-10706), (0x239DF0));
 getUnitRoom_t getUnitRoom = (getUnitRoom_t)getProc((DLL_D2COMMON), (), (), (), (), (), (), (-10846), ());
 getLevelNoByRoom_t getLevelNoByRoom = (getLevelNoByRoom_t)getProc((DLL_D2COMMON), (), (), (), (), (), (), (-10691), ());
+uintptr_t getLevelName_Fn = getProc((DLL_D2CLIENT), (0x88420), (0x839F0), (0x9DC10), (0x61AA0), (0x8B1A0), (0xBE240), (0x18250), (0x53E70));
 
 // Offset D2WinUnitHover = getOffset((DLL_D2WIN), (), (-10124, 0xF7E9C1FA, 0x1F3), (-10175, 0x03C2572B, 0x1A3), (-10037, 0x03C2572B, 0x1A3), (-10201, 0x03C2572B, 0x1A3), (-10110, 0x03C2572B, 0x1A3), (-10124, 0x03C2572B, 0x1A3), (0x10318B, 0x03C22BF0));
 // DWORD D2WinUnitHoverRet = helpers::GetProcOffset(D2WinUnitHover) + (isVer(V_110) ? 5 : 6);
@@ -168,11 +170,15 @@ void initHooks()
 	automap_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x867A0, 0xE87B7400), (0x81D6E, 0xE8FD7500), (0xA36B1, 0xE8DAB2FF), (0x66AB1, 0xE8BABBFF), (0x90211, 0xE88ABBFF), (0xC3AA1, 0xE82AB6FF), (0x1D4A1, 0xE87AB9FF), (0x56FAA, 0xE861E5FF)), 5, (uintptr_t)automapDrawEndStub);
 	automap_loop.toggle(true);
 
-	/*patch_minimap = std::make_unique<Patch>();
-	patch_minimap->add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x740E833D), (0x8678F, 0x740FE87A), (0x81D5D, 0x740FE8EC), (0xA36A1), (0x66AA1), (0x90201), (0xC3A91), (0x1D491), (0x56F99, 0x740FE8F0)), 2);
-	Glide.feature.mini_map.available = automap_loop.IsActive() && patch_minimap->Prepare();
-	if (Glide.feature.mini_map.available)
-		patch_minimap->toggle(Glide.feature.mini_map.active);*/
+	if (App.api == Api::Glide) {
+		patch_minimap = std::make_unique<Patch>();
+		patch_minimap->add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x740E833D), (0x8678F, 0x740FE87A), (0x81D5D, 0x740FE8EC), (0xA36A1), (0x66AA1), (0x90201), (0xC3A91), (0x1D491), (0x56F99, 0x740FE8F0)), 2);
+		App.mini_map.available = automap_loop.isActive() && patch_minimap->prepare();
+		if (App.mini_map.available)
+			patch_minimap->toggle(App.mini_map.active);
+		else
+			App.mini_map.active = false;
+	}
 
 	patch_motion_prediction = std::make_unique<Patch>();
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC1053), (0x7FCF0, 0x83EC5053), (0x7B4F0, 0x83EC4C53), (0x941F0), (0x15C80), (0x71990), (0x7CA40), (0x76170), (0xA0A01, 0x8BEC83EC)), 5, (uintptr_t)rectangledTextBeginStub);
@@ -185,9 +191,7 @@ void initHooks()
 	modules::MotionPrediction::Instance().toggle(App.motion_prediction);
 
 	patch_hd_text = std::make_unique<Patch>();
-	// patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (), (), (), (), (), (), (0x1908C), ()), (uintptr_t)LevelEntryTextStub);
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT), (), (), (), (), (), (), (0x19095), ()), 5, (uintptr_t)levelEntryTextBeginStub);
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2WIN), (), (), (), (), (), (), (-10172, 0, 0xD0), ()), 5, (uintptr_t)levelEntryTextEndStub);
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x2D8C0000), (0x86952), (0x81EEF), (0x9EC05), (0x628E5), (0x8C015), (0xBF345), (0x19095), (0x556F2)), 5, (uintptr_t)levelEntryTextStub);
 	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC5C8B), (0x86330), (0x81790), (0x9DDF0), (0x61440), (0x8AB50), (0xBE4C0), (0x17D10), (0x52E51, 0x8BEC83EC)), 5, (uintptr_t)(isVerMax(V_110f) || isVer(V_114d) ? drawRectFrameStubECX : drawRectFrameStub));
 	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (uintptr_t)(isVerMax(V_110f) || isVer(V_114d) ? loadUIImageStubECX : loadUIImageStub));
 	if (isVer(V_114d))

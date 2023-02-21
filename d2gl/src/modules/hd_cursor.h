@@ -26,7 +26,6 @@ public:
 };
 
 class HDCursor {
-private:
 	std::unique_ptr<Texture> m_texture;
 	std::unique_ptr<CursorObject> m_hand_cursor;
 	std::unique_ptr<CursorObject> m_other_cursor;

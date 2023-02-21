@@ -35,8 +35,8 @@ void main()
 
 layout(location = 0) out vec4 FragColor;
 
-uniform sampler2D u_Texture[16];
-uniform sampler2DArray u_Textures[16];
+uniform sampler2D u_MapTexture;
+uniform sampler2DArray u_Textures[4];
 
 in vec4 v_Position;
 in vec2 v_TexCoord;
@@ -51,17 +51,22 @@ uniform vec2 u_Scale;
 uniform vec4 u_TextMask;
 uniform bool u_IsMasking = false;
 
-float msdf(vec3 _rgb, float _smoothess, float _weight)
+float msdf(vec3 rgb, float smoothess, float weight)
 {
-	float msd = max(min(_rgb.r, _rgb.g), min(max(_rgb.r, _rgb.g), _rgb.b));
-	float screen_px_dist = max(_smoothess, 1.0) * (msd - (1.0 - 0.5 * _weight));
+	float msd = max(min(rgb.r, rgb.g), min(max(rgb.r, rgb.g), rgb.b));
+	float screen_px_dist = max(smoothess, 1.0) * (msd - (1.0 - 0.5 * weight));
 	return clamp(screen_px_dist + 0.5, 0.0, 1.0);
+}
+
+vec3 greyscale(vec3 color, float str)
+{
+    float g = dot(color, vec3(0.299, 0.587, 0.114));
+    return mix(color, vec3(g), str);
 }
 
 void main()
 {
 	switch(v_Flags.x) {
-		case 0: FragColor = texture(u_Texture[v_TexIds.x], v_TexCoord) * v_Color1; break;
 		case 1: FragColor = texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)) * v_Color1; break;
 		case 2: FragColor = v_Color1; break;
 		case 3:
@@ -81,6 +86,10 @@ void main()
 			}
 		break;
 		case 4: FragColor = vec4(0.0); break;
+		case 5:
+			FragColor = texture(u_MapTexture, v_TexCoord);
+			FragColor.rgb = greyscale(FragColor.rgb, 0.3);
+		break;
 	}
 
 	float border = 1.00001;

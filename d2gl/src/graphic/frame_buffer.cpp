@@ -35,7 +35,7 @@ FrameBuffer::FrameBuffer(const FrameBufferCreateInfo& info)
 	delete[] attachments;
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		error("Framebuffer is not complete!");
+		error_log("Framebuffer is not complete!");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	current_binded_fbo = 0;

@@ -310,7 +310,10 @@ void loadIni()
 		App.dlls_early = getString("Other", "load_dlls_early", App.dlls_early);
 		App.dlls_late = getString("Other", "load_dlls_late", App.dlls_late);
 
-		App.pd2_fix = isPD2() && getBool("Other", "pd2_fix", App.pd2_fix);
+		if (isPD2()) {
+			App.pd2_fix = getBool("Other", "pd2_fix", App.pd2_fix);
+			trace_log("Project Diablo 2 Detected.");
+		}
 	}
 
 	// clang-format off

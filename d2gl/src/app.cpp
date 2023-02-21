@@ -46,6 +46,9 @@ void dllAttach(HMODULE hmodule)
 
 	App.hmodule = hmodule;
 
+	if (strstr(GetCommandLineA(), "-log"))
+		App.log = true;
+
 	logInit();
 	timeBeginPeriod(1);
 	checkCompatibilityMode();
@@ -53,12 +56,13 @@ void dllAttach(HMODULE hmodule)
 
 	if (helpers::getVersion() == Version::Unknown) {
 		MessageBoxA(NULL, "Game version is not supported!", "Unsupported version!", MB_OK | MB_ICONERROR);
-		error("Game version is not supported!");
+		error_log("Game version is not supported!");
 		exit(1);
 	}
-	trace("Game version %s detected.", helpers::getVersionString().c_str());
+	trace_log("Game version %s detected.", helpers::getVersionString().c_str());
 
 	option::loadIni();
+	trace_log("Loading early DLLs.");
 	helpers::loadDlls(App.dlls_early);
 
 	d2::initHooks();

@@ -336,7 +336,7 @@ void setWindowRect()
 
 		AdjustWindowRect(&wr, App.window.style, FALSE);
 		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
-		trace("Switched to windowed mode: %d x %d", App.window.size.x, App.window.size.y);
+		trace_log("Switched to windowed mode: %d x %d", App.window.size.x, App.window.size.y);
 	} else {
 		SetWindowLong(App.hwnd, GWL_STYLE, App.window.style & ~WS_OVERLAPPEDWINDOW);
 
@@ -345,7 +345,7 @@ void setWindowRect()
 
 		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), 0);
 		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
-		trace("Switched to fullscreen mode: %d x %d", App.window.size.x, App.window.size.y);
+		trace_log("Switched to fullscreen mode: %d x %d", App.window.size.x, App.window.size.y);
 	}
 }
 
@@ -413,10 +413,10 @@ void toggleDarkmode()
 		BOOL dark = (BOOL)App.window.dark_mode;
 		WINDCOMPATTRDATA data = { WINDCOMPATTR::WCA_USEDARKMODECOLORS, &dark, sizeof(dark) };
 		SetWindowCompositionAttribute(App.hwnd, &data);
-		trace("Window style switched to dark mode.");
+		trace_log("Window style switched to dark mode.");
 	} else {
 		if (App.window.dark_mode)
-			trace("Dark mode is not available!");
+			trace_log("Dark mode is not available!");
 	}
 }
 

@@ -72,6 +72,7 @@ Wrapper::Wrapper()
 	PipelineCreateInfo mod_pipeline_ci;
 	mod_pipeline_ci.shader = g_shader_mod;
 	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
+	mod_pipeline_ci.bindings = { { BindingType::TextureArray } };
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 }
 
@@ -184,6 +185,7 @@ void Wrapper::onStageChange()
 			break;
 		case DrawStage::Cursor:
 			ctx->appendDelayedObjects();
+			modules::HDText::Instance().drawEntryText();
 			modules::HDCursor::Instance().draw();
 			break;
 	}
@@ -298,6 +300,7 @@ HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
+	trace_log("Loading late DLLs.");
 	helpers::loadDlls(App.dlls_late);
 
 	return DD_OK;
@@ -316,7 +319,7 @@ HRESULT Wrapper::setDisplayMode(DWORD width, DWORD height, DWORD bpp)
 
 	App.game.bpp = bpp;
 	App.game.size = { width, height };
-	trace("Game requested screen size: %d x %d\n", App.game.size.x, App.game.size.y);
+	trace("Game requested screen size: %d x %d", App.game.size.x, App.game.size.y);
 
 	if (App.hwnd && old_size != App.game.size) {
 		win32::setWindowMetricts();

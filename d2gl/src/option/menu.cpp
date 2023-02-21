@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "menu.h"
+#include "d2/common.h"
 #include "helpers.h"
 #include "ini.h"
 #include "modules/motion_prediction.h"
@@ -294,7 +295,7 @@ void Menu::draw()
 				ImGui::BeginDisabled(!App.hd_cursor);
 					drawCheckbox_m("HD Text", App.hd_text, "High-definition ingame texts.", hd_text)
 					{
-						//d2::PatchHDText->Toggle(App.hd_text);
+						d2::patch_hd_text->toggle(App.hd_text);
 						saveBool("Feature", "hd_text", App.hd_text);
 					}
 					drawSeparator();
@@ -309,10 +310,10 @@ void Menu::draw()
 					ImGui::EndDisabled();
 				ImGui::EndDisabled();
 				drawSeparator();
-				ImGui::BeginDisabled(!App.hd_cursor || !App.mini_map.available);
+				ImGui::BeginDisabled(App.api != Api::Glide || !App.hd_cursor || !App.mini_map.available);
 					drawCheckbox_m("Mini Map", App.mini_map.active, "Always on Minimap widget.", mini_map)
 					{
-						//d2::PatchMinimap->Toggle(App.mini_map.active);
+						d2::patch_minimap->toggle(App.mini_map.active);
 						saveBool("Feature", "mini_map", App.mini_map.active);
 					}
 				ImGui::EndDisabled();

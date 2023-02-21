@@ -182,7 +182,7 @@ uintptr_t getProcOffset(Offset offset)
 		if (*(uint32_t*)address != original_4bytes) {
 			bytes = (uint8_t*)address;
 			uint32_t addr_4bytes = bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3];
-			error("Offset: %s, %d(0x%.8X), %d(0x%.8X). Original bytes are not equal: 0x%.8X != 0x%.8X", offset.module, offset.pos, offset.pos, offset.add, offset.add, addr_4bytes, offset.og_4bytes);
+			error_log("Offset: %s, %d(0x%.8X), %d(0x%.8X). Original bytes are not equal: 0x%.8X != 0x%.8X", offset.module, offset.pos, offset.pos, offset.add, offset.add, addr_4bytes, offset.og_4bytes);
 			return NULL;
 		}
 	}
@@ -264,7 +264,7 @@ BufferData loadFile(const std::string& file_path)
 	if (!is_mpq_loaded) {
 		std::string mpq_path = getCurrentDir() + App.mpq_file;
 		if (!d2::mpqLoad(mpq_path.c_str()))
-			error("%s not loaded.", mpq_path.c_str());
+			error_log("%s not loaded.", mpq_path.c_str());
 		is_mpq_loaded = true;
 	}
 
@@ -285,12 +285,12 @@ BufferData loadFile(const std::string& file_path)
 			cache[fileSize] = 0;
 			return { return_size, cache };
 		} else
-			error("File (MPQ): \"%s\" read error.", path.c_str());
+			error_log("File (MPQ): \"%s\" read error.", path.c_str());
 
 		delete[] cache;
 		return { 0 };
 	} else
-		error("File (MPQ): \"%s\" could not opened!", path.c_str());
+		error_log("File (MPQ): \"%s\" could not opened!", path.c_str());
 
 	return { 0 };
 }
@@ -337,10 +337,8 @@ void loadDlls(const std::string& dlls)
 	for (std::string dll; std::getline(ss, dll, ',');) {
 		dll.erase(remove_if(dll.begin(), dll.end(), isspace), dll.end());
 
-		if (dll != "") {
-			trace("load: %s", dll.c_str());
-			LoadLibraryA(dll.c_str());
-		}
+		if (dll != "" && LoadLibraryA(dll.c_str()))
+			trace_log("%s loaded.", dll.c_str());
 	}
 }
 
