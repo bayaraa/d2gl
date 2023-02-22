@@ -741,15 +741,16 @@ inline wchar_t HDText::getColor(uint32_t color)
 
 void HDText::drawFpsCounter()
 {
-	if (!App.show_fps)
+	if (!App.show_fps || App.game.screen != GameScreen::InGame)
 		return;
 
 	static wchar_t str[20] = { 0 };
 	const float fps = round(1000.0f / App.context->getAvgFrameTime());
 	swprintf_s(str, L"FPS: %.0f", fps);
 
-	d2::setTextSizeHooked(11);
-	d2::drawNormalTextHooked(str, 5, App.game.size.y - 2, 0, 0);
+	d2::setTextSizeHooked(App.hd_text ? 99 : 11);
+	const auto width = d2::getNormalTextWidth(str);
+	d2::drawNormalTextHooked(str, App.game.size.x / 2 - width / 2, App.game.size.y - 54, 4, 0);
 }
 
 }

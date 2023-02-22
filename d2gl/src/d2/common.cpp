@@ -32,7 +32,7 @@ uint32_t* screen_height = (uint32_t*)getProc((DLL_D2CLIENT), (0xD40E0), (0xD40F0
 uint32_t* screen_shift = (uint32_t*)getProc((DLL_D2CLIENT), (0x115C10), (0x10B9C4), (0x11C1C0), (0x11C3E4), (0x11C1D0), (0x11C414), (0x11D070), (0x3A5210));
 
 bool* perspective = (bool*)getProc((DLL_D2GFX), (0xE188), (0xE198), (0x10C94), (0x10C30), (0x10C8C), (0x10BE0), (0x10BE4), (0x32DA48));
-bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0xFB094), (0x1040E4), (0x102B7C), (0xFADA4), (0x11C8B4), (0x3A27E4)); // 0xFADAC
+bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0xFB094), (0x1040E4), (0x102B7C), (0xFADA4), (0x11C8B4), (0x3A27E4));
 
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
@@ -92,8 +92,6 @@ drawWallTile_t drawWallTile = (drawWallTile_t)getProc((DLL_D2GFX), (-10080), (-1
 drawTransWallTile_t drawTransWallTile = (drawTransWallTile_t)getProc((DLL_D2GFX), (-10081), (-10081), (-10035), (-10076), (-10075), (-10058), (-10040), (0xF6950));
 drawShadowTile_t drawShadowTile = (drawShadowTile_t)getProc((DLL_D2GFX), (-10082), (-10082), (-10012), (-10043), (-10042), (-10069), (-10060), (0xF6980));
 
-// drawRectFrame_t drawRectFrame = (drawRectFrame_t)getProc((DLL_D2CLIENT), (), (), (), (), (), (0xBE4C0), (0x17D10), ());
-
 takeScreenShot_t takeScreenShot = (takeScreenShot_t)getProc((DLL_D2WIN), (-10168), (-10168), (-10205), (-10014), (-10196), (-10187), (-10107), (0xFA7A0));
 drawNormalText_t drawNormalText = (drawNormalText_t)getProc((DLL_D2WIN), (-10117), (-10117), (-10020), (-10064), (-10001), (-10150), (-10076), (0x102320));
 drawNormalTextEx_t drawNormalTextEx = (drawNormalTextEx_t)getProc((DLL_D2WIN), (), (), (-10006), (-10043), (-10157), (-10096), (-10084), (0x102360));
@@ -104,7 +102,6 @@ getNormalTextNWidth_t getNormalTextNWidth = (getNormalTextNWidth_t)getProc((DLL_
 getFramedTextSize_t getFramedTextSize = (getFramedTextSize_t)getProc((DLL_D2WIN), (-10131), (-10131), (-10057), (-10183), (-10096), (-10177), (-10179), (0x102520));
 getFontHeight_t getFontHeight = (getFontHeight_t)getProc((DLL_D2WIN), (-10125), (-10125), (-10000), (-10138), (-10146), (-10083), (-10088), (0x101A40));
 setTextSize_t setTextSize = (setTextSize_t)getProc((DLL_D2WIN), (-10127), (-10127), (-10141), (-10170), (-10010), (-10184), (-10047), (0x102EF0));
-// 1.10 10124 draw popup
 
 getSelectedUnit_t getSelectedUnit = (getSelectedUnit_t)getProc((DLL_D2CLIENT), (0x14CE0), (0x15A20), (0x37CA0), (0x2F950), (0x6ECA0), (0x51A80), (0x17280), (0x67A10));
 getUnitStat_t getUnitStat_Fn = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), (-10519), (-11092), (-10061), (-10658), (-10973), (-10550), (0x225480));
@@ -124,32 +121,6 @@ RECT* currently_drawing_rect = nullptr;
 std::unique_ptr<Patch> patch_minimap;
 std::unique_ptr<Patch> patch_motion_prediction;
 std::unique_ptr<Patch> patch_hd_text;
-
-// GetUnitStat = (GetUnitStat_t)getProc(D2COMMON, -10973, -10550);
-// GetUnitState = (GetUnitState_t)getProc(D2COMMON, -10494, -10706);
-
-////EXVARPTR(D2GFX, GfxMode, int, 0x14A40)
-////	EXVARPTR(D2GFX, ScreenShift, int, 0x14A50)
-
-
-////DrawRect = (DrawRect_t)getProc(D2GFX, , );
-////DrawRectEx = (DrawRectEx_t)getProc(D2GFX, , );
-////DrawSolidRect = (DrawSolidRect_t)getProc(D2GFX, , );
-////DrawSolidSquare = (DrawSolidSquare_t)getProc(D2GFX, , );
-
-// DrawSolidRectAlpha_t DrawSolidRectAlpha = (DrawSolidRectAlpha_t)getProc((DLL_D2GFX), (), (-10057), (), (), (), (), (-10013), ());
-
-
-
-// SetTextSize = (SetTextSize_t)getProc(D2WIN, -10184, -10047);
-// CreateTextBox = (CreateTextBox_t)getProc(D2WIN, -10098, -10164);
-
-// DrawLineOnTextBox = (DrawLineOnTextBox_t)getProc(D2WIN, -10022, -10051);
-
-// FUNCPTR(D2COMMON, GetLevelText, D2::Types::LevelTxt* __stdcall, (DWORD levelno), 0x21DB70) // Updated 1.14d //0061DB70-BASE
-// FUNCPTR(D2COMMON, GetUnitStat, DWORD __stdcall, (D2::Types::UnitAny* pUnit, DWORD dwStat, DWORD dwStat2), 0x225480)                // Updated 1.14d //00625480-BASE
-// FUNCPTR(D2COMMON, GetUnitState, int __stdcall, (D2::Types::UnitAny* pUnit, DWORD dwStateNo), 0x239DF0)                             // Updated 1.14d //00639DF0-BASE
-
 
 void initHooks()
 {
@@ -221,12 +192,6 @@ void initHooks()
 			patch_hd_text->add(PatchType::Nop, getOffset((DLL_D2WIN, 0x66C70458, 0xD1), (), (), (-10134), (-10155, 0, 0x2D1), (-10201, 0, 0x271), (-10019), (-10194), ()), 6); // Get text N chars width fix
 	}
 	patch_hd_text->toggle(true);
-	// Game.exe+0x101AB1
-
-	// d2client+0x9452A <== item text | framed text size
-	// d2client+0x33507 <== mouse skill text | framed text size
-	// d2client+0x33B10 <== skill text | framed text size
-	// d2client+0xC0B5F <== monster text | framed text*/
 
 	if (isVerNot(V_109d) && App.no_pickup)
 		*no_pickup = 1;
@@ -259,14 +224,6 @@ void initHooks()
 	DetourAttach(&(PVOID&)getFontHeight, getFontHeightHooked);
 	DetourAttach(&(PVOID&)setTextSize, setTextSizeHooked);
 	DetourTransactionCommit();
-
-	// Patches[PATCH_BOT_tILE_FIX] = new Patch(PatchType::Nop, getProc(D2GFX, 0x897D, 0x830D), 3);
-	// Patches[PATCH_BOT_tILE_FIX]->add(PatchType::Nop, getProc(D2GLIDE, 0x6850, 0x6850), 3);//TODO 1.13d offset
-	// Patches[PATCH_BOT_tILE_FIX]->add(PatchType::Nop, getProc(D2GLIDE, 0x6EE6, 0x6EE6), 3);//TODO 1.13d offset
-	// Patches[PATCH_BOT_tILE_FIX]->add(PatchType::Nop, getProc(D2GLIDE, 0x629E, 0x629E), 3);//TODO 1.13d offset
-	// Patches[PATCH_BOT_tILE_FIX]->add(PatchType::Nop, getProc(D2GLIDE, 0x6AAE, 0x6AAE), 3);//TODO 1.13d offset
-	// Patches[PATCH_BOT_tILE_FIX]->add(PatchType::Nop, getProc(D2CLIENT, 0x8A4FD, 0xB535D), 3);
-	// Patches[PATCH_BOT_tILE_FIX]->add(PatchType::Nop, getProc(D2CLIENT, -10003, -10003) + Helpers::GetVersionOffset(0x63B, 0x63B), 3);//TODO 1.13d offset
 }
 
 void destroyHooks()

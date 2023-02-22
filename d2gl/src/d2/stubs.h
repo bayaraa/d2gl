@@ -36,12 +36,11 @@ void drawMissileStub();
 void drawWeatherParticlesStub();
 void drawWeatherParticlesStub114d();
 
-// void ObjectHoverBeginStub();
 void rectangledTextBeginStub();
 void rectangledTextEndStub();
 void drawRectFrameStub();
 void drawRectFrameStubECX();
-// void DrawFramedBoxStub();
+
 void unitHoverTextStub();
 void altItemsTextStub();
 void altItemsTextStub110f();

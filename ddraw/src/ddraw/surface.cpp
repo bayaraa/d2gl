@@ -45,7 +45,7 @@ DirectDrawSurface::DirectDrawSurface(LPDDSURFACEDESC surface_desc)
 {
 	if (m_flags & DDSD_PIXELFORMAT) {
 		switch (surface_desc->ddpfPixelFormat.dwRGBBitCount) {
-			case 16: assert(false && "DDSD_PIXELFORMAT 16");
+			case 16: assert(false);
 			case 8:
 			case 32: m_bpp = surface_desc->ddpfPixelFormat.dwRGBBitCount; break;
 		}
@@ -263,7 +263,7 @@ HRESULT __stdcall DirectDrawSurface::Blt(LPRECT in_dst_rect, LPDIRECTDRAWSURFACE
 					memcpy(dst, first_row, dst_pitch);
 				}
 			}
-			assert(false && "m_bpp 16");
+			assert(false);
 		} else if (m_bpp == 32) {
 			auto row1 = (uint32_t*)dst;
 			const auto color = blt_fx->dwFillColor;
@@ -418,7 +418,7 @@ HRESULT __stdcall DirectDrawSurface::GetPixelFormat(LPDDPIXELFORMAT pixel_format
 			pixel_format->dwRBitMask = 0xF800;
 			pixel_format->dwGBitMask = 0x07E0;
 			pixel_format->dwBBitMask = 0x001F;
-			assert(false && "m_bpp 16");
+			assert(false);
 		} else if (m_bpp == 32) {
 			pixel_format->dwRBitMask = 0xFF0000;
 			pixel_format->dwGBitMask = 0x00FF00;
@@ -457,7 +457,7 @@ HRESULT __stdcall DirectDrawSurface::GetSurfaceDesc(LPDDSURFACEDESC surface_desc
 			surface_desc->ddpfPixelFormat.dwRBitMask = 0xF800;
 			surface_desc->ddpfPixelFormat.dwGBitMask = 0x07E0;
 			surface_desc->ddpfPixelFormat.dwBBitMask = 0x001F;
-			assert(false && "m_bpp 16");
+			assert(false);
 		} else if (m_bpp == 32) {
 			surface_desc->ddpfPixelFormat.dwRBitMask = 0xFF0000;
 			surface_desc->ddpfPixelFormat.dwGBitMask = 0x00FF00;

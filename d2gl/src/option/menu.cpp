@@ -129,9 +129,12 @@ void Menu::toggle(bool force)
 
 void Menu::draw()
 {
-	// if (!m_visible)
-	// return;
+#ifndef _DEBUG
+	if (!m_visible)
+		return;
 
+	App.context->imguiStartFrame();
+#else
 	App.context->imguiStartFrame();
 
 	static bool show_info = true;
@@ -146,21 +149,8 @@ void Menu::draw()
 	ImGui::Text(" 32: 8192 / %d", App.var4);
 	ImGui::Text(" 16: 5120 / %d", App.var5);
 	ImGui::Text("  8: 4096 / %d", App.var6);
-	// ImGui::SliderInt("X1", &App.var9, -200, 200);
-	// ImGui::SliderInt("Y1", &App.var10, -200, 200);
-	// ImGui::SliderInt("X2", &App.var11, -200, 200);
-	// ImGui::SliderInt("Y2", &App.var12, -200, 200);
-	// ImGui::Text("py: %d", App.var7);
-	// ImGui::Text("px: %d", App.var8);
-	//   ImGui::InputInt("ShakeX", &App.var11);
-	//   ImGui::InputInt("ShakeY", &App.var12);
-	// ImGui::Checkbox("tile", (bool*)&App.var7);
-	// ImGui::Checkbox("wall", (bool*)&App.var8);
-	// ImGui::Checkbox("wallt", (bool*)&App.var9);
-	// ImGui::Checkbox("shadow", (bool*)&App.var10);
-	// ImGui::Checkbox("check5", (bool*)&App.var11);
-	// ImGui::Checkbox("check6", (bool*)&App.var12);
 	ImGui::End();
+#endif
 
 	if (m_visible) {
 		ImVec2 window_pos = { (float)App.window.size.x * 0.5f, (float)App.window.size.y * 0.5f };
@@ -317,14 +307,16 @@ void Menu::draw()
 						saveBool("Feature", "hd_text", App.hd_text);
 					}
 					drawSeparator();
-					drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs.", hd_orbs)
-						saveBool("Feature", "hd_orbs", App.hd_orbs.active);
-					ImGui::Spacing();
-					ImGui::Spacing();
-					ImGui::SameLine(36.0f);
-					ImGui::BeginDisabled(!App.hd_orbs.active);
-						drawCheckbox_m("Centered", App.hd_orbs.centered, "", hd_orbs_centered)
-							saveBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
+					ImGui::BeginDisabled(true);
+						drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs. (coming soon)", hd_orbs)
+							saveBool("Feature", "hd_orbs", App.hd_orbs.active);
+						ImGui::Spacing();
+						ImGui::Spacing();
+						ImGui::SameLine(36.0f);
+						ImGui::BeginDisabled(!App.hd_orbs.active);
+							drawCheckbox_m("Centered", App.hd_orbs.centered, "", hd_orbs_centered)
+								saveBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
+						ImGui::EndDisabled();
 					ImGui::EndDisabled();
 				ImGui::EndDisabled();
 				drawSeparator();
@@ -348,7 +340,7 @@ void Menu::draw()
 				drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 					saveBool("Feature", "no_pickup", App.no_pickup);
 				drawSeparator();
-				drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom left corner.", show_fps)
+				drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 					saveBool("Feature", "show_fps", App.show_fps);
 				childEnd();
 				tabEnd();

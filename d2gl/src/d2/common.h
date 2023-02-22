@@ -57,8 +57,6 @@ typedef bool(__stdcall* drawWallTile_t)(TileContext* tile, int x, int y, GFXLigh
 typedef bool(__stdcall* drawTransWallTile_t)(TileContext* tile, int x, int y, GFXLight* light, int screen_panels, uint8_t alpha);
 typedef bool(__stdcall* drawShadowTile_t)(TileContext* tile, int x, int y, int draw_mode, int screen_panels);
 
-// typedef void(__fastcall* drawRectFrame_t)(RECT* rect);
-
 typedef void(__fastcall* takeScreenShot_t)(void);
 typedef void(__fastcall* drawNormalText_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 typedef void(__fastcall* drawNormalTextEx_t)(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl);
@@ -69,25 +67,6 @@ typedef uint32_t(__fastcall* getNormalTextNWidth_t)(const wchar_t* str, const in
 typedef uint32_t(__fastcall* getFramedTextSize_t)(const wchar_t* str, uint32_t* width, uint32_t* height);
 typedef uint16_t(__fastcall* getFontHeight_t)(void);
 typedef uint32_t(__fastcall* setTextSize_t)(uint32_t size);
-
-// typedef DWORD(__stdcall* GetUnitStat_t) (UnitAny* pUnit, DWORD dwStat, DWORD dwStat2);
-// typedef int(__stdcall* GetUnitState_t) (UnitAny* pUnit, DWORD dwStateNo);
-
-// typedef void(__stdcall* DrawLine_t) (int nXStart, int nYStart, int nXEnd, int nYEnd, BYTE nColor, BYTE nAlpha);
-// typedef void(__stdcall* DrawRect_t) (RECT* pRect, BYTE nPaletteIndex);
-// typedef void(__stdcall* DrawRectEx_t) (RECT* pRect, BYTE nPaletteIndex);
-// typedef void(__stdcall* DrawSolidRect_t) (RECT* pRect, BYTE nPaletteIndex);
-// typedef void(__stdcall* DrawSolidSquare_t) (POINT* pPoint, BYTE nPaletteIndex, int nSize);
-
-// typedef void(__stdcall* DrawSolidRectAlpha_t) (int nXStart, int nYStart, int nXEnd, int nYEnd, uint32_t color, BYTE nAlpha);
-//
-
-//
-// typedef int(__fastcall* SetTextSize_t) (int dwSize);
-// typedef void(__stdcall* CreateTextBox_t) (DWORD* data);
-//
-// typedef void(__fastcall* DrawLineOnTextBox_t) (void* screen, char* s, DWORD color);
-//
 
 extern uint32_t* screen_width;
 extern uint32_t* screen_height;
@@ -153,8 +132,6 @@ extern drawWallTile_t drawWallTile;
 extern drawTransWallTile_t drawTransWallTile;
 extern drawShadowTile_t drawShadowTile;
 
-// extern drawRectFrame_t drawRectFrame;
-
 extern takeScreenShot_t takeScreenShot;
 extern drawNormalText_t drawNormalText;
 extern drawNormalTextEx_t drawNormalTextEx;
@@ -166,9 +143,6 @@ extern getFramedTextSize_t getFramedTextSize;
 extern getFontHeight_t getFontHeight;
 extern setTextSize_t setTextSize;
 
-// extern DWORD HoveredUnit;
-// extern Offset D2WinUnitHover;
-// extern DWORD D2WinUnitHoverRet;
 extern getSelectedUnit_t getSelectedUnit;
 extern getUnitStat_t getUnitStat_Fn;
 extern getUnitState_t getUnitState_Fn;
@@ -187,22 +161,5 @@ extern std::unique_ptr<Patch> patch_hd_text;
 
 void initHooks();
 void destroyHooks();
-
-// extern GetUnitStat_t GetUnitStat;
-// extern GetUnitState_t GetUnitState;
-
-// extern DrawLine_t DrawLine;
-////extern DrawRect_t DrawRect;
-////extern DrawRectEx_t DrawRectEx;
-////extern DrawSolidRect_t DrawSolidRect;
-////extern DrawSolidSquare_t DrawSolidSquare;
-// extern DrawSolidRectAlpha_t DrawSolidRectAlpha;
-
-
-
-// extern SetTextSize_t SetTextSize;
-// extern CreateTextBox_t CreateTextBox;
-
-// extern DrawLineOnTextBox_t DrawLineOnTextBox;
 
 }

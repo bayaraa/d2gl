@@ -228,269 +228,269 @@ FX_ENTRY void FX_CALL grGlideShutdown(void)
 
 FX_ENTRY FxI32 FX_CALL grQueryResolutions(const GrResolution* resTemplate, GrResolution* output)
 {
-	assert(false && "grQueryResolutions");
+	assert(false);
 	return 0;
 }
 
 FX_ENTRY FxBool FX_CALL grReset(FxU32 what)
 {
-	assert(false && "grReset");
+	assert(false);
 	return FXTRUE;
 }
 
 FX_ENTRY void FX_CALL grEnable(GrEnableMode_t mode)
 {
-	assert(false && "grEnable");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grDisable(GrEnableMode_t mode)
 {
-	assert(false && "grDisable");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grGlideGetState(void* state)
 {
-	assert(false && "grGlideGetState");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grGlideSetState(const void* state)
 {
-	assert(false && "grGlideSetState");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grGlideGetVertexLayout(void* layout)
 {
-	assert(false && "grGlideGetVertexLayout");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grGlideSetVertexLayout(const void* layout)
 {
-	assert(false && "grGlideSetVertexLayout");
+	assert(false);
 }
 
 FX_ENTRY float FX_CALL guFogTableIndexToW(int i)
 {
-	assert(false && "guFogTableIndexToW");
+	assert(false);
 	return 0.0f;
 }
 
 FX_ENTRY void FX_CALL guFogGenerateExp(GrFog_t* fogtable, float density)
 {
-	assert(false && "guFogGenerateExp");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL guFogGenerateExp2(GrFog_t* fogtable, float density)
 {
-	assert(false && "guFogGenerateExp2");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL guFogGenerateLinear(GrFog_t* fogtable, float nearZ, float farZ)
 {
-	assert(false && "guFogGenerateLinear");
+	assert(false);
 }
 
 FX_ENTRY FxBool FX_CALL gu3dfGetInfo(const char* filename, Gu3dfInfo* info)
 {
-	assert(false && "gu3dfGetInfo");
+	assert(false);
 	return FXFALSE;
 }
 
 FX_ENTRY FxBool FX_CALL gu3dfLoad(const char* filename, Gu3dfInfo* data)
 {
-	assert(false && "gu3dfLoad");
+	assert(false);
 	return FXFALSE;
 }
 
 FX_ENTRY void FX_CALL grCheckForRoom(FxI32 n)
 {
-	assert(false && "grCheckForRoom");
+	assert(false);
 }
 
 FX_ENTRY int FX_CALL guEncodeRLE16(void* dst, void* src, FxU32 width, FxU32 height)
 {
-	assert(false && "guEncodeRLE16");
+	assert(false);
 	return 0;
 }
 
 FX_ENTRY void FX_CALL grSstVidMode(FxU32 whichSst, void* vidTimings)
 {
-	assert(false && "grSstVidMode");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grAlphaControlsITRGBLighting(FxBool enable)
 {
-	assert(false && "grAlphaControlsITRGBLighting");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grAlphaTestFunction(GrCmpFnc_t function)
 {
-	assert(false && "grAlphaTestFunction");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grAlphaTestReferenceValue(GrAlpha_t value)
 {
-	assert(false && "grAlphaTestReferenceValue");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grLfbConstantAlpha(GrAlpha_t alpha)
 {
-	assert(false && "grLfbConstantAlpha");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grLfbConstantDepth(FxU32 depth)
 {
-	assert(false && "grLfbConstantDepth");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grLfbWriteColorSwizzle(FxBool swizzleBytes, FxBool swapWords)
 {
-	assert(false && "grLfbWriteColorSwizzle");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grLfbWriteColorFormat(GrColorFormat_t colorFormat)
 {
-	assert(false && "grLfbWriteColorFormat");
+	assert(false);
 }
 
 FX_ENTRY FxBool FX_CALL grLfbWriteRegion(GrBuffer_t dst_buffer, FxU32 dst_x, FxU32 dst_y, GrLfbSrcFmt_t src_format, FxU32 src_width, FxU32 src_height, FxBool pixelPipeline, FxI32 src_stride, void* src_data)
 {
-	assert(false && "grLfbWriteRegion");
+	assert(false);
 	return FXFALSE;
 }
 
 FX_ENTRY FxBool FX_CALL grLfbReadRegion(GrBuffer_t src_buffer, FxU32 src_x, FxU32 src_y, FxU32 src_width, FxU32 src_height, FxU32 dst_stride, void* dst_data)
 {
-	assert(false && "grLfbReadRegion");
+	assert(false);
 	return FXFALSE;
 }
 
 FX_ENTRY void FX_CALL grTexMultibase(GrChipID_t tmu, FxBool enable)
 {
-	assert(false && "grTexMultibase");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grTexMultibaseAddress(GrChipID_t tmu, GrTexBaseRange_t range, FxU32 startAddress, FxU32 evenOdd, GrTexInfo* info)
 {
-	assert(false && "grTexMultibaseAddress");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grDrawTriangle(const void* a, const void* b, const void* c)
 {
-	assert(false && "grDrawTriangle");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grAADrawTriangle(const void* a, const void* b, const void* c, FxBool ab_antialias, FxBool bc_antialias, FxBool ca_antialias)
 {
-	assert(false && "grAADrawTriangle");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grClipWindow(FxU32 minx, FxU32 miny, FxU32 maxx, FxU32 maxy)
 {
-	assert(false && "grClipWindow");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grSstOrigin(GrOriginLocation_t origin)
 {
-	assert(false && "grSstOrigin");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grCullMode(GrCullMode_t mode)
 {
-	assert(false && "grCullMode");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grDepthBiasLevel(FxI32 level)
 {
-	assert(false && "grDepthBiasLevel");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grDepthBufferFunction(GrCmpFnc_t function)
 {
-	assert(false && "grDepthBufferFunction");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grDepthBufferMode(GrDepthBufferMode_t mode)
 {
-	assert(false && "grDepthBufferMode");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grFogColorValue(GrColor_t fogcolor)
 {
-	assert(false && "grFogColorValue");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grFogMode(GrFogMode_t mode)
 {
-	assert(false && "grFogMode");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grFogTable(const GrFog_t ft[])
 {
-	assert(false && "grFogTable");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grSplash(float x, float y, float width, float height, FxU32 frame)
 {
-	assert(false && "grSplash");
+	assert(false);
 }
 
 FX_ENTRY GrProc FX_CALL grGetProcAddress(char* procName)
 {
-	assert(false && "grGetProcAddress");
+	assert(false);
 	return NULL;
 }
 
 FX_ENTRY void FX_CALL grDepthRange(FxFloat n, FxFloat f)
 {
-	assert(false && "grDepthRange");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grTexNCCTable(GrNCCTable_t table)
 {
-	assert(false && "grTexNCCTable");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grTexDetailControl(GrChipID_t tmu, int lod_bias, FxU8 detail_scale, float detail_max)
 {
-	assert(false && "grTexDetailControl");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grTexLodBiasValue(GrChipID_t tmu, float bias)
 {
-	assert(false && "grTexLodBiasValue");
+	assert(false);
 }
 
 FX_ENTRY void FX_CALL grTexDownloadMipMapLevel(GrChipID_t tmu, FxU32 startAddress, GrLOD_t thisLod, GrLOD_t largeLod, GrAspectRatio_t aspectRatio, GrTextureFormat_t format, FxU32 evenOdd, void* data)
 {
-	assert(false && "grTexDownloadMipMapLevel");
+	assert(false);
 }
 
 FX_ENTRY FxBool FX_CALL grTexDownloadMipMapLevelPartial(GrChipID_t tmu, FxU32 startAddress, GrLOD_t thisLod, GrLOD_t largeLod, GrAspectRatio_t aspectRatio, GrTextureFormat_t format, FxU32 evenOdd, void* data, int start, int end)
 {
-	assert(false && "grTexDownloadMipMapLevelPartial");
+	assert(false);
 	return FXFALSE;
 }
 
 FX_ENTRY void FX_CALL grTexDownloadTablePartial(GrTexTable_t type, void* data, int start, int end)
 {
-	assert(false && "grTexDownloadTablePartial");
+	assert(false);
 }
 
 FX_ENTRY FxU32 FX_CALL grTexCalcMemRequired(GrLOD_t lodmin, GrLOD_t lodmax, GrAspectRatio_t aspect, GrTextureFormat_t fmt)
 {
-	assert(false && "grTexCalcMemRequired");
+	assert(false);
 	return 0;
 }
 
 FX_ENTRY FxU32 FX_CALL grTexTextureMemRequired(FxU32 evenOdd, GrTexInfo* info)
 {
-	assert(false && "grTexTextureMemRequired");
+	assert(false);
 	return 0;
 }
 
 FX_ENTRY void FX_CALL grDisableAllEffects(void)
 {
-	assert(false && "grDisableAllEffects");
+	assert(false);
 }
 
 #ifdef __cplusplus

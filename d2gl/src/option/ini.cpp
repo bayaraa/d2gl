@@ -229,7 +229,7 @@ void saveIni()
 	  "skip_intro=%s\n\n"
 	  "; Auto /nopickup option on launch (exclude 1.09d).\n"
 	  "no_pickup=%s\n\n"
-	  "; Show FPS Counter (Bottom left corner).\n"
+	  "; Show FPS Counter (bottom center).\n"
 	  "show_fps=%s\n\n\n";
 
 	sprintf_s(buf, feature_setting,
