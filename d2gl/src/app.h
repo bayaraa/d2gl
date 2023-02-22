@@ -3,7 +3,7 @@
 #include "graphic/context.h"
 #include "types.h"
 
-#define _DEBUG 1
+// #define _DEBUG 1
 
 namespace d2gl {
 
@@ -118,6 +118,7 @@ struct D2GLApp {
 		bool available = true;
 	} mini_map;
 
+	bool show_fps = false;
 	bool pd2_fix = false;
 
 	int var1 = 0;

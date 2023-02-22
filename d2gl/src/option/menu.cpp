@@ -112,7 +112,7 @@ void Menu::toggle(bool force)
 void Menu::draw()
 {
 	// if (!m_visible)
-	//	return;
+	// return;
 
 	App.context->imguiStartFrame();
 
@@ -136,10 +136,10 @@ void Menu::draw()
 	// ImGui::Text("px: %d", App.var8);
 	//   ImGui::InputInt("ShakeX", &App.var11);
 	//   ImGui::InputInt("ShakeY", &App.var12);
-	ImGui::Checkbox("tile", (bool*)&App.var7);
-	ImGui::Checkbox("wall", (bool*)&App.var8);
-	ImGui::Checkbox("wallt", (bool*)&App.var9);
-	ImGui::Checkbox("shadow", (bool*)&App.var10);
+	// ImGui::Checkbox("tile", (bool*)&App.var7);
+	// ImGui::Checkbox("wall", (bool*)&App.var8);
+	// ImGui::Checkbox("wallt", (bool*)&App.var9);
+	// ImGui::Checkbox("shadow", (bool*)&App.var10);
 	// ImGui::Checkbox("check5", (bool*)&App.var11);
 	// ImGui::Checkbox("check6", (bool*)&App.var12);
 	ImGui::End();

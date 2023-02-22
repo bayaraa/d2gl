@@ -210,7 +210,9 @@ void saveIni()
 	  "; Skip the Intro videos.\n"
 	  "skip_intro=%s\n\n"
 	  "; Auto /nopickup option on launch (exclude 1.09d).\n"
-	  "no_pickup=%s\n\n\n";
+	  "no_pickup=%s\n\n"
+	  "; Show FPS Counter (Bottom left corner).\n"
+	  "show_fps=%s\n\n\n";
 
 	sprintf_s(buf, feature_setting,
 	  boolString(App.hd_cursor),
@@ -220,7 +222,8 @@ void saveIni()
 	  boolString(App.mini_map.active),
 	  boolString(App.motion_prediction),
 	  boolString(App.skip_intro),
-	  boolString(App.no_pickup));
+	  boolString(App.no_pickup),
+	  boolString(App.show_fps));
 	out_file << buf;
 
 	static const char* other_setting =
@@ -228,9 +231,9 @@ void saveIni()
 	  "; Preferred OpenGL Version (must be 3.3 or between 4.0 to 4.6).\n"
 	  "gl_ver_major=%d\n"
 	  "gl_ver_minor=%d\n\n"
-	  "; Comma(,) delimitered DLL(s) to load (early: right after attached).\n"
+	  "; Comma delimitered DLLs to load (early: right after attached).\n"
 	  "load_dlls_early=%s\n\n"
-	  "; Comma(,) delimitered DLL(s) to load (late: right after window created).\n"
+	  "; Comma delimitered DLLs to load (late: right after window created).\n"
 	  "load_dlls_late=%s\n\n"
 	  "; Apply fix some glide crash with Project Diablo 2.\n"
 	  "pd2_fix=%s\n";

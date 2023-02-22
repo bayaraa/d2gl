@@ -80,7 +80,7 @@
       "break;"
     "case 5:"
       "FragColor=texture(u_MapTexture,v_TexCoord);"
-      "FragColor.xyz=v(FragColor.xyz,.3);"
+      "FragColor.xyz=v(FragColor.xyz,.2);"
       "break;"
   "}"
   "float i=1.00001;"

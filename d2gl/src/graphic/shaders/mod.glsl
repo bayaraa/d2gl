@@ -88,7 +88,7 @@ void main()
 		case 4: FragColor = vec4(0.0); break;
 		case 5:
 			FragColor = texture(u_MapTexture, v_TexCoord);
-			FragColor.rgb = greyscale(FragColor.rgb, 0.3);
+			FragColor.rgb = greyscale(FragColor.rgb, 0.2);
 		break;
 	}
 

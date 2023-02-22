@@ -7,7 +7,7 @@ namespace d2gl::modules {
 MiniMap::MiniMap()
 {
 	m_bg = std::make_unique<Object>(m_pos, m_size);
-	m_bg->setColor(0x00000099, 1);
+	m_bg->setColor(0x000000CC, 1);
 	m_bg->setColor(0x222222DD, 2);
 	m_bg->setFlags({ 1, 2, 0, 0 });
 
@@ -17,7 +17,7 @@ MiniMap::MiniMap()
 
 void MiniMap::resize()
 {
-	m_size = { 220.0f, 160.0f };
+	m_size = { 220.0f, 150.0f };
 	m_pos = { App.game.size.x - m_size.x - 5.0f, 5.0f };
 
 	const glm::vec2 zoom = App.viewport.scale;
@@ -48,7 +48,7 @@ void MiniMap::draw()
 			swprintf_s(time_str, L"%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);
 
 			d2::setTextSizeHooked(99);
-			d2::drawNormalTextHooked(time_str, App.game.size.x - 220, 20, 0, 0);
+			d2::drawNormalTextHooked(time_str, App.game.size.x - 220, 20, 4, 0);
 		}
 	}
 }
