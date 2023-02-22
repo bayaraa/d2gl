@@ -6,34 +6,53 @@ Few pre included libretro's shader to upscale higher resolutions. Change in game
 ## Features
 
 - Turns Diablo 2 to modern opengl title.
-- Upscale to higher resolution using libretro's shader.
+- Upscale to higher resolution using some libretro's shader.
 - Switch some parts in game to high-definition (all text, cursor etc.).
-- Unlocked FPS (menu screen / ingame).
-- Modified version of "D2DX's Unit/Weather Motion Predictor" feature.
-- Few graphic post processing effects (sharpen, FXAA etc.).
+- Unlocked FPS (menu screen 45fps / ingame).
+- Modified version of "D2DX's Unit/Weather Motion Predictor" feature (better with v-sync on).
+- Few graphic post processing effects (Lut, sharpen, FXAA etc.).
 
 ## Requirements
 
-- Diablo 2 LoD: 1.09d, 1.10f, 1.11, 1.11b, 1.12a, 1.13c, 1.13d, 1.14d.
+- Diablo 2 LoD: ``1.09d``, ``1.10f``, ``1.11``, ``1.11b``, ``1.12a``, ``1.13c``, ``1.13d``, ``1.14d``.
   - 1.14d dropped software rendering. So don't put ddraw.dll into game folder.
 - Windows 10/11
 - GPU with minimum OpenGL 3.3 support.
+  Currently i don't have access to NVidia or AMD or any dedicated GPU. Tested only Intel 550 iGPU but fps seems ok.
 
 ## Usage
 
+Don't use custom wrapper on official servers (like battle.net) you will be banned.  
 Put d2gl.mpq and glide3x.dll or ddraw.dll (or both) into game installation folder.  
 Disable all compatibilty mode if you enabled on Game.exe and Diablo II.exe.  
 Run Game.exe without any flag will open game in DDraw mode (except 1.14d).  
-Run Game.exe with -3dfx flag will open game in Glide mode.
+Run Game.exe with ``-3dfx`` flag will open game in Glide mode (don't use ``-w`` flag).  
+``CTRL+O`` brings option menu and almost every setting can be changed directly ingame.
+
+If you want to play in widescreen (with SGD2FreeRes) custom SGD2FreeRes is included in zip file.  
+If you want to play PD2 with this wrapper disable PD2's default hd mod D2HD.dll (rename or delete) and open d2gl.ini and set
+``pd2_fix=true``. It will fix some glide related crashes (Not fully tested but Rathma, DClone, some maps tested. Unfortunately quick cast bar, buff timer not showing).
+
+To load custom dll you there are 2 settings in d2gl.ini ``load_dlls_early``, ``load_dlls_late``.  
+``load_dlls_early`` is loads right after wrapper attached.  
+``load_dlls_late`` is loads right after game window created (if you play PD2 use ``load_dlls_late=SGD2FreeRes.dll``).
+
+## Compatibility
+
+I did not really tested with other mods.
+Briefly tested on D2LoD 1.13c on single player with Basemod(1.1.3.9), BH Maphack(1.9.9), Plugy(14.0.3).
+Briefly tested on Project Diablo 2 Season 6 single player with/without plugy.
 
 ## Credits
 
-Diablo II community (The Phrozen Keep), Everyone who makes d2 mod and open their source codes.
+Diablo II modding community (The Phrozen Keep), Everyone who makes d2 mod and open their source codes.
 
-- Detours by Microsoft.
+- SGD2FreeRes D2 Custom HD resolution mod (Mir Drualga).
+- D2DX's Unit/Weather Motion Predictor (Bolrog).
+- Detours (Microsoft).
 - The OpenGL Extension Wrangler Library (Brian Paul).
 - OpenGL Mathematics (GLM) (G-Truc Creation).
-- FXAA implementation by Timothy Lottes (NVIDIA Corporation.).
+- FXAA implementation by Timothy Lottes (NVIDIA Corporation).
 - Dear ImGui (Omar Cornut).
 - stb_image, stb_image_write (Sean Barrett).
 - MurmurHash3 (Austin Appleby).
