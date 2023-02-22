@@ -13,11 +13,12 @@ BraceWrapping:
   AfterNamespace: false
   AfterStruct: false
   AfterUnion: false
+  AfterExternBlock: false
   BeforeCatch: false
   BeforeElse: false
   IndentBraces: false
   SplitEmptyFunction: false
-  SplitEmptyRecord: false
+  SplitEmptyRecord: true
 BreakBeforeBraces: Custom
 ColumnLimit: 0
 Cpp11BracedListStyle: false
@@ -27,6 +28,7 @@ AlignTrailingComments: false
 ContinuationIndentWidth: 2
 PenaltyIndentedWhitespace: 0
 AllowShortCaseLabelsOnASingleLine: true
+IndentExternBlock: NoIndent
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentWidth: 4

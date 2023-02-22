@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)src\app.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\extra.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\funcs.cpp" />
@@ -63,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\app.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\funcs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\patch.h" />

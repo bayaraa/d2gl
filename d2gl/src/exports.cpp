@@ -17,36 +17,17 @@
 */
 
 #include "pch.h"
-#include "extra.h"
+#include "exports.h"
 
-namespace d2gl {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-bool isPD2()
+__declspec(dllexport) void __stdcall setCustomScreenSize(uint32_t width, uint32_t height)
 {
-	HANDLE handle = GetModuleHandleA("ProjectDiablo.dll");
-	return (bool)handle;
+	d2gl::App.game.custom_size = { width, height };
 }
 
-bool fixPD2drawShiftedImage(const d2::CellContext* cell)
-{
-	if (App.pd2_fix && App.api == Api::Glide && (uintptr_t)&cell == 0x19F63C)
-		return true;
-
-	return false;
+#ifdef __cplusplus
 }
-
-bool fixPD2drawGroundTile(const d2::TileContext* tile)
-{
-	if (App.pd2_fix && App.api == Api::Glide && tile) {
-		const auto len = strlen(tile->szTileName);
-		if (len > 8) {
-			const auto name = tile->szTileName + len - 8;
-			if (strcmp(name, "Warp.dt1") == 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-}
+#endif
