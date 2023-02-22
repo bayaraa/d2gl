@@ -45,7 +45,7 @@ Briefly tested on Project Diablo 2 Season 6 single player with/without plugy.
 
 ## Credits
 
-Diablo II modding community (The Phrozen Keep), Everyone who makes d2 mod and open their source codes.
+Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and their source codes public.
 
 - SGD2FreeRes D2 Custom HD resolution mod (Mir Drualga).
 - D2DX's Unit/Weather Motion Predictor (Bolrog).
@@ -56,3 +56,10 @@ Diablo II modding community (The Phrozen Keep), Everyone who makes d2 mod and op
 - Dear ImGui (Omar Cornut).
 - stb_image, stb_image_write (Sean Barrett).
 - MurmurHash3 (Austin Appleby).
+
+## Some Screenshots
+
+![Screenshot010](https://user-images.githubusercontent.com/2043880/220664490-2a9b34d8-ca7c-4e52-a57d-d43c508f5813.png)
+![Screenshot011](https://user-images.githubusercontent.com/2043880/220665044-ca291b3e-c838-46c3-b574-ecd7f125c115.png)
+![Screenshot013](https://user-images.githubusercontent.com/2043880/220666692-967a8c13-f480-4ac6-af1e-b45fda3bdee3.png)
+![Screenshot002](https://user-images.githubusercontent.com/2043880/220667272-a83aa2cd-d038-41ea-a878-a6e148b8f9f6.png)
