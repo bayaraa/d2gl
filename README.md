@@ -25,3 +25,15 @@ Put d2gl.mpq and glide3x.dll or ddraw.dll (or both) into game installation folde
 Disable all compatibilty mode if you enabled on Game.exe and Diablo II.exe.  
 Run Game.exe without any flag will open game in DDraw mode (except 1.14d).  
 Run Game.exe with -3dfx flag will open game in Glide mode.
+
+## Credits
+
+Diablo II community (The Phrozen Keep), Everyone who makes d2 mod and open their source codes.
+
+- Detours by Microsoft.
+- The OpenGL Extension Wrangler Library (Brian Paul).
+- OpenGL Mathematics (GLM) (G-Truc Creation).
+- FXAA implementation by Timothy Lottes (NVIDIA Corporation.).
+- Dear ImGui (Omar Cornut).
+- stb_image, stb_image_write (Sean Barrett).
+- MurmurHash3 (Austin Appleby).
