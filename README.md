@@ -49,6 +49,7 @@ Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and
 
 - SGD2FreeRes D2 Custom HD resolution mod (Mir Drualga).
 - D2DX's Unit/Weather Motion Predictor (Bolrog).
+- Libretro's common-shaders.
 - Detours (Microsoft).
 - The OpenGL Extension Wrangler Library (Brian Paul).
 - OpenGL Mathematics (GLM) (G-Truc Creation).
