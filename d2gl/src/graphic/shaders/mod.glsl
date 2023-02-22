@@ -107,6 +107,7 @@ void main()
 		case 5:
 			FragColor = texture(u_MapTexture, v_TexCoord);
 			FragColor.rgb = greyscale(FragColor.rgb, 0.2);
+			FragColor.a *= 0.9;
 		break;
 	}
 

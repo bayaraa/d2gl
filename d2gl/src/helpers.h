@@ -31,8 +31,8 @@
 #define DLL_USER32   "user32.dll"
 
 #define UNPACK(...) __VA_ARGS__
-#define getOffset(def, v109d, v110f, v111a, v111b, v112a, v113c, v113d, v114d) helpers::getVersionOffset({ UNPACK def }, { UNPACK v109d }, { UNPACK v110f }, { UNPACK v111a }, { UNPACK v111b }, { UNPACK v112a }, { UNPACK v113c }, { UNPACK v113d }, { UNPACK v114d })
-#define getProc(def, v109d, v110f, v111a, v111b, v112a, v113c, v113d, v114d)   helpers::getProcOffset(getOffset(def, v109d, v110f, v111a, v111b, v112a, v113c, v113d, v114d))
+#define getOffset(def, v109d, v110, v111, v111b, v112, v113c, v113d, v114d) helpers::getVersionOffset({ UNPACK def }, { UNPACK v109d }, { UNPACK v110 }, { UNPACK v111 }, { UNPACK v111b }, { UNPACK v112 }, { UNPACK v113c }, { UNPACK v113d }, { UNPACK v114d })
+#define getProc(def, v109d, v110, v111, v111b, v112, v113c, v113d, v114d)   helpers::getProcOffset(getOffset(def, v109d, v110, v111, v111b, v112, v113c, v113d, v114d))
 #define isVer(ver)    helpers::getVersion() == Version::##ver
 #define isVerNot(ver) helpers::getVersion() != Version::##ver
 #define isVerMin(ver) helpers::getVersion() >= Version::##ver
@@ -52,7 +52,7 @@ void strToLower(std::string& str);
 
 Version getVersion();
 std::string getVersionString();
-Offset getVersionOffset(OffsetDefault def_offset, Offset v109d, Offset v110f, Offset v111a, Offset v111b, Offset v112a, Offset v113c, Offset v113d, Offset v114d);
+Offset getVersionOffset(OffsetDefault def_offset, Offset v109d, Offset v110, Offset v111, Offset v111b, Offset v112, Offset v113c, Offset v113d, Offset v114d);
 
 uintptr_t getProcOffset(Offset offset);
 uintptr_t getProcOffset(LPCSTR module, int offset);

@@ -52,8 +52,8 @@ void MotionPrediction::toggle(bool active)
 	if (!m_active && active) {
 		DetourTransactionBegin();
 		DetourUpdateThread(GetCurrentThread());
-		DetourAttach(&(PVOID&)d2::drawUnit, isVerMax(V_110f) || isVer(V_114d) ? d2::drawUnitStubESI : d2::drawUnitStubStack);
-		if (isVerNot(V_109d) && isVerNot(V_110f))
+		DetourAttach(&(PVOID&)d2::drawUnit, isVerMax(V_110) || isVer(V_114d) ? d2::drawUnitStubESI : d2::drawUnitStubStack);
+		if (isVerNot(V_109d) && isVerNot(V_110))
 			DetourAttach(&(PVOID&)d2::drawMissile, d2::drawMissileStub);
 		DetourAttach(&(PVOID&)d2::drawWeatherParticles, isVer(V_114d) ? d2::drawWeatherParticlesStub114d : d2::drawWeatherParticlesStub);
 		DetourTransactionCommit();
@@ -63,8 +63,8 @@ void MotionPrediction::toggle(bool active)
 	} else if (m_active && !active) {
 		DetourTransactionBegin();
 		DetourUpdateThread(GetCurrentThread());
-		DetourDetach(&(PVOID&)d2::drawUnit, isVerMax(V_110f) || isVer(V_114d) ? d2::drawUnitStubESI : d2::drawUnitStubStack);
-		if (isVerNot(V_109d) && isVerNot(V_110f))
+		DetourDetach(&(PVOID&)d2::drawUnit, isVerMax(V_110) || isVer(V_114d) ? d2::drawUnitStubESI : d2::drawUnitStubStack);
+		if (isVerNot(V_109d) && isVerNot(V_110))
 			DetourDetach(&(PVOID&)d2::drawMissile, d2::drawMissileStub);
 		DetourDetach(&(PVOID&)d2::drawWeatherParticles, isVer(V_114d) ? d2::drawWeatherParticlesStub114d : d2::drawWeatherParticlesStub);
 		DetourTransactionCommit();
@@ -257,7 +257,7 @@ void MotionPrediction::altItemsTextMotion()
 			y1 = (int*)((uintptr_t)d2::alt_item_pos + 0x18);
 			y2 = (int*)((uintptr_t)d2::alt_item_pos + 0x10);
 			break;
-		case Version::V_110f:
+		case Version::V_110:
 			x1 = (int*)((uintptr_t)d2::alt_item_pos + 0x30);
 			x2 = (int*)((uintptr_t)d2::alt_item_pos + 0x2C);
 			y1 = (int*)((uintptr_t)d2::alt_item_pos + 0x14);

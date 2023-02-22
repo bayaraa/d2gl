@@ -104,6 +104,8 @@ public:
 	void startEntryText();
 	void drawEntryText();
 
+	static void drawFpsCounter();
+
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);
 

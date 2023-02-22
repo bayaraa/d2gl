@@ -353,6 +353,7 @@ void Wrapper::onStageChange()
 		case DrawStage::Cursor:
 			ctx->appendDelayedObjects();
 			modules::HDText::Instance().drawEntryText();
+			modules::HDText::Instance().drawFpsCounter();
 			modules::HDCursor::Instance().draw();
 			break;
 	}

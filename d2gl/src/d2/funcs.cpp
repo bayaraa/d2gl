@@ -31,7 +31,7 @@ uint32_t mpqLoad(const char* mpqfile)
 {
 	if (isVer(V_114d))
 		return ((mpqLoad_114_t)mpqLoad_Fn)(mpqfile, 0, 0, 0);
-	else if (isVerMin(V_111a))
+	else if (isVerMin(V_111))
 		return mpqLoadStub("d2gl.dll", mpqfile, "d2gl", 0, 0);
 
 	return ((mpqLoad_110_t)mpqLoad_Fn)("d2gl.dll", mpqfile, 0, 0, 0, 0, 0);
@@ -142,9 +142,9 @@ CellFile* getCellFile(CellContext* cell)
 {
 	if (isVerMin(V_113c))
 		return cell->v113.pCellFile;
-	else if (isVer(V_112a))
+	else if (isVer(V_112))
 		return cell->v112.pCellFile;
-	else if (isVerMin(V_111a))
+	else if (isVerMin(V_111))
 		return cell->v111.pCellFile;
 	return cell->v109.pCellFile;
 }
@@ -153,9 +153,9 @@ DWORD getCellNo(CellContext* cell)
 {
 	if (isVerMin(V_113c))
 		return cell->v113.nCellNo;
-	else if (isVer(V_112a))
+	else if (isVer(V_112))
 		return cell->v112.nCellNo;
-	else if (isVerMin(V_111a))
+	else if (isVerMin(V_111))
 		return cell->v111.nCellNo;
 	return cell->v109.nCellNo;
 }

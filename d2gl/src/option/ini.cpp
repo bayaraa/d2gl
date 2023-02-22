@@ -322,6 +322,7 @@ void loadIni()
 		App.motion_prediction = getBool("Feature", "motion_prediction", App.motion_prediction);
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);
 		App.no_pickup = getBool("Feature", "no_pickup", App.no_pickup);
+		App.show_fps = getBool("Feature", "show_fps", App.show_fps);
 
 		App.gl_ver_major = getInt("Other", "gl_ver_major", App.gl_ver_major, 3, 4);
 		App.gl_ver_minor = getInt("Other", "gl_ver_minor", App.gl_ver_minor, 0, 6);

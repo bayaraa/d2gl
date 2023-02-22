@@ -81,6 +81,7 @@
     "case 5:"
       "FragColor=texture(u_MapTexture,v_TexCoord);"
       "FragColor.xyz=v(FragColor.xyz,.2);"
+      "FragColor.w*=.9;"
       "break;"
   "}"
   "float i=1.00001;"

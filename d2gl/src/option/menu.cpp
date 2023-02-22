@@ -347,6 +347,9 @@ void Menu::draw()
 				drawSeparator();
 				drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 					saveBool("Feature", "no_pickup", App.no_pickup);
+				drawSeparator();
+				drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom left corner.", show_fps)
+					saveBool("Feature", "show_fps", App.show_fps);
 				childEnd();
 				tabEnd();
 			}

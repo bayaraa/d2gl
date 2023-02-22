@@ -214,7 +214,7 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	if (!isActive() || !str)
 		return false;
 
-	if (isVerMin(V_111a)) {
+	if (isVerMin(V_111)) {
 		const auto unit = d2::getSelectedUnit();
 		if (unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
 			drawMonsterHealthBar(unit);
@@ -358,7 +358,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (!isActive())
 		return false;
 
-	if (isVerMax(V_110f)) {
+	if (isVerMax(V_110)) {
 		static bool monster_hp = false;
 		const auto unit = d2::getSelectedUnit();
 		if (unit && unit->dwType == d2::UnitType::Monster && top == 18 && bottom == 34) {
@@ -456,11 +456,11 @@ void HDText::drawSubText(uint8_t fn)
 	static int *length, *x, *y;
 
 	if (fn == 1) {
-		str = *(const wchar_t**)(ptr + (isVerMax(V_110f) ? 0x20 : 0x68));
-		color = (uint32_t*)(ptr + (isVerMax(V_110f) ? 0x78 : 0x74));
-		length = (int*)(ptr + (isVerMax(V_110f) ? 0x1C : 0x10));
-		x = (int*)(ptr + (isVerMax(V_110f) ? 0x18 : 0x18));
-		y = (int*)(ptr + (isVerMax(V_110f) ? 0x70 : 0x6C));
+		str = *(const wchar_t**)(ptr + (isVerMax(V_110) ? 0x20 : 0x68));
+		color = (uint32_t*)(ptr + (isVerMax(V_110) ? 0x78 : 0x74));
+		length = (int*)(ptr + (isVerMax(V_110) ? 0x1C : 0x10));
+		x = (int*)(ptr + (isVerMax(V_110) ? 0x18 : 0x18));
+		y = (int*)(ptr + (isVerMax(V_110) ? 0x70 : 0x6C));
 	} else if (fn == 2) {
 		str = (const wchar_t*)(ptr + 0x390);
 		color = (uint32_t*)(ptr + 0x74);
@@ -637,7 +637,7 @@ void HDText::startEntryText()
 		return;
 
 	m_entry_text = true;
-	if (isVerMax(V_110f)) {
+	if (isVerMax(V_110)) {
 		static int level = 0;
 		if (level != *d2::level_no) {
 			m_entry_text_draw = true;
@@ -737,6 +737,19 @@ inline const D2FontInfo& HDText::getFont(uint32_t size)
 inline wchar_t HDText::getColor(uint32_t color)
 {
 	return (color < g_default_colors.size()) ? g_default_colors[color] : g_default_colors[0];
+}
+
+void HDText::drawFpsCounter()
+{
+	if (!App.show_fps)
+		return;
+
+	static wchar_t str[20] = { 0 };
+	const float fps = round(1000.0f / App.context->getAvgFrameTime());
+	swprintf_s(str, L"FPS: %.0f", fps);
+
+	d2::setTextSizeHooked(11);
+	d2::drawNormalTextHooked(str, 5, App.game.size.y - 2, 0, 0);
 }
 
 }

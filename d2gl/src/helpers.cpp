@@ -110,10 +110,10 @@ Version getVersion()
 	ss << ((ver_info->dwFileVersionLS >>  0) & 0xffff);
 
 	if (ss.str() == "1.0.9.22" ) version = Version::V_109d;
-	else if (ss.str() == "1.0.10.39") version = Version::V_110f;
-	else if (ss.str() == "1.0.11.45") version = Version::V_111a;
+	else if (ss.str() == "1.0.10.39") version = Version::V_110;
+	else if (ss.str() == "1.0.11.45") version = Version::V_111;
 	else if (ss.str() == "1.0.11.46") version = Version::V_111b;
-	else if (ss.str() == "1.0.12.49") version = Version::V_112a;
+	else if (ss.str() == "1.0.12.49") version = Version::V_112;
 	else if (ss.str() == "1.0.13.60") version = Version::V_113c;
 	else if (ss.str() == "1.0.13.64") version = Version::V_113d;
 	else if (ss.str() == "1.14.3.71") version = Version::V_114d;
@@ -127,10 +127,10 @@ std::string getVersionString()
 	// clang-format off
 	switch (getVersion()) {
 	case Version::V_109d: return "1.09d";
-	case Version::V_110f: return "1.10f";
-	case Version::V_111a: return "1.11a";
+	case Version::V_110: return "1.10";
+	case Version::V_111: return "1.11";
 	case Version::V_111b: return "1.11b";
-	case Version::V_112a: return "1.12a";
+	case Version::V_112: return "1.12";
 	case Version::V_113c: return "1.13c";
 	case Version::V_113d: return "1.13d";
 	case Version::V_114d: return "1.14d";
@@ -139,16 +139,16 @@ std::string getVersionString()
 	return "Unknown";
 }
 
-Offset getVersionOffset(OffsetDefault def_offset, Offset v109d, Offset v110f, Offset v111a, Offset v111b, Offset v112a, Offset v113c, Offset v113d, Offset v114d)
+Offset getVersionOffset(OffsetDefault def_offset, Offset v109d, Offset v110, Offset v111, Offset v111b, Offset v112, Offset v113c, Offset v113d, Offset v114d)
 {
 	Offset offset;
 	// clang-format off
 	switch (getVersion()) {
 	case Version::V_109d: offset = v109d; break;
-	case Version::V_110f: offset = v110f; break;
-	case Version::V_111a: offset = v111a; break;
+	case Version::V_110: offset = v110; break;
+	case Version::V_111: offset = v111; break;
 	case Version::V_111b: offset = v111b; break;
-	case Version::V_112a: offset = v112a; break;
+	case Version::V_112: offset = v112; break;
 	case Version::V_113c: offset = v113c; break;
 	case Version::V_113d: offset = v113d; break;
 	case Version::V_114d: offset = v114d;

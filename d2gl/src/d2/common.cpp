@@ -164,22 +164,22 @@ void initHooks()
 
 	Patch game_loop = Patch();
 	game_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x9B3D, 0xE87A5F0B), (0xA2A2, 0xE8B51B0C), (0x89A2F, 0xE84A37F8), (0x3356F, 0xE85E9CFD), (0x7D1BF, 0xE84801F9), (0x44E2F, 0xE81A85FC), (0x45E7F, 0xE8E473FC), (0x4F256, 0xE8E5550C)), 5, (uintptr_t)gameDrawBeginStub);
-	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5333DB3B), (0x865AC, 0x33ED894C), (0x81B7C, 0x33DB894C), (0xA35F6), (0x669F6), (0x90156), (0xC39E6), (0x1D3E6), (0x56EE1, 0x8BEC83EC)), isVerMax(V_110f) ? 6 : 5, (uintptr_t)uiDrawBeginStub);
+	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5333DB3B), (0x865AC, 0x33ED894C), (0x81B7C, 0x33DB894C), (0xA35F6), (0x669F6), (0x90156), (0xC39E6), (0x1D3E6), (0x56EE1, 0x8BEC83EC)), isVerMax(V_110) ? 6 : 5, (uintptr_t)uiDrawBeginStub);
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x508D5424), (0xB58CC, 0x6AFF5203), (0xB7A9C, 0x6AFF5203), (0x38461), (0x27F11), (0x9EB21), (0x16001), (0x14481), (0x684A5, 0x518D45B8)), 5, (uintptr_t)uiDrawEndStub); // Cursor changed
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x52894424), (0xB5606), (0xB7776), (0x38D46), (0x287F6), (0x9F406), (0x168E6), (0x14D66), (0x68435, 0x57568D55)), 5, (uintptr_t)uiDrawEndStub); // Default cursor
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xB9120000), (0xF4C2, 0x51895C24), (0xD922, 0x51895C24), (0xBA47), (0x133D7), (0xCDC7), (0x17F87), (0xE107), (0xF983F, 0x83EA0123)), 5, (uintptr_t)uiDrawEndStub); // InMenu
 	game_loop.toggle(true);
 
 	Patch fps_fix = Patch();
-	fps_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT), (0x9B5F, 0x392D400C), (0xA2C9, 0x85C0752B), (0x89A51, 0x391D2034), (0x33591, 0x391D8036), (0x7D1E1, 0x391D2834), (0x44E51, 0x391D9034), (0x45EA1, 0x391DF046), (0x4F278, 0x391D0407)), isVer(V_110f) ? 4 : 8); // InGame: Unlimited
+	fps_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT), (0x9B5F, 0x392D400C), (0xA2C9, 0x85C0752B), (0x89A51, 0x391D2034), (0x33591, 0x391D8036), (0x7D1E1, 0x391D2834), (0x44E51, 0x391D9034), (0x45EA1, 0x391DF046), (0x4F278, 0x391D0407)), isVer(V_110) ? 4 : 8); // InGame: Unlimited
 	fps_fix.add(PatchType::Swap, getOffset((DLL_D2WIN, 0x2881FF18), (0xEC0C, 0x6A195150), (0xD02B), (0xC63B), (0x13F5B), (0xD94B), (0x18A1B), (0xED6B), (0xFA62D)), 4, isVer(V_109d) ? 0x6A2D5150 : 0x1481FF18); // InMenu: 45fps
 	fps_fix.toggle(true);
 
 	Patch sleep_fix = Patch();
 	sleep_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x6A0AFF15), (0x2635, 0x6A00FF15), (0x2684), (0x8BD14), (0x5D4A4), (0x6CFD4), (0x3CB94), (0x27724), (0x51C42)), 8);
-	sleep_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x6A00FFD3), (0x96C8, 0x55FFD783), (0x9E68, 0x53FFD783), (0x89288), (0x320B8), (0x7BD18), (0x43988), (0x44928), (0x4C711, 0x6A00FFD7)), isVerMax(V_110f) ? 3 : 4);
-	sleep_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x6A00FFD3), (0x96EC, 0x55FFD783), (0x9E8C, 0x53FFD783), (0x892AD), (0x320DD), (0x7BD3D), (0x439AD), (0x4494D), (0x4C740, 0x6A00FFD7)), isVerMax(V_110f) ? 3 : 4);
-	if (isVerMin(V_110f) && isVerMax(V_113d))
+	sleep_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x6A00FFD3), (0x96C8, 0x55FFD783), (0x9E68, 0x53FFD783), (0x89288), (0x320B8), (0x7BD18), (0x43988), (0x44928), (0x4C711, 0x6A00FFD7)), isVerMax(V_110) ? 3 : 4);
+	sleep_fix.add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x6A00FFD3), (0x96EC, 0x55FFD783), (0x9E8C, 0x53FFD783), (0x892AD), (0x320DD), (0x7BD3D), (0x439AD), (0x4494D), (0x4C740, 0x6A00FFD7)), isVerMax(V_110) ? 3 : 4);
+	if (isVerMin(V_110) && isVerMax(V_113d))
 		sleep_fix.add(PatchType::Nop, getOffset((DLL_D2WIN), (), (0xD075, 0x50FF15C0), (0xC683, 0x50FF15A0), (0x13FA3, 0x50FF15A8), (0xD993, 0x50FF15A8), (0x18A63, 0x50FF15C8), (0xEDB3, 0x50FF15B8), ()), 7);
 	sleep_fix.toggle(true);
 
@@ -201,23 +201,23 @@ void initHooks()
 	patch_motion_prediction = std::make_unique<Patch>();
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC1053), (0x7FCF0, 0x83EC5053), (0x7B4F0, 0x83EC4C53), (0x941F0), (0x15C80), (0x71990), (0x7CA40), (0x76170), (0xA0A01, 0x8BEC83EC)), 5, (uintptr_t)rectangledTextBeginStub);
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5D5B83C4), (0x7FE50), (0x7B650), (0x9431A), (0x15DAA), (0x71ABA), (0x7CB6A), (0x7629A), (0xA0B1B, 0x5E5B8BE5)), 5, (uintptr_t)rectangledTextEndStub);
-	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8B450083), (0x85629), (0x80B1E, 0x8B0683F8), (0xA05C5), (0x63E45), (0x8D595), (0xC0E25), (0x1A825), (0x5501E, 0x8B0683F8)), (isVer(V_110f) || isVer(V_114d)) ? 5 : 6, (uintptr_t)unitHoverTextStub);
-	if (isVer(V_109d) || isVer(V_110f))
-		patch_motion_prediction->add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x63D95, 0x33FF8944), (0x6A19E, 0x89442430), (), (), (), (), (), ()), 6, (uintptr_t)(isVer(V_110f) ? altItemsTextStub110f : altItemsTextStub109d));
+	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8B450083), (0x85629), (0x80B1E, 0x8B0683F8), (0xA05C5), (0x63E45), (0x8D595), (0xC0E25), (0x1A825), (0x5501E, 0x8B0683F8)), (isVer(V_110) || isVer(V_114d)) ? 5 : 6, (uintptr_t)unitHoverTextStub);
+	if (isVer(V_109d) || isVer(V_110))
+		patch_motion_prediction->add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x63D95, 0x33FF8944), (0x6A19E, 0x89442430), (), (), (), (), (), ()), 6, (uintptr_t)(isVer(V_110) ? altItemsTextStub110f : altItemsTextStub109d));
 	else
 		patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0xC7442450), (), (), (0xB754D), (0x5DB8D), (0x775BD), (0x5921D), (0x4E7AD), (0xC0A58, 0xC745BC01)), isVer(V_114d) ? 7 : 8, (uintptr_t)altItemsTextStub);
 	modules::MotionPrediction::Instance().toggle(App.motion_prediction);
 
 	patch_hd_text = std::make_unique<Patch>();
 	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x2D8C0000), (0x86952), (0x81EEF), (0x9EC05), (0x628E5), (0x8C015), (0xBF345), (0x19095), (0x556F2)), 5, (uintptr_t)levelEntryTextStub);
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC5C8B), (0x86330), (0x81790), (0x9DDF0), (0x61440), (0x8AB50), (0xBE4C0), (0x17D10), (0x52E51, 0x8BEC83EC)), 5, (uintptr_t)(isVerMax(V_110f) || isVer(V_114d) ? drawRectFrameStubECX : drawRectFrameStub));
-	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (uintptr_t)(isVerMax(V_110f) || isVer(V_114d) ? loadUIImageStubECX : loadUIImageStub));
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC5C8B), (0x86330), (0x81790), (0x9DDF0), (0x61440), (0x8AB50), (0xBE4C0), (0x17D10), (0x52E51, 0x8BEC83EC)), 5, (uintptr_t)(isVerMax(V_110) || isVer(V_114d) ? drawRectFrameStubECX : drawRectFrameStub));
+	patch_hd_text->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8D9424FC), (0x1000, 0x81EC0801), (0x1000, 0x81EC0801), (0x75D00), (0xA9070), (0xBEF70), (0x2B420), (0xA9480), (0x788B3, 0x81EC0801)), isVer(V_109d) ? 6 : 7, (uintptr_t)(isVerMax(V_110) || isVer(V_114d) ? loadUIImageStubECX : loadUIImageStub));
 	if (isVer(V_114d))
 		patch_hd_text->add(PatchType::Auto, getOffset((), (), (), (), (), (), (), (), (0x101AC1, 0x8B0883C4)), 5, (uintptr_t)drawSubTextCStub); // Default texts & Credits screen
 	else {
-		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x254), (-10124, 0, 0x35A), (-10124, 0, 0x33A), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)(isVerMax(V_110f) ? drawSubTextBStub : drawSubTextAStub)); // Default texts & Credits screen
+		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x254), (-10124, 0, 0x35A), (-10124, 0, 0x33A), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)(isVerMax(V_110) ? drawSubTextBStub : drawSubTextAStub)); // Default texts & Credits screen
 		patch_hd_text->add(PatchType::Call, getOffset((DLL_D2WIN, 0xB9120000, 0x74), (-10118, 0, 0x62), (-10118, 0, 0x62), (-10039), (-10031), (-10131), (-10070), (-10102), ()), 5, (uintptr_t)drawSubTextAStub); // Button black labels
-		if (isVerMin(V_111a))
+		if (isVerMin(V_111))
 			patch_hd_text->add(PatchType::Nop, getOffset((DLL_D2WIN, 0x66C70458, 0xD1), (), (), (-10134), (-10155, 0, 0x2D1), (-10201, 0, 0x271), (-10019), (-10194), ()), 6); // Get text N chars width fix
 	}
 	patch_hd_text->toggle(true);
@@ -249,7 +249,7 @@ void initHooks()
 
 	DetourAttach(&(PVOID&)takeScreenShot, takeScreenShotHooked);
 	DetourAttach(&(PVOID&)drawNormalText, drawNormalTextHooked);
-	if (isVerNot(V_109d) && isVerNot(V_110f))
+	if (isVerNot(V_109d) && isVerNot(V_110))
 		DetourAttach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
 	DetourAttach(&(PVOID&)drawFramedText, drawFramedTextHooked);
 	DetourAttach(&(PVOID&)drawRectangledText, drawRectangledTextHooked);
@@ -289,7 +289,7 @@ void destroyHooks()
 
 	DetourDetach(&(PVOID&)takeScreenShot, takeScreenShotHooked);
 	DetourDetach(&(PVOID&)drawNormalText, drawNormalTextHooked);
-	if (isVerNot(V_109d) && isVerNot(V_110f))
+	if (isVerNot(V_109d) && isVerNot(V_110))
 		DetourDetach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
 	DetourDetach(&(PVOID&)drawFramedText, drawFramedTextHooked);
 	DetourDetach(&(PVOID&)drawRectangledText, drawRectangledTextHooked);
