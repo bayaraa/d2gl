@@ -200,9 +200,9 @@ void Wrapper::onStageChange()
 		case DrawStage::Map:
 			break;
 		case DrawStage::HUD:
+			modules::HDText::Instance().drawFpsCounter();
 			break;
 		case DrawStage::Cursor:
-			modules::HDText::Instance().drawFpsCounter();
 			ctx->appendDelayedObjects();
 			modules::HDText::Instance().drawEntryText();
 			modules::HDCursor::Instance().draw();
@@ -256,7 +256,7 @@ void Wrapper::onBufferSwap(bool flip)
 			}
 		}
 
-		ctx->bindFrameBuffer(m_game_framebuffer);
+		ctx->bindFrameBuffer(m_game_framebuffer, false);
 		ctx->setViewport(App.game.size);
 		ctx->bindPipeline(m_game_pipeline);
 		ctx->pushQuad();
@@ -338,10 +338,10 @@ HRESULT Wrapper::setDisplayMode(DWORD width, DWORD height, DWORD bpp)
 
 	App.game.bpp = bpp;
 	App.game.size = { width, height };
-	trace("Game requested screen size: %d x %d", App.game.size.x, App.game.size.y);
+	trace_log("Game requested screen size: %d x %d", App.game.size.x, App.game.size.y);
 
 	if (App.hwnd && old_size != App.game.size) {
-		win32::setWindowMetricts();
+		win32::setWindowMetrics();
 		win32::windowResize();
 		DDrawWrapper->onResize();
 

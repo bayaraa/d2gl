@@ -367,7 +367,7 @@ void setWindowRect()
 	}
 }
 
-void setWindowMetricts()
+void setWindowMetrics()
 {
 	App.viewport.size.x = App.window.size.x;
 	App.viewport.size.y = (uint32_t)(((float)App.game.size.y / App.game.size.x) * App.window.size.x);
@@ -417,7 +417,7 @@ void windowResize()
 	bool cursor_lock = App.cursor.locked;
 	setCursorUnlock();
 
-	setWindowMetricts();
+	setWindowMetrics();
 	App.window.resized = true;
 
 	if (cursor_lock)

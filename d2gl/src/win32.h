@@ -60,7 +60,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void setWindow(HWND hwnd);
 void setWindowRect();
-void setWindowMetricts();
+void setWindowMetrics();
 void setCursorLock();
 void setCursorUnlock();
 void windowResize();

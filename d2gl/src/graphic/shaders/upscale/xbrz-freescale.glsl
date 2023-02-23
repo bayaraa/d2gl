@@ -100,6 +100,9 @@ float GetLeftRatio(vec2 center, vec2 origin, vec2 dir, vec2 scale)
 #define  eq(a,b) (a == b)
 #define neq(a,b) (a != b)
 
+//[
+vec2 coord;
+//]
 #define P(x,y) texture(u_Texture, coord + u_RelSize * vec2(x, y)).rgb
 
 void main()
@@ -113,7 +116,7 @@ void main()
 
 	vec2 scale = u_OutSize * u_RelSize;
 	vec2 pos = fract(v_TexCoord * u_TexSize) - vec2(0.5, 0.5);
-	vec2 coord = v_TexCoord - pos * u_RelSize;
+	coord = v_TexCoord - pos * u_RelSize;
 
 	vec3 A = P(-1.,-1.);
 	vec3 B = P( 0.,-1.);

@@ -749,8 +749,9 @@ void HDText::drawFpsCounter()
 	swprintf_s(str, L"FPS: %.0f", fps);
 
 	d2::setTextSizeHooked(App.hd_text ? 99 : 11);
-	const auto width = d2::getNormalTextWidth(str);
+	const auto width = d2::getNormalTextWidthHooked(str);
 	d2::drawNormalTextHooked(str, App.game.size.x / 2 - width / 2, App.game.size.y - 54, 4, 0);
+	d2::setTextSizeHooked(1);
 }
 
 }

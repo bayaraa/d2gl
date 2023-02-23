@@ -349,9 +349,9 @@ void Wrapper::onStageChange()
 
 				modules::MiniMap::Instance().draw();
 			}
+			modules::HDText::Instance().drawFpsCounter();
 			break;
 		case DrawStage::Cursor:
-			modules::HDText::Instance().drawFpsCounter();
 			ctx->appendDelayedObjects();
 			modules::HDText::Instance().drawEntryText();
 			modules::HDCursor::Instance().draw();
@@ -671,7 +671,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 
 	if (App.hwnd) {
 		if (old_size != App.game.size) {
-			win32::setWindowMetricts();
+			win32::setWindowMetrics();
 			win32::windowResize();
 			GlideWrapper->onResize();
 		}
@@ -680,7 +680,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 
 	win32::setWindow((HWND)hwnd);
 	win32::setWindowRect();
-	win32::setWindowMetricts();
+	win32::setWindowMetrics();
 
 	App.context = std::make_unique<Context>();
 	GlideWrapper = std::make_unique<Wrapper>();
