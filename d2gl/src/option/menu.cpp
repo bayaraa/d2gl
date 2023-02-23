@@ -298,7 +298,21 @@ void Menu::draw()
 			if (tabBegin("[Features]", 2, &active_tab)) {
 				childBegin("##w5", true);
 				drawCheckbox_m("HD Cursor", App.hd_cursor, "High-definition in game & menu screen cursor.", hd_cursor)
+				{
 					saveBool("Feature", "hd_cursor", App.hd_cursor);
+					if (!App.hd_cursor) {
+						App.hd_text = false;
+						d2::patch_hd_text->toggle(App.hd_text);
+						saveBool("Feature", "hd_text", App.hd_text);
+
+						App.hd_orbs.active = false;
+						saveBool("Feature", "hd_orbs", App.hd_orbs.active);
+
+						App.mini_map.active = false;
+						d2::patch_minimap->toggle(App.mini_map.active);
+						saveBool("Feature", "mini_map", App.mini_map.active);
+					}
+				}
 				drawSeparator();
 				ImGui::BeginDisabled(!App.hd_cursor);
 					drawCheckbox_m("HD Text", App.hd_text, "High-definition ingame texts.", hd_text)

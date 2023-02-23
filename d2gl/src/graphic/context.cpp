@@ -87,7 +87,7 @@ Context::Context()
 
 	char version_str[50] = { 0 };
 	sprintf_s(version_str, "%d.%d", major_version, minor_version);
-	trace_log("OpenGL: %s", version_str);
+	trace_log("OpenGL: %s (%s)", version_str, glGetString(GL_RENDERER));
 	App.version = version_str;
 
 	GLint max_texture_unit;
