@@ -27,7 +27,7 @@ Put d2gl.mpq and glide3x.dll or ddraw.dll (or both) into game installation folde
 Disable all compatibilty mode if you enabled on Game.exe and Diablo II.exe.  
 Run Game.exe without any flag will open game in DDraw mode (except 1.14d).  
 Run Game.exe with ``-3dfx`` flag will open game in Glide mode (don't use ``-w`` flag).  
-``CTRL+O`` brings option menu and almost every setting can be changed directly ingame.
+``CTRL+O`` ("O" as a letter) brings option menu and almost every setting can be changed directly ingame.
 
 If you want to play in widescreen (with SGD2FreeRes) custom SGD2FreeRes is included in zip file.  
 If you want to play PD2 with this wrapper disable PD2's default hd mod D2HD.dll (rename or delete) and open d2gl.ini and set
