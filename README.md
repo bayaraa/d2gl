@@ -31,7 +31,7 @@ Run Game.exe with ``-3dfx`` flag will open game in Glide mode (don't use ``-w`` 
 
 If you want to play in widescreen (with SGD2FreeRes) custom SGD2FreeRes is included in zip file.  
 If you want to play PD2 with this wrapper disable PD2's default hd mod D2HD.dll (rename or delete) and open d2gl.ini and set
-``pd2_fix=true``. It will fix some glide related crashes (Not fully tested but Rathma, DClone, some maps tested. Unfortunately quick cast bar, buff timer not showing).
+``pd2_fix=true``. It will fix some glide related crashes (Not fully tested but Rathma, DClone, some maps tested).
 
 To load custom dll you there are 2 settings in d2gl.ini ``load_dlls_early``, ``load_dlls_late``.  
 ``load_dlls_early`` is loads right after wrapper attached.  
