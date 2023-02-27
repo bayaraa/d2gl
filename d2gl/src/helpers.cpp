@@ -19,6 +19,7 @@
 #include "pch.h"
 #include "helpers.h"
 #include "d2/common.h"
+#include "extra/pd2_fixes.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -348,16 +349,28 @@ std::string saveScreenShot(uint8_t* data, int width, int height)
 	return file_name;
 }
 
-void loadDlls(const std::string& dlls)
+void loadDlls(const std::string& dlls, bool late)
 {
+	if (late)
+		applyPD2fixes(0);
+
+	trace_log("Loading %s DLLs.", late ? "late" : "early");
 	auto ss = std::stringstream(dlls);
 
 	for (std::string dll; std::getline(ss, dll, ',');) {
 		dll.erase(remove_if(dll.begin(), dll.end(), isspace), dll.end());
 
-		if (dll != "" && LoadLibraryA(dll.c_str()))
-			trace_log("%s loaded.", dll.c_str());
+		if (dll != "") {
+			if (LoadLibraryA(dll.c_str())) {
+				trace_log("%s loaded.", dll.c_str());
+			} else {
+				error_log("%s not loaded.", dll.c_str());
+			}
+		}
 	}
+
+	if (late)
+		applyPD2fixes(1);
 }
 
 }

@@ -16,10 +16,9 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)src\app.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\funcs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\patch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\stubs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\context.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.cpp" />
@@ -36,6 +35,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\ini.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\menu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\font.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\patch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\win32.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)vendor\include\imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -67,10 +67,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\funcs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\patch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\patch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\structs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\stubs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\context.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\object.h" />

@@ -113,6 +113,11 @@ uintptr_t getLevelName_Fn = getProc((DLL_D2CLIENT), (0x88420), (0x839F0), (0x9DC
 // Offset D2WinUnitHover = getOffset((DLL_D2WIN), (), (-10124, 0xF7E9C1FA, 0x1F3), (-10175, 0x03C2572B, 0x1A3), (-10037, 0x03C2572B, 0x1A3), (-10201, 0x03C2572B, 0x1A3), (-10110, 0x03C2572B, 0x1A3), (-10124, 0x03C2572B, 0x1A3), (0x10318B, 0x03C22BF0));
 // DWORD D2WinUnitHoverRet = helpers::GetProcOffset(D2WinUnitHover) + (isVer(V_110) ? 5 : 6);
 
+// d2client + 0x291F8 : 1 2 3 4 (potion keys)
+// d2client + 0x27708 : life XX/XX
+// d2client + 0x277C7 : Mana XX/XX
+// d2client + 0x3D88A 0x3DD72 0x3E69C 0x289C9 : keybindings
+
 UnitAny* currently_drawing_unit = nullptr;
 uint32_t currently_drawing_weather_particles = 0;
 uint32_t* currently_drawing_weather_particle_index_ptr = nullptr;

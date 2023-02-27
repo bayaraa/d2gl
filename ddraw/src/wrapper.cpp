@@ -20,6 +20,7 @@
 #include "wrapper.h"
 #include "d2/common.h"
 #include "ddraw/surface.h"
+#include "extra/pd2_fixes.h"
 #include "modules/hd_cursor.h"
 #include "modules/hd_text.h"
 #include "modules/motion_prediction.h"
@@ -303,6 +304,8 @@ void Wrapper::onBufferSwap(bool flip)
 	option::Menu::instance().draw();
 
 	ctx->presentFrame();
+
+	fixPD2invItemActions();
 }
 
 HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
@@ -319,8 +322,7 @@ HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
-	trace_log("Loading late DLLs.");
-	helpers::loadDlls(App.dlls_late);
+	helpers::loadDlls(App.dlls_late, true);
 
 	return DD_OK;
 }

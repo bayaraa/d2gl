@@ -469,7 +469,6 @@ __declspec(naked) void drawSubTextCStub()
 	{
 		push eax
 		mov eax, ebp
-		// add eax, 0x8
 		mov sub_text_ptr, eax
 		pop eax
 		pushad

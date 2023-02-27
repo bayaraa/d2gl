@@ -20,6 +20,7 @@
 #include "hd_text.h"
 #include "d2/common.h"
 #include "d2/stubs.h"
+#include "extra/pd2_fixes.h"
 #include "font.h"
 
 namespace d2gl::modules {
@@ -196,10 +197,24 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 		}
 	}
 
+	if (pd2_draw_ui) {
+		font = getFont(99);
+		m_fonts[font.id]->setSize(font.size);
+		m_fonts[font.id]->setMetrics(font);
+		m_fonts[font.id]->setStroke(2);
+		if (color == 15)
+			text_color = g_text_colors.at(L'\x30');
+
+		auto size = m_fonts[font.id]->getTextSize(str);
+		pos.x += ((float)m_last_text_width / 2.0f) - size.x / 2.0f;
+		pos.y -= 1.0f;
+	}
+
 	m_fonts[font.id]->setBoxed(false);
 	m_fonts[font.id]->setMasking(m_masking);
 	m_fonts[font.id]->setAlign(centered ? TextAlign::Center : TextAlign::Left);
 	m_fonts[font.id]->drawText(str, pos, text_color);
+	m_fonts[font.id]->setStroke(0);
 
 	if (map_text) {
 		App.context->toggleDelayPush(false);
@@ -244,27 +259,17 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	else if (line_count > 1)
 		pos.x -= size.x / 2.0f - 24.0f;
 
-	const int mid_y = (int)(pos.y + box_size.y / 2);
-	const int cursor_y = d2::getCursorPos().y;
-	if (mid_y > cursor_y)
-		pos.y = (float)(y - m_last_text_height);
-	else
-		pos.y = (float)y - box_size.y;
-
-	const float margin = 5.0f;
-	if (pos.x + box_size.x > (float)App.game.size.x - margin)
-		pos.x = (float)App.game.size.x - box_size.x - margin;
-	else if (pos.x < margin)
-		pos.x = margin;
-	if (pos.y + box_size.y > (float)App.game.size.y - margin)
-		pos.y = (float)App.game.size.y - box_size.y - margin;
-	else if (pos.y < margin)
-		pos.y = margin;
-
 	App.context->toggleDelayPush(true);
 
 	const auto item = d2::getSelectedItem();
 	if (item && item->dwType == d2::UnitType::Item) {
+		const int mid_y = (int)(pos.y + box_size.y / 2);
+		const int cursor_y = d2::getCursorPos().y;
+		if (mid_y > cursor_y)
+			pos.y = (float)(y - m_last_text_height);
+		else
+			pos.y = (float)y - box_size.y;
+
 		const auto quality = d2::getItemQuality(item);
 		uint32_t border_color = m_border_color;
 		switch (quality) {
@@ -277,6 +282,16 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 		m_object_bg->setColor(border_color, 2);
 	} else
 		m_object_bg->setColor(m_border_color, 2);
+
+	const float margin = 5.0f;
+	if (pos.x + box_size.x > (float)App.game.size.x - margin)
+		pos.x = (float)App.game.size.x - box_size.x - margin;
+	else if (pos.x < margin)
+		pos.x = margin;
+	if (pos.y + box_size.y > (float)App.game.size.y - margin)
+		pos.y = (float)App.game.size.y - box_size.y - margin;
+	else if (pos.y < margin)
+		pos.y = margin;
 
 	m_object_bg->setPosition(pos);
 	m_object_bg->setSize(box_size);
@@ -386,6 +401,9 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if ((*d2::screen_shift == 2 || *d2::screen_shift == 3) && width == 320 && height == 432) // Plugy stats panel bg
 		return false;
 
+	if (draw_mode == 2 && width == 24 && height <= 24) // PD2 buff timer bg
+		return false;
+
 	uint32_t bg_color = 0x000000FF;
 	switch (draw_mode) {
 		case 0: bg_color = 0x00000066; break;
@@ -401,10 +419,20 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	// draw_mode == 7 : BH setting tab bg
 	// draw_mode == 8 : BH setting checkbox bg
 
+	// if (draw_mode == 1)
+	//	trace("%d | %dx%d | %dx%d", draw_mode, left, top, width, height);
+
 	m_object_bg->setPosition({ (float)left, (float)top });
 	m_object_bg->setSize({ (float)width, (float)height });
 	m_object_bg->setColor(bg_color, 1);
-	m_object_bg->setFlags({ 2, 0, 0, 0 });
+
+	if (draw_mode == 1 && top == App.game.size.y - 103 && height == 47) { // message input bg
+		m_object_bg->setColor(m_border_color, 2);
+		m_object_bg->setFlags({ 2, 4, 0, 0 });
+		m_object_bg->setExtra({ (float)width, (float)height });
+	} else
+		m_object_bg->setFlags({ 2, 0, 0, 0 });
+
 	App.context->pushObject(m_object_bg);
 
 	return true;
@@ -417,6 +445,7 @@ uint32_t HDText::getNormalTextWidth(const wchar_t* str, const int n_chars)
 	m_fonts[font.id]->setMetrics(font);
 
 	const auto size = m_fonts[font.id]->getTextSize(str, n_chars);
+	m_last_text_width = (uint32_t)size.x;
 
 	return (uint32_t)size.x;
 }
@@ -430,6 +459,7 @@ uint32_t HDText::getFramedTextSize(const wchar_t* str, uint32_t* width, uint32_t
 	const auto size = m_fonts[font.id]->getTextSize(str);
 	*width = (uint32_t)size.x;
 	*height = (uint32_t)(size.y * 1.11888f);
+	m_last_text_width = *width;
 	m_last_text_height = *height;
 
 	return *height;
@@ -748,7 +778,7 @@ void HDText::drawFpsCounter()
 	const float fps = round(1000.0f / App.context->getAvgFrameTime());
 	swprintf_s(str, L"FPS: %.0f", fps);
 
-	d2::setTextSizeHooked(App.hd_text ? 99 : 11);
+	d2::setTextSizeHooked(99);
 	const auto width = d2::getNormalTextWidthHooked(str);
 	d2::drawNormalTextHooked(str, App.game.size.x / 2 - width / 2, App.game.size.y - 54, 4, 0);
 	d2::setTextSizeHooked(1);

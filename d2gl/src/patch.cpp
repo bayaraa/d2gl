@@ -19,7 +19,7 @@
 #include "pch.h"
 #include "patch.h"
 
-namespace d2gl::d2 {
+namespace d2gl {
 
 SubPatch::SubPatch(PatchType type, Offset offset, uint16_t len, uintptr_t ptr)
 	: m_type(type), m_offset(offset), m_length(len), m_pointer(ptr) {}
@@ -183,6 +183,20 @@ bool Patch::toggle(bool active)
 	}
 
 	return true;
+}
+
+void Patch::getBytes(uintptr_t address, size_t len, uint8_t** dst)
+{
+	*dst = new uint8_t[len];
+	memcpy_s(*dst, len, (uint8_t*)address, len);
+}
+
+void Patch::setBytes(uintptr_t address, size_t len, uint8_t* src)
+{
+	DWORD protect;
+	VirtualProtect((void*)address, len, PAGE_EXECUTE_READWRITE, &protect);
+	memcpy_s((void*)address, len, src, len);
+	VirtualProtect((void*)address, len, protect, &protect);
 }
 
 }

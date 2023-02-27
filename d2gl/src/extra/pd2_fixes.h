@@ -22,8 +22,13 @@
 
 namespace d2gl {
 
+extern int pd2_draw_ui;
+
 bool isPD2();
-bool fixPD2drawShiftedImage(const d2::CellContext* cell);
+void fixPD2drawImage(int x, int y);
+void fixPD2drawSolidRectEx(glm::ivec2& offset, int draw_mode);
 bool fixPD2drawGroundTile(const d2::TileContext* tile);
+void fixPD2invItemActions();
+void applyPD2fixes(int step = 0);
 
 }

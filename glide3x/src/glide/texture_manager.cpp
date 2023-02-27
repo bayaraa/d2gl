@@ -24,6 +24,7 @@ namespace d2gl {
 GlideTexture g_glide_texture;
 
 TextureManager::TextureManager(const SubTextureCounts& size_counts)
+	: m_size_counts(size_counts)
 {
 	uint16_t tex_start = 0;
 
@@ -113,6 +114,21 @@ const SubTextureInfo* TextureManager::getSubTextureInfo(uint32_t address, uint16
 	}
 
 	return &data.sub_texure_info[cache.items[hash]];
+}
+
+void TextureManager::clearCache()
+{
+	for (auto& size_count : m_size_counts) {
+		auto size = size_count.first;
+		auto& data = m_data[size];
+
+		for (auto& cache : data.cache) {
+			for (auto& item : cache.second.items) {
+				data.available[item.second] = true;
+			}
+		}
+		data.cache.clear();
+	}
 }
 
 }

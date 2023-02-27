@@ -52,6 +52,7 @@ extern GlideTexture g_glide_texture;
 class TextureManager {
 	std::unique_ptr<Texture> m_texture;
 	std::map<uint16_t, TextureManagerData> m_data;
+	SubTextureCounts m_size_counts;
 
 public:
 	TextureManager(const SubTextureCounts& size_counts);
@@ -61,6 +62,7 @@ public:
 	inline size_t getUsage(uint16_t size) { return m_data[size].tex_count - m_data[size].available.size(); }
 
 	const SubTextureInfo* getSubTextureInfo(uint32_t address, uint16_t size, uint32_t width, uint32_t height, uint32_t frame_count);
+	void clearCache();
 };
 
 }

@@ -19,7 +19,7 @@
 #include "pch.h"
 #include "funcs.h"
 #include "common.h"
-#include "extra.h"
+#include "extra/pd2_fixes.h"
 #include "helpers.h"
 #include "modules/hd_text.h"
 #include "modules/motion_prediction.h"
@@ -196,6 +196,8 @@ void uiDrawEnd()
 
 void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette)
 {
+	fixPD2drawImage(x, y);
+
 	if (App.hd_cursor && App.game.draw_stage >= DrawStage::Cursor)
 		return;
 
@@ -213,8 +215,7 @@ void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint3
 
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift)
 {
-	if (fixPD2drawShiftedImage(cell))
-		return;
+	fixPD2drawImage(x, y);
 
 	if (modules::HDText::Instance().drawShiftedImage(cell, x, y, gamma, draw_mode)) {
 		auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::ShiftedImage);
@@ -248,7 +249,9 @@ void __stdcall drawShadowHooked(CellContext* cell, int x, int y)
 
 void __stdcall drawSolidRectExHooked(int left, int top, int right, int bottom, uint32_t color, int draw_mode)
 {
-	const auto offset = modules::MotionPrediction::Instance().drawSolidRect();
+	auto offset = modules::MotionPrediction::Instance().drawSolidRect();
+	fixPD2drawSolidRectEx(offset, draw_mode);
+
 	if (!modules::HDText::Instance().drawSolidRect(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode))
 		drawSolidRectEx(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode);
 }
@@ -350,6 +353,7 @@ uint16_t __fastcall getFontHeightHooked()
 uint32_t __fastcall setTextSizeHooked(uint32_t size)
 {
 	modules::HDText::Instance().setTextSize(size);
+	size = (size > 13) ? 11 : size;
 	return setTextSize(size);
 }
 

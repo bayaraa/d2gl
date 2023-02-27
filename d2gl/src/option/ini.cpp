@@ -18,7 +18,7 @@
 
 #include "pch.h"
 #include "ini.h"
-#include "extra.h"
+#include "extra/pd2_fixes.h"
 #include "helpers.h"
 
 namespace d2gl::option {
@@ -317,7 +317,7 @@ void loadIni()
 		App.hd_text = getBool("Feature", "hd_text", App.hd_text);
 		App.hd_orbs.active = getBool("Feature", "hd_orbs", App.hd_orbs.active);
 		App.hd_orbs.centered = getBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
-		App.mini_map.active = getBool("Feature", "mini_map", App.mini_map.active);
+		App.mini_map.active = getBool("Feature", "mini_map", App.mini_map.active) && App.api == Api::Glide;
 
 		App.motion_prediction = getBool("Feature", "motion_prediction", App.motion_prediction);
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);

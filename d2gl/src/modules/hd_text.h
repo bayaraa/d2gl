@@ -47,6 +47,7 @@ class HDText {
 	std::unique_ptr<Object> m_object_bg;
 	uint32_t m_text_size = 1;
 	uint32_t m_last_text_height = 0;
+	uint32_t m_last_text_width = 0;
 	uint32_t m_map_text_line = 1;
 
 	bool m_bordered_rect = false;

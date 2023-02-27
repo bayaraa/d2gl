@@ -58,6 +58,9 @@ void checkDPIAwareness()
 
 void dllAttach(HMODULE hmodule)
 {
+	if (strstr(GetCommandLineA(), "-w"))
+		return;
+
 	auto flag_3dfx = strstr(GetCommandLineA(), "-3dfx");
 	if ((App.api == Api::Glide && !flag_3dfx) || (App.api == Api::DDraw && flag_3dfx))
 		return;
@@ -80,7 +83,6 @@ void dllAttach(HMODULE hmodule)
 	trace_log("Game version %s detected.", helpers::getVersionString().c_str());
 
 	option::loadIni();
-	trace_log("Loading early DLLs.");
 	helpers::loadDlls(App.dlls_early);
 
 	d2::initHooks();

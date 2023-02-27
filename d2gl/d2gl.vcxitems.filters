@@ -9,7 +9,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\menu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\funcs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\patch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\stubs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\context.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)vendor\include\imgui\imgui.cpp" />
@@ -27,9 +26,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_cursor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_text.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\font.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\mini_map.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\patch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\app.h" />
@@ -42,7 +42,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\option\menu.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\funcs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\patch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\patch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\structs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\stubs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\context.h" />
@@ -56,7 +56,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_cursor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\font.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\mini_map.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
   </ItemGroup>

@@ -19,6 +19,7 @@
 #include "pch.h"
 #include "wrapper.h"
 #include "d2/common.h"
+#include "extra/pd2_fixes.h"
 #include "helpers.h"
 #include "modules/hd_cursor.h"
 #include "modules/hd_text.h"
@@ -463,6 +464,8 @@ void Wrapper::onBufferSwap()
 	option::Menu::instance().draw();
 
 	ctx->presentFrame();
+
+	fixPD2invItemActions();
 }
 
 void Wrapper::grDrawPoint(const void* pt)
@@ -652,8 +655,11 @@ FxBool Wrapper::grLfbUnlock()
 GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolution)
 {
 	App.game.screen = (GameScreen)(*d2::is_in_game);
-	if (App.game.screen == GameScreen::InGame)
+	if (App.game.screen == GameScreen::InGame) {
 		App.game.screen = GameScreen::Loading;
+
+		GlideWrapper->m_game_texture->clearCache();
+	}
 
 	glm::uvec2 old_size = App.game.size;
 	if (screen_resolution == GR_RESOLUTION_640x480)
@@ -689,8 +695,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
-	trace_log("Loading late DLLs.");
-	helpers::loadDlls(App.dlls_late);
+	helpers::loadDlls(App.dlls_late, true);
 
 	return 1;
 }

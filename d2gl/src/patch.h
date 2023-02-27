@@ -20,7 +20,7 @@
 
 #include "helpers.h"
 
-namespace d2gl::d2 {
+namespace d2gl {
 
 enum class PatchType {
 	Nop,
@@ -74,6 +74,9 @@ public:
 	bool toggle(bool active = true);
 
 	inline const bool isActive() { return m_installed; }
+
+	static void getBytes(uintptr_t address, size_t len, uint8_t** dst);
+	static void setBytes(uintptr_t address, size_t len, uint8_t* src);
 };
 
 }

@@ -169,6 +169,9 @@ void Font::drawText(const wchar_t* str, glm::vec2 pos, uint32_t color)
 	} else if (color == 0xFF)
 		m_shadow_color = 0x00000055;
 
+	if (m_stroke == 2 && color != 0xFEFEFEFF)
+		border_color = 0x00000099;
+
 	m_object->setColor(border_color, 2);
 	m_object->setExtra({ m_smoothness, m_weight });
 
@@ -226,9 +229,12 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 		m_object->setFlags({ 3, 0, m_masking, 0 });
 		App.context->pushObject(m_object);
 
+		if (m_scale > 0.3f)
+			m_stroke = 1;
+
 		m_object->setPosition(object_pos);
 		m_object->setColor(color);
-		m_object->setFlags({ 3, 0, m_masking, m_scale > 0.3f ? 1 : 0 });
+		m_object->setFlags({ 3, 0, m_masking, m_stroke });
 		App.context->pushObject(m_object);
 
 		return glyph->advance * m_scale;

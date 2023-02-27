@@ -68,6 +68,7 @@ class Font {
 	float m_smoothness = 5.0f;
 	TextAlign m_align = TextAlign::Left;
 	uint32_t m_shadow_color = 0;
+	uint8_t m_stroke = 0;
 
 	bool m_boxed = false;
 	bool m_masking = false;
@@ -89,6 +90,7 @@ public:
 	inline void setAlign(TextAlign align) { m_align = align; }
 	inline void setBoxed(bool boxed) { m_boxed = boxed; }
 	inline void setMasking(bool masking) { m_masking = masking; }
+	inline void setStroke(uint8_t stroke = 0) { m_stroke = stroke; }
 
 	inline float getLineHeight() { return m_size * m_line_height; }
 	inline float getLetterSpacing() { return m_size * m_letter_spacing; }

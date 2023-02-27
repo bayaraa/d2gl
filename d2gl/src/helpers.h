@@ -65,6 +65,6 @@ ImageData loadImage(const std::string& file_path, bool flipped = true);
 void clearImage(ImageData& image);
 std::string saveScreenShot(uint8_t* data, int width, int height);
 
-void loadDlls(const std::string& dlls);
+void loadDlls(const std::string& dlls, bool late = false);
 
 }
