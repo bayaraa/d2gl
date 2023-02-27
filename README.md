@@ -45,7 +45,7 @@ Briefly tested on Project Diablo 2 Season 6 single player with/without plugy.
 
 ## Credits
 
-Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and their source codes public.
+Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and their source codes available.
 
 - SGD2FreeRes D2 Custom HD resolution mod (Mir Drualga).
 - D2DX's Unit/Weather Motion Predictor (Bolrog).
