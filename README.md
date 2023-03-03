@@ -31,9 +31,9 @@ Run Game.exe with ``-3dfx`` flag will open game in Glide mode (don't use ``-w`` 
 
 If you want to play in widescreen (with SGD2FreeRes) custom SGD2FreeRes is included in zip file.  
 If you want to play PD2 with this wrapper disable PD2's default hd mod D2HD.dll (rename or delete) and open d2gl.ini and set
-``pd2_fix=true``. It will fix some glide related crashes (Not fully tested but Rathma, DClone, some maps tested. Unfortunately quick cast bar, buff timer not showing).
+``pd2_fix=true``. It will fix some glide related crashes (Not fully tested but Rathma, DClone, some maps tested).
 
-To load custom dll you there are 2 settings in d2gl.ini ``load_dlls_early``, ``load_dlls_late``.  
+To load custom dll there are 2 settings in d2gl.ini ``load_dlls_early``, ``load_dlls_late``.  
 ``load_dlls_early`` is loads right after wrapper attached.  
 ``load_dlls_late`` is loads right after game window created (if you play PD2 use ``load_dlls_late=SGD2FreeRes.dll``).
 
@@ -45,7 +45,7 @@ Briefly tested on Project Diablo 2 Season 6 single player with/without plugy.
 
 ## Credits
 
-Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and their source codes public.
+Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and their source codes available.
 
 - SGD2FreeRes D2 Custom HD resolution mod (Mir Drualga).
 - D2DX's Unit/Weather Motion Predictor (Bolrog).
