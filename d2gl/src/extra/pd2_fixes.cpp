@@ -47,16 +47,17 @@ bool isPD2()
 void fixPD2drawImage(int x, int y)
 {
 	if (pd2_draw_ui) {
-		if (App.hd_text)
+		if (App.hd_text) {
+			y = (App.api == Api::DDraw) ? y + 1 : y;
 			d2::drawSolidRectEx(x, y - 24, x + 24, y, 0, 5);
-
+		}
 		pd2_draw_shifted_image = 1;
 	}
 }
 
 void fixPD2drawSolidRectEx(glm::ivec2& offset, int draw_mode)
 {
-	if (pd2_draw_ui && draw_mode == 2)
+	if (pd2_draw_ui && App.api == Api::Glide && draw_mode == 2)
 		offset.y += 1;
 }
 
@@ -76,17 +77,21 @@ bool fixPD2drawGroundTile(const d2::TileContext* tile)
 
 void fixPD2invItemActions()
 {
-	if (!App.pd2_fix || !d2common_new_code)
+	if (!d2common_new_code || !App.pd2_fix)
 		return;
 
-	static bool applied = true;
-	bool apply = (App.game.screen != GameScreen::InGame || *d2::screen_shift == 0);
+	static bool* inventory = (bool*)helpers::getProcOffset(DLL_D2CLIENT, 0xFAD84);
+	static bool* stash = (bool*)helpers::getProcOffset(DLL_D2CLIENT, 0xFADE4);
+	static bool* cube = (bool*)helpers::getProcOffset(DLL_D2CLIENT, 0xFADE8);
 
-	if (!applied && apply) {
+	static bool applied = true;
+	bool remove = (App.game.screen == GameScreen::InGame && (*cube || *stash || *inventory));
+
+	if (!applied && !remove) {
 		Patch::setBytes(d2common_address, 5, d2common_new_code);
 		Patch::setBytes(d2client_address, 76, d2client_new_code);
 		applied = true;
-	} else if (applied && !apply) {
+	} else if (applied && remove) {
 		Patch::setBytes(d2common_address, 5, d2common_old_code);
 		Patch::setBytes(d2client_address, 76, d2client_old_code);
 		applied = false;
@@ -172,9 +177,9 @@ void applyPD2fixes(int step)
 		}
 
 		if (App.api == Api::Glide) {
-			Patch patch2 = Patch();
-			patch2.add(PatchType::Jump, { 0xA614, 0, 0, DLL_D2GLIDE }, 6, (uintptr_t)d2glideFix);
-			patch2.toggle(true);
+			Patch patch = Patch();
+			patch.add(PatchType::Jump, { 0xA614, 0, 0, DLL_D2GLIDE }, 6, (uintptr_t)d2glideFix);
+			patch.toggle(true);
 		}
 	}
 }

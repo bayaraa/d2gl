@@ -158,7 +158,8 @@ Wrapper::Wrapper()
 	mod_pipeline_ci.shader = g_shader_mod;
 	mod_pipeline_ci.bindings = {
 		{ BindingType::Texture, "u_MapTexture", TEXTURE_SLOT_MAP },
-		{ BindingType::TextureArray },
+		{ BindingType::Texture, "u_CursorTexture", TEXTURE_SLOT_CURSOR },
+		{ BindingType::Texture, "u_FontTexture", TEXTURE_SLOT_FONTS },
 	};
 	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
@@ -259,11 +260,13 @@ void Wrapper::onResize()
 
 void Wrapper::onShaderChange(bool texture)
 {
-	if (texture || (m_current_shader != App.shader.selected && (m_current_shader == 0 || App.shader.selected == 0))) {
+	const auto shader = g_shader_upscale[App.shader.selected];
+
+	if (texture || m_current_shader != App.shader.selected) {
 		TextureCreateInfo texture_ci;
 		texture_ci.size = App.game.tex_size;
 		texture_ci.slot = TEXTURE_SLOT_UPSCALE;
-		if (App.shader.selected == 0) {
+		if (shader.linear) {
 			texture_ci.min_filter = GL_LINEAR;
 			texture_ci.mag_filter = GL_LINEAR;
 		}
@@ -272,7 +275,7 @@ void Wrapper::onShaderChange(bool texture)
 
 	if (m_current_shader != App.shader.selected) {
 		PipelineCreateInfo pipeline_ci;
-		pipeline_ci.shader = g_shader_upscale[App.shader.selected].second;
+		pipeline_ci.shader = shader.source;
 		pipeline_ci.bindings = {
 			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
 			{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_UPSCALE },
@@ -654,6 +657,9 @@ FxBool Wrapper::grLfbUnlock()
 
 GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolution)
 {
+	if (App.video_test)
+		return 1;
+
 	App.game.screen = (GameScreen)(*d2::is_in_game);
 	if (App.game.screen == GameScreen::InGame) {
 		App.game.screen = GameScreen::Loading;
@@ -721,7 +727,7 @@ const char* Wrapper::grGetString(FxU32 pname)
 	switch (pname) {
 		case GR_EXTENSION: return " ";
 		case GR_HARDWARE: return "Spectre 3000";
-		case GR_RENDERER: return "Glide";
+		case GR_RENDERER: return "D2GL";
 		case GR_VENDOR: return "3Dfx Interactive";
 		case GR_VERSION: return "3.1";
 	}

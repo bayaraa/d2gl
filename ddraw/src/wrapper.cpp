@@ -91,7 +91,10 @@ Wrapper::Wrapper()
 	PipelineCreateInfo mod_pipeline_ci;
 	mod_pipeline_ci.shader = g_shader_mod;
 	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
-	mod_pipeline_ci.bindings = { { BindingType::TextureArray } };
+	mod_pipeline_ci.bindings = {
+		{ BindingType::Texture, "u_CursorTexture", TEXTURE_SLOT_CURSOR },
+		{ BindingType::Texture, "u_FontTexture", TEXTURE_SLOT_FONTS },
+	};
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 }
 
@@ -163,11 +166,13 @@ void Wrapper::onResize()
 
 void Wrapper::onShaderChange(bool texture)
 {
-	if (texture || (m_current_shader != App.shader.selected && (m_current_shader == 0 || App.shader.selected == 0))) {
+	const auto shader = g_shader_upscale[App.shader.selected];
+
+	if (texture || m_current_shader != App.shader.selected) {
 		TextureCreateInfo texture_ci;
 		texture_ci.size = App.game.tex_size;
 		texture_ci.slot = TEXTURE_SLOT_UPSCALE;
-		if (App.shader.selected == 0) {
+		if (shader.linear) {
 			texture_ci.min_filter = GL_LINEAR;
 			texture_ci.mag_filter = GL_LINEAR;
 		}
@@ -176,7 +181,7 @@ void Wrapper::onShaderChange(bool texture)
 
 	if (m_current_shader != App.shader.selected) {
 		PipelineCreateInfo pipeline_ci;
-		pipeline_ci.shader = g_shader_upscale[App.shader.selected].second;
+		pipeline_ci.shader = shader.source;
 		pipeline_ci.bindings = {
 			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
 			{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_UPSCALE },
@@ -310,7 +315,7 @@ void Wrapper::onBufferSwap(bool flip)
 
 HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
 {
-	if (App.hwnd)
+	if (App.video_test || App.hwnd)
 		return DD_OK;
 
 	win32::setWindow(hwnd);
@@ -342,7 +347,7 @@ HRESULT Wrapper::setDisplayMode(DWORD width, DWORD height, DWORD bpp)
 	App.game.size = { width, height };
 	trace_log("Game requested screen size: %d x %d", App.game.size.x, App.game.size.y);
 
-	if (App.hwnd && old_size != App.game.size) {
+	if (!App.video_test && App.hwnd && old_size != App.game.size) {
 		win32::setWindowMetrics();
 		win32::windowResize();
 		DDrawWrapper->onResize();

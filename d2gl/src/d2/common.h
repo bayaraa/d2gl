@@ -72,6 +72,7 @@ extern uint32_t* screen_width;
 extern uint32_t* screen_height;
 extern uint32_t* screen_shift;
 
+extern int* video_mode;
 extern bool* perspective;
 extern bool* esc_menu_open;
 

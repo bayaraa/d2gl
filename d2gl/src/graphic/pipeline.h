@@ -54,6 +54,12 @@ struct BlendFactors {
 
 typedef std::vector<std::vector<BlendType>> AttachmentBlends;
 
+struct UpscaleShader {
+	std::string name;
+	const char* source;
+	bool linear = false;
+};
+
 struct PipelineCreateInfo {
 	const char* shader = nullptr;
 	std::vector<BindingInfo> bindings;
@@ -92,6 +98,6 @@ private:
 extern const char* g_shader_movie;
 extern const char* g_shader_postfx;
 extern const char* g_shader_mod;
-extern const std::vector<std::pair<std::string, const char*>> g_shader_upscale;
+extern const std::vector<UpscaleShader> g_shader_upscale;
 
 }

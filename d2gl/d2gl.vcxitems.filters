@@ -62,5 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\upscale\catmull-rom.glsl" />
   </ItemGroup>
 </Project>

@@ -249,6 +249,8 @@ void saveIni()
 	  "; Preferred OpenGL Version (must be 3.3 or between 4.0 to 4.6).\n"
 	  "gl_ver_major=%d\n"
 	  "gl_ver_minor=%d\n\n"
+	  "; Use compute shader (enabling this might be better on some gpu).\n"
+	  "use_compute_shader=%s\n\n"
 	  "; Comma delimitered DLLs to load (early: right after attached).\n"
 	  "load_dlls_early=%s\n\n"
 	  "; Comma delimitered DLLs to load (late: right after window created).\n"
@@ -259,6 +261,7 @@ void saveIni()
 	sprintf_s(buf, other_setting,
 	  App.gl_ver_major,
 	  App.gl_ver_minor,
+	  boolString(App.use_compute_shader),
 	  App.dlls_early.c_str(),
 	  App.dlls_late.c_str(),
 	  boolString(App.pd2_fix));
@@ -273,7 +276,7 @@ void loadIni()
 	App.desktop_resolution = { GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) };
 
 	for (auto& shader : g_shader_upscale)
-		App.shader.items.push_back({ shader.first });
+		App.shader.items.push_back({ shader.name });
 
 	App.lut.items.push_back({ "Game Default" });
 	for (int i = 1; i <= 14; i++) {
@@ -328,6 +331,8 @@ void loadIni()
 		App.gl_ver_minor = getInt("Other", "gl_ver_minor", App.gl_ver_minor, 0, 6);
 		if (App.gl_ver_major == 3)
 			App.gl_ver_minor = 3;
+
+		App.use_compute_shader = getBool("Other", "use_compute_shader", App.use_compute_shader);
 
 		App.dlls_early = getString("Other", "load_dlls_early", App.dlls_early);
 		App.dlls_late = getString("Other", "load_dlls_late", App.dlls_late);

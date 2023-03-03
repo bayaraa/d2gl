@@ -47,6 +47,8 @@ TextureManager::TextureManager(const SubTextureCounts& size_counts)
 		m_data.insert({ size, {} });
 		m_data[size].sub_texure_info.assign(tex_count + 1, { 0 });
 		m_data[size].tex_count = tex_count;
+		m_data[size].available.reserve(tex_count);
+		m_data[size].cache.reserve(tex_count);
 
 		for (uint16_t i = 0; i < count; i++) {
 			uint16_t n = i * div * div;
@@ -110,6 +112,7 @@ const SubTextureInfo* TextureManager::getSubTextureInfo(uint32_t address, uint16
 
 		cache.items.insert({ hash, id });
 		data.available.erase(id);
+
 		return texture_info;
 	}
 

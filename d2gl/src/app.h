@@ -33,6 +33,8 @@ struct D2GLApp {
 	const bool debug = false;
 #endif
 	bool log = false;
+	bool video_test = false;
+	bool ready = false;
 
 	std::string menu_title = "D2GL";
 	std::string ini_file = "d2gl.ini";
@@ -46,8 +48,8 @@ struct D2GLApp {
 	GLCaps gl_caps;
 	uint8_t gl_ver_major = 4;
 	uint8_t gl_ver_minor = 6;
+	bool use_compute_shader = false;
 
-	bool ready = false;
 	HMODULE hmodule = 0;
 	WNDPROC wndproc = 0;
 	HWND hwnd = 0;

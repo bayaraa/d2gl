@@ -231,10 +231,10 @@ const char* g_shader_mod = {
 };
 
 // clang-format off
-const std::vector<std::pair<std::string, const char*>> g_shader_upscale = {
+const std::vector<UpscaleShader> g_shader_upscale = {
 	{ "simple-sharp-bilinear", {
 		#include "shaders/upscale/simple-sharp-bilinear.glsl.h"
-	} },
+	}, true },
 	{ "xbr-lv2-noblend", {
 		#include "shaders/upscale/xbr-lv2-noblend.glsl.h"
 	} },
@@ -250,6 +250,9 @@ const std::vector<std::pair<std::string, const char*>> g_shader_upscale = {
 	{ "advanced-aa", {
 		#include "shaders/upscale/advanced-aa.glsl.h"
 	} },
+	{ "catmull-rom", {
+		#include "shaders/upscale/catmull-rom.glsl.h"
+	}, true },
 };
 // clang-format on
 

@@ -27,7 +27,7 @@ MiniMap::MiniMap()
 	m_bg = std::make_unique<Object>(m_pos, m_size);
 	m_bg->setColor(0x000000AA, 1);
 	m_bg->setColor(0x222222DD, 2);
-	m_bg->setFlags({ 1, 2, 0, 0 });
+	m_bg->setFlags({ 2, 2, 0, 0 });
 
 	m_map = std::make_unique<Object>(m_pos, m_size);
 	m_map->setFlags({ 5, 0, 0, 0 });

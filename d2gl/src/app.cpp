@@ -58,22 +58,27 @@ void checkDPIAwareness()
 
 void dllAttach(HMODULE hmodule)
 {
-	if (strstr(GetCommandLineA(), "-w"))
+	std::string command_line = GetCommandLineA();
+	helpers::strToLower(command_line);
+
+	if (command_line.find("d2vidtst") != std::string::npos) {
+		App.video_test = true;
+		return;
+	}
+
+	if (command_line.find("-w") != std::string::npos)
 		return;
 
-	auto flag_3dfx = strstr(GetCommandLineA(), "-3dfx");
+	bool flag_3dfx = command_line.find("-3dfx") != std::string::npos;
+	flag_3dfx = !flag_3dfx ? *d2::video_mode == 4 : flag_3dfx;
+
 	if ((App.api == Api::Glide && !flag_3dfx) || (App.api == Api::DDraw && flag_3dfx))
 		return;
 
-	App.hmodule = hmodule;
-
-	if (strstr(GetCommandLineA(), "-log"))
+	if (command_line.find("-log") != std::string::npos)
 		App.log = true;
 
 	logInit();
-	timeBeginPeriod(1);
-	checkCompatibilityMode();
-	checkDPIAwareness();
 
 	if (helpers::getVersion() == Version::Unknown) {
 		MessageBoxA(NULL, "Game version is not supported!", "Unsupported version!", MB_OK | MB_ICONERROR);
@@ -81,6 +86,11 @@ void dllAttach(HMODULE hmodule)
 		exit(1);
 	}
 	trace_log("Game version %s detected.", helpers::getVersionString().c_str());
+
+	timeBeginPeriod(1);
+	checkCompatibilityMode();
+	checkDPIAwareness();
+	App.hmodule = hmodule;
 
 	option::loadIni();
 	helpers::loadDlls(App.dlls_early);

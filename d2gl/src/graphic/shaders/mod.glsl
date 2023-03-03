@@ -54,7 +54,8 @@ void main()
 layout(location = 0) out vec4 FragColor;
 
 uniform sampler2D u_MapTexture;
-uniform sampler2DArray u_Textures[4];
+uniform sampler2DArray u_CursorTexture;
+uniform sampler2DArray u_FontTexture;
 
 in vec4 v_Position;
 in vec2 v_TexCoord;
@@ -85,19 +86,20 @@ vec3 greyscale(vec3 color, float str)
 void main()
 {
 	switch(v_Flags.x) {
-		case 1: FragColor = texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)) * v_Color1; break;
+		case 1: FragColor = texture(u_CursorTexture, vec3(v_TexCoord, v_TexIds.y)) * v_Color1; break;
 		case 2: FragColor = v_Color1; break;
-		case 3:
+		case 3: {
+			vec3 color = texture(u_FontTexture, vec3(v_TexCoord, v_TexIds.y)).rgb;
 			if (v_Flags.w == 1) {
-				float opacity1 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, v_Extra.y + 0.05);
-				float opacity2 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, 0.95);
+				float opacity1 = msdf(color, v_Extra.x, v_Extra.y + 0.05);
+				float opacity2 = msdf(color, v_Extra.x, 0.95);
 				FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
 			} else if(v_Flags.w == 2) {
-				float opacity1 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, v_Extra.y + 0.1);
-				float opacity2 = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, 1.1);
+				float opacity1 = msdf(color, v_Extra.x, v_Extra.y + 0.1);
+				float opacity2 = msdf(color, v_Extra.x, 1.1);
 				FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
 			} else {
-				float opacity = msdf(texture(u_Textures[v_TexIds.x], vec3(v_TexCoord, v_TexIds.y)).rgb, v_Extra.x, v_Extra.y);
+				float opacity = msdf(color, v_Extra.x, v_Extra.y);
 				FragColor = vec4(v_Color1.rgb, v_Color1.a * opacity);
 			}
 			if (u_IsMasking && v_Flags.z == 0) {
@@ -106,6 +108,7 @@ void main()
 				else
 					FragColor.a *= 0.7;
 			}
+		}
 		break;
 		case 4: FragColor = vec4(0.0); break;
 		case 5:

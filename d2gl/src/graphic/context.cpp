@@ -102,7 +102,7 @@ Context::Context()
 		trace("GL_KHR_debug enabled!");
 	}
 
-	if (glewIsSupported("GL_VERSION_4_3") || glewIsSupported("GL_ARB_compute_shader")) {
+	if (App.use_compute_shader && (glewIsSupported("GL_VERSION_4_3") || glewIsSupported("GL_ARB_compute_shader"))) {
 		App.gl_caps.compute_shader = true;
 		trace_log("OpenGL: Compute shader available.");
 	}

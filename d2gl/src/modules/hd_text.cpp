@@ -229,12 +229,10 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	if (!isActive() || !str)
 		return false;
 
-	if (isVerMin(V_111)) {
-		const auto unit = d2::getSelectedUnit();
-		if (unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
-			drawMonsterHealthBar(unit);
-			return true;
-		}
+	const auto unit = d2::getSelectedUnit();
+	if (isVerMin(V_111) && unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
+		drawMonsterHealthBar(unit);
+		return true;
 	}
 
 	auto font = getFont(1);
@@ -250,8 +248,18 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	const uint32_t text_color = g_text_colors.at(font.color ? font.color : getColor(color));
 	const int line_count = m_fonts[font.id]->getLineCount();
 
-	const glm::vec2 padding = { 10.0f, 5.0f };
-	glm::vec2 pos = { (float)x - padding.x, (float)y - size.y - padding.y };
+	glm::vec2 pos;
+	glm::vec2 padding = { 10.0f, 5.0f };
+
+	if (unit && unit->dwType == d2::UnitType::Item) {
+		padding = { 3.4f, font.size * 0.05f * line_count };
+		pos = { (float)x - padding.x - 1.0f, (float)y - size.y - padding.y + 1.0f };
+		m_object_bg->setFlags({ 2, 0, 0, 0 });
+	} else {
+		pos = { (float)x - padding.x, (float)y - size.y - padding.y };
+		m_object_bg->setFlags({ 2, 2, 0, 0 });
+	}
+
 	glm::vec2 box_size = size + padding * 2.0f;
 
 	if (centered)
@@ -296,7 +304,6 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	m_object_bg->setPosition(pos);
 	m_object_bg->setSize(box_size);
 	m_object_bg->setColor(m_bg_color, 1);
-	m_object_bg->setFlags({ 2, 2, 0, 0 });
 	m_object_bg->setExtra(box_size);
 	App.context->pushObject(m_object_bg);
 
