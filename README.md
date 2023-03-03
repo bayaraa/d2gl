@@ -1,6 +1,6 @@
 # Diablo 2 LoD Glide/DDraw to OpenGL Wrapper (D2GL)
 
-Makes Diablo 2's wrap glide/ddraw graphic to opengl calls. Easier to switch between fullscreen and windowed, fixes some window and cursor related issues.
+Wrap Diablo 2's glide/ddraw calls to opengl calls. Easier to switch between fullscreen and windowed, fixes some window and cursor related issues.
 Few pre included libretro's shader to upscale higher resolutions. Change in game text to high-definition text etc.
 
 ## Features
