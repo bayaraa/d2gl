@@ -57,6 +57,8 @@ Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and
 - Dear ImGui (Omar Cornut).
 - stb_image, stb_image_write (Sean Barrett).
 - MurmurHash3 (Austin Appleby).
+- MSDF Atlas Generator (Chlumsky).
+- Shader Minifier (laurentlb).
 
 ## Some Screenshots
 
