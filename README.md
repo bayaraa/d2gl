@@ -1,7 +1,7 @@
 # Diablo 2 LoD Glide/DDraw to OpenGL Wrapper (D2GL)
 
-Makes Diablo 2's glide/ddraw graphic to modern opengl title. Easier to switch between fullscreen and windowed, fixes some window and cursor related issues.
-Few pre included libretro's shader to upscale higher resolutions. Change in game text to high-definition fonts etc.
+Wrap Diablo 2's glide/ddraw calls to opengl calls. Easier to switch between fullscreen and windowed, fixes some window and cursor related issues.
+Few pre included libretro's shader to upscale higher resolutions. Change in game text to high-definition text etc.
 
 ## Features
 
@@ -57,6 +57,8 @@ Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and
 - Dear ImGui (Omar Cornut).
 - stb_image, stb_image_write (Sean Barrett).
 - MurmurHash3 (Austin Appleby).
+- MSDF Atlas Generator (Chlumsky).
+- Shader Minifier (laurentlb).
 
 ## Some Screenshots
 
