@@ -201,7 +201,8 @@ layout(std140) uniform ubo_Metrics {
 	vec2 u_RelSize;
 };
 
-uniform sampler2D u_Textures[2];
+uniform sampler2D u_Texture0;
+uniform sampler2D u_Texture1;
 
 in vec2 v_TexCoord;
 flat in ivec4 v_Flags;
@@ -227,9 +228,21 @@ vec3 LumaSharpen(sampler2D tex, vec2 tc)
 void main()
 {
 	switch(v_Flags.x) {
-		case 0: FragColor = vec4(LumaSharpen(u_Textures[v_Flags.y], v_TexCoord), 1.0); break;
-		case 1: FragColor = vec4(FxaaPass(u_Textures[v_Flags.y], v_TexCoord, u_RelSize), 1.0); break;
-		case 2: FragColor = vec4(P(u_Textures[0], v_TexCoord), 1.0); break;
+		case 0: {
+			if (v_Flags.y == 0)
+				FragColor = vec4(LumaSharpen(u_Texture0, v_TexCoord), 1.0);
+			else
+				FragColor = vec4(LumaSharpen(u_Texture1, v_TexCoord), 1.0);
+		}
+		break;
+		case 1: {
+			if (v_Flags.y == 0)
+				FragColor = vec4(FxaaPass(u_Texture0, v_TexCoord, u_RelSize), 1.0);
+			else
+				FragColor = vec4(FxaaPass(u_Texture1, v_TexCoord, u_RelSize), 1.0);
+		}
+		break;
+		case 2: FragColor = vec4(P(u_Texture0, v_TexCoord), 1.0); break;
 	}
 }
 

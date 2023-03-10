@@ -16,7 +16,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 /*
-	This file is "partly" of D2DX.
+	Part of this file is part of D2DX.
 	https://github.com/bolrog/d2dx/blob/main/src/d2dx/UnitMotionPredictor.cpp
 	https://github.com/bolrog/d2dx/blob/main/src/d2dx/WeatherMotionPredictor.cpp
 
@@ -46,6 +46,11 @@
 #include <detours/detours.h>
 
 namespace d2gl::modules {
+
+MotionPrediction::MotionPrediction()
+{
+	m_units.reserve(1024);
+}
 
 void MotionPrediction::toggle(bool active)
 {

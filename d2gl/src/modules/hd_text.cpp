@@ -613,8 +613,11 @@ bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamm
 		}
 	}
 
-	if (m_entry_text && y == 160)
-		return false;
+	if (m_entry_text) {
+		const auto cell_file = d2::getCellFile(cell);
+		if (cell_file->cells[0]->height == 26 || cell_file->cells[0]->height == 41)
+			return false;
+	}
 	m_entry_text = false;
 
 	return true;
@@ -708,7 +711,7 @@ void HDText::drawEntryText()
 
 	setTextSize(2);
 	auto text_width = getNormalTextWidth(text.c_str(), 0);
-	drawText(text.c_str(), *d2::screen_width / 2 - text_width / 2, 160, 17, 0);
+	drawText(text.c_str(), *d2::screen_width / 2 - text_width / 2, (uint32_t)((float)*d2::screen_height / 4.5f), 17, 0);
 }
 
 void HDText::drawMonsterHealthBar(d2::UnitAny* unit)

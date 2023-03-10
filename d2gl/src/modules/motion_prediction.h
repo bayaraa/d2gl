@@ -60,7 +60,7 @@ class MotionPrediction {
 	std::array<ParticleMotion, 512> m_particles;
 	uint32_t m_last_particle_index = 0;
 
-	MotionPrediction() = default;
+	MotionPrediction();
 	~MotionPrediction() = default;
 
 public:

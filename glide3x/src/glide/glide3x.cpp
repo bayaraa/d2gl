@@ -127,7 +127,7 @@ FX_ENTRY FxU32 FX_CALL grGet(FxU32 pname, FxU32 plength, FxI32* params)
 
 FX_ENTRY FxU32 FX_CALL grTexMaxAddress(GrChipID_t tmu)
 {
-	return GLIDE_TEX_MEMORY;
+	return GLIDE_TEX_MEMORY - 256 * 256;
 }
 
 FX_ENTRY FxU32 FX_CALL grTexMinAddress(GrChipID_t tmu)

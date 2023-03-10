@@ -25,7 +25,7 @@
 
 namespace d2gl {
 
-#define GLIDE_MAX_NUM_TMU 2
+#define GLIDE_MAX_NUM_TMU 3
 #define GLIDE_TEX_MEMORY 16 * 1024 * 1024
 
 class Wrapper;

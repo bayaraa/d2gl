@@ -16,7 +16,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 /*
-	This file is "partly" of cnc-ddraw.
+	Part of this file is part of cnc-ddraw.
 	Copyright (c) 2022 github.com/FunkyFr3sh
 	https://github.com/FunkyFr3sh/cnc-ddraw/blob/master/src/ddsurface.c
 
@@ -45,8 +45,8 @@ DirectDrawSurface::DirectDrawSurface(LPDDSURFACEDESC surface_desc)
 {
 	if (m_flags & DDSD_PIXELFORMAT) {
 		switch (surface_desc->ddpfPixelFormat.dwRGBBitCount) {
-			case 16: assert(false);
 			case 8:
+			case 16:
 			case 32: m_bpp = surface_desc->ddpfPixelFormat.dwRGBBitCount; break;
 		}
 	}
@@ -89,7 +89,6 @@ DirectDrawSurface::DirectDrawSurface(LPDDSURFACEDESC surface_desc)
 			((uint32_t*)m_bmi->colors)[0] = 0xF800;
 			((uint32_t*)m_bmi->colors)[1] = 0x07E0;
 			((uint32_t*)m_bmi->colors)[2] = 0x001F;
-			assert(false && "m_bpp 16");
 		} else if (m_bpp == 32) {
 			((uint32_t*)m_bmi->colors)[0] = 0xFF0000;
 			((uint32_t*)m_bmi->colors)[1] = 0x00FF00;
@@ -242,8 +241,7 @@ HRESULT __stdcall DirectDrawSurface::Blt(LPRECT in_dst_rect, LPDIRECTDRAWSURFACE
 				memset(dst, color, dst_pitch);
 				dst += m_ypitch;
 			}
-		} else if (m_bpp == 16) // Unused
-		{
+		} else if (m_bpp == 16) {
 			auto row1 = (uint16_t*)dst;
 			const auto color = (uint16_t)blt_fx->dwFillColor;
 
@@ -263,7 +261,6 @@ HRESULT __stdcall DirectDrawSurface::Blt(LPRECT in_dst_rect, LPDIRECTDRAWSURFACE
 					memcpy(dst, first_row, dst_pitch);
 				}
 			}
-			assert(false);
 		} else if (m_bpp == 32) {
 			auto row1 = (uint32_t*)dst;
 			const auto color = blt_fx->dwFillColor;
@@ -418,7 +415,6 @@ HRESULT __stdcall DirectDrawSurface::GetPixelFormat(LPDDPIXELFORMAT pixel_format
 			pixel_format->dwRBitMask = 0xF800;
 			pixel_format->dwGBitMask = 0x07E0;
 			pixel_format->dwBBitMask = 0x001F;
-			assert(false);
 		} else if (m_bpp == 32) {
 			pixel_format->dwRBitMask = 0xFF0000;
 			pixel_format->dwGBitMask = 0x00FF00;
@@ -438,7 +434,7 @@ HRESULT __stdcall DirectDrawSurface::GetSurfaceDesc(LPDDSURFACEDESC surface_desc
 		memset(surface_desc, 0, size);
 
 		surface_desc->dwSize = size;
-		surface_desc->dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_LPSURFACE;
+		surface_desc->dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_LPSURFACE;
 		surface_desc->dwWidth = m_width;
 		surface_desc->dwHeight = m_height;
 		surface_desc->lPitch = m_ypitch;
@@ -447,6 +443,7 @@ HRESULT __stdcall DirectDrawSurface::GetSurfaceDesc(LPDDSURFACEDESC surface_desc
 		surface_desc->ddpfPixelFormat.dwFlags = DDPF_RGB;
 		surface_desc->ddpfPixelFormat.dwRGBBitCount = m_bpp;
 		surface_desc->ddsCaps.dwCaps = m_caps;
+		surface_desc->dwRefreshRate = 60;
 
 		if (m_caps & (DDSCAPS_PRIMARYSURFACE | DDSCAPS_BACKBUFFER))
 			surface_desc->ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
@@ -457,7 +454,6 @@ HRESULT __stdcall DirectDrawSurface::GetSurfaceDesc(LPDDSURFACEDESC surface_desc
 			surface_desc->ddpfPixelFormat.dwRBitMask = 0xF800;
 			surface_desc->ddpfPixelFormat.dwGBitMask = 0x07E0;
 			surface_desc->ddpfPixelFormat.dwBBitMask = 0x001F;
-			assert(false);
 		} else if (m_bpp == 32) {
 			surface_desc->ddpfPixelFormat.dwRBitMask = 0xFF0000;
 			surface_desc->ddpfPixelFormat.dwGBitMask = 0x00FF00;

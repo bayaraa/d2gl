@@ -87,7 +87,7 @@ HRESULT __stdcall DirectDraw::EnumDisplayModes(DWORD flags, LPDDSURFACEDESC surf
 	for (auto& res : resolutions) {
 		DDSURFACEDESC desc = { 0 };
 		desc.dwSize = sizeof(DDSURFACEDESC);
-		desc.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
+		desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH | DDSD_REFRESHRATE | DDSD_PITCH | DDSD_PIXELFORMAT;
 		desc.dwRefreshRate = 60;
 		desc.dwWidth = res.first;
 		desc.dwHeight = res.second;
@@ -96,6 +96,14 @@ HRESULT __stdcall DirectDraw::EnumDisplayModes(DWORD flags, LPDDSURFACEDESC surf
 		desc.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
 		desc.ddpfPixelFormat.dwRGBBitCount = 8;
 		desc.lPitch = ((res.first * 8 + 31) & ~31) >> 3;
+		enum_modes_callback((LPDDSURFACEDESC)&desc, context);
+
+		desc.ddpfPixelFormat.dwFlags = DDPF_RGB;
+		desc.ddpfPixelFormat.dwRGBBitCount = 16;
+		desc.ddpfPixelFormat.dwRBitMask = 0xF800;
+		desc.ddpfPixelFormat.dwGBitMask = 0x07E0;
+		desc.ddpfPixelFormat.dwBBitMask = 0x001F;
+		desc.lPitch = ((res.first * 16 + 31) & ~31) >> 3;
 		enum_modes_callback((LPDDSURFACEDESC)&desc, context);
 
 		desc.ddpfPixelFormat.dwFlags = DDPF_RGB;
@@ -130,7 +138,7 @@ HRESULT __stdcall DirectDraw::SetCooperativeLevel(HWND hwnd, DWORD flags)
 
 HRESULT __stdcall DirectDraw::SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
 {
-	return Wrapper::setDisplayMode(width, height, bpp);
+	return Wrapper::setDisplayMode(width, height, bpp == 16 ? 32 : bpp);
 }
 
 HRESULT __stdcall DirectDraw::GetDeviceIdentifier(LPDDDEVICEIDENTIFIER device_idenfitier, DWORD flags)

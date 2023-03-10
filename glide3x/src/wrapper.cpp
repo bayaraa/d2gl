@@ -137,8 +137,8 @@ Wrapper::Wrapper()
 	postfx_pipeline_ci.shader = g_shader_postfx;
 	postfx_pipeline_ci.bindings = {
 		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
-		{ BindingType::Texture, "u_Textures[0]", TEXTURE_SLOT_POSTFX1 },
-		{ BindingType::Texture, "u_Textures[1]", TEXTURE_SLOT_POSTFX2 },
+		{ BindingType::Texture, "u_Texture0", TEXTURE_SLOT_POSTFX1 },
+		{ BindingType::Texture, "u_Texture1", TEXTURE_SLOT_POSTFX2 },
 	};
 	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
 	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
