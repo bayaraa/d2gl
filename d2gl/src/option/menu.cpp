@@ -235,6 +235,7 @@ void Menu::draw()
 				App.mouse_lock = m_options.mouse_lock;
 
 				saveBool("Screen", "fullscreen", App.window.fullscreen);
+				saveBool("Screen", "mouse_lock", App.mouse_lock);
 				saveInt("Screen", "window_width", App.window.size.x);
 				saveInt("Screen", "window_height", App.window.size.y);
 				saveBool("Screen", "centered_window", App.window.centered);
