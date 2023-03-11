@@ -213,11 +213,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_CONTROL || wParam == VK_TAB) {
 				if (GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(VK_TAB) & 0x8000) {
 					setCursorUnlock();
+					App.mouse_lock = !App.mouse_lock;
+					setCursorLock();
 					return 0;
 				}
 			} else if (wParam == VK_CONTROL || wParam == VK_MENU) {
 				if ((GetAsyncKeyState(VK_RMENU) & 0x8000) && GetAsyncKeyState(VK_RCONTROL) & 0x8000) {
 					setCursorUnlock();
+					App.mouse_lock = !App.mouse_lock;
+					setCursorLock();
 					return 0;
 				}
 			} else {
@@ -373,8 +377,8 @@ void setWindowMetrics()
 	App.viewport.size.y = (uint32_t)(((float)App.game.size.y / App.game.size.x) * App.window.size.x);
 
 	if (App.viewport.size.y > App.window.size.y) {
-		App.viewport.size.x = (uint32_t)(((float)App.game.size.x / App.game.size.y) * App.window.size.y);
-		App.viewport.size.y = App.window.size.y;
+	 	App.viewport.size.x = (uint32_t)(((float)App.game.size.x / App.game.size.y) * App.window.size.y);
+	 	App.viewport.size.y = App.window.size.y;
 	}
 
 	App.viewport.offset.x = App.window.size.x / 2 - App.viewport.size.x / 2;
@@ -397,7 +401,9 @@ void setCursorLock()
 		RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
 		MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
 
-		ClipCursor(&rc);
+		if (App.mouse_lock)
+			ClipCursor(&rc);
+
 		ShowCursor_Og(false);
 		App.cursor.locked = true;
 	}

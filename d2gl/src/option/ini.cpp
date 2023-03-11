@@ -130,7 +130,8 @@ void saveIni()
 	  "[Screen]\n\n"
 	  "; Game will run in fullscreen window.\n"
 	  "; Window size (window_width/window_height) will be ignored.\n"
-	  "fullscreen=%s\n\n"
+	  "fullscreen=%s\n"
+	  "mouse_lock=%s\n\n"
 	  "; Window size.\n"
 	  "window_width=%d\n"
 	  "window_height=%d\n\n"
@@ -156,6 +157,7 @@ void saveIni()
 
 	sprintf_s(buf, screen_setting,
 	  boolString(App.window.fullscreen),
+	  boolString(App.mouse_lock),
 	  App.window.size.x,
 	  App.window.size.y,
 	  boolString(App.window.centered),
@@ -302,6 +304,8 @@ void loadIni()
 		App.foreground_fps.range.value = getInt("Screen", "foreground_fps_value", App.foreground_fps.range.value, App.foreground_fps.range.min, App.foreground_fps.range.max);
 		App.background_fps.active = getBool("Screen", "background_fps", App.background_fps.active);
 		App.background_fps.range.value = getInt("Screen", "background_fps_value", App.background_fps.range.value, App.background_fps.range.min, App.background_fps.range.max);
+
+		App.mouse_lock = getBool("Screen", "mouse_lock", App.mouse_lock);
 
 		App.shader.selected = getInt("Graphic", "shader", App.shader.selected, 0, App.shader.items.size() - 1);
 		App.lut.selected = getInt("Graphic", "lut", App.lut.selected, 0, App.lut.items.size() - 1);
