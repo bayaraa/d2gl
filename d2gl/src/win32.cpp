@@ -373,8 +373,8 @@ void setWindowMetrics()
 	App.viewport.size.y = (uint32_t)(((float)App.game.size.y / App.game.size.x) * App.window.size.x);
 
 	if (App.viewport.size.y > App.window.size.y) {
-		App.viewport.size.x = (uint32_t)(((float)App.game.size.x / App.game.size.y) * App.window.size.y);
-		App.viewport.size.y = App.window.size.y;
+	 	App.viewport.size.x = (uint32_t)(((float)App.game.size.x / App.game.size.y) * App.window.size.y);
+	 	App.viewport.size.y = App.window.size.y;
 	}
 
 	App.viewport.offset.x = App.window.size.x / 2 - App.viewport.size.x / 2;
@@ -397,7 +397,9 @@ void setCursorLock()
 		RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
 		MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
 
-		ClipCursor(&rc);
+		if (App.mouse_lock)
+			ClipCursor(&rc);
+
 		ShowCursor_Og(false);
 		App.cursor.locked = true;
 	}

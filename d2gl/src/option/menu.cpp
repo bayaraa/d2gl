@@ -120,6 +120,7 @@ void Menu::toggle(bool force)
 		m_options.window = App.window;
 		m_options.foreground_fps = App.foreground_fps;
 		m_options.background_fps = App.background_fps;
+		m_options.mouse_lock = App.mouse_lock;
 	}
 }
 
@@ -157,7 +158,7 @@ void Menu::draw()
 	  ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 	static ImGuiCond window_pos_cond = ImGuiCond_Appearing;
 
-	ImGui::SetNextWindowSize({ 640.0f, 500.0f }, ImGuiCond_Always);
+	ImGui::SetNextWindowSize({ 640.0f, 580.0f }, ImGuiCond_Always);
 	ImGui::SetNextWindowSizeConstraints({ 10.0f, 10.0f }, max_size);
 	ImGui::SetNextWindowPos(window_pos, window_pos_cond, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowBgAlpha(0.90f);
@@ -182,6 +183,8 @@ void Menu::draw()
 			drawCheckbox_m("Fullscreen", m_options.window.fullscreen, "Game will run in windowed mode if unchecked.", fullscreen);
 			drawSeparator();
 			ImGui::BeginDisabled(m_options.window.fullscreen);
+				drawCheckbox_m("Lock mouse", m_options.mouse_lock, "Cursor will not be allowed to leave game window.", mouse_lock);
+				drawSeparator();
 				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
 				ImGui::Dummy({ 0.0f, 6.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
@@ -229,6 +232,7 @@ void Menu::draw()
 				App.vsync = m_options.vsync;
 				App.foreground_fps = m_options.foreground_fps;
 				App.background_fps = m_options.background_fps;
+				App.mouse_lock = m_options.mouse_lock;
 
 				saveBool("Screen", "fullscreen", App.window.fullscreen);
 				saveInt("Screen", "window_width", App.window.size.x);

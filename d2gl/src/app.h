@@ -126,6 +126,7 @@ struct D2GLApp {
 	bool no_pickup = false;
 	bool hd_cursor = false;
 	bool hd_text = false;
+	bool mouse_lock = true;
 
 	struct {
 		bool active = false;

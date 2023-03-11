@@ -31,6 +31,7 @@ enum class Color {
 
 struct Options {
 	bool vsync = false;
+	bool mouse_lock = true;
 	D2GLApp::Window window;
 	D2GLApp::ForegroundFPS foreground_fps;
 	D2GLApp::BackgroundFPS background_fps;

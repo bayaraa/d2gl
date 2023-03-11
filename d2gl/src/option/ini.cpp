@@ -152,7 +152,8 @@ void saveIni()
 	  "; Max Background FPS.\n"
 	  "; Limit maximum fps when game window is in background (inactive).\n"
 	  "background_fps=%s\n"
-	  "background_fps_value=%d\n\n\n";
+	  "background_fps_value=%d\n"
+	  "mouse_lock=%d\n\n\n";
 
 	sprintf_s(buf, screen_setting,
 	  boolString(App.window.fullscreen),
@@ -166,7 +167,8 @@ void saveIni()
 	  boolString(App.foreground_fps.active),
 	  App.foreground_fps.range.value,
 	  boolString(App.background_fps.active),
-	  App.background_fps.range.value);
+	  App.background_fps.range.value),
+	  boolString(App.mouse_lock);
 	out_file << buf;
 
 	std::string shader_str = "";
@@ -302,6 +304,8 @@ void loadIni()
 		App.foreground_fps.range.value = getInt("Screen", "foreground_fps_value", App.foreground_fps.range.value, App.foreground_fps.range.min, App.foreground_fps.range.max);
 		App.background_fps.active = getBool("Screen", "background_fps", App.background_fps.active);
 		App.background_fps.range.value = getInt("Screen", "background_fps_value", App.background_fps.range.value, App.background_fps.range.min, App.background_fps.range.max);
+
+		App.mouse_lock = getBool("Screen", "mouse_lock", App.mouse_lock);
 
 		App.shader.selected = getInt("Graphic", "shader", App.shader.selected, 0, App.shader.items.size() - 1);
 		App.lut.selected = getInt("Graphic", "lut", App.lut.selected, 0, App.lut.items.size() - 1);
