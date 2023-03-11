@@ -130,7 +130,8 @@ void saveIni()
 	  "[Screen]\n\n"
 	  "; Game will run in fullscreen window.\n"
 	  "; Window size (window_width/window_height) will be ignored.\n"
-	  "fullscreen=%s\n\n"
+	  "fullscreen=%s\n"
+	  "mouse_lock=%s\n\n"
 	  "; Window size.\n"
 	  "window_width=%d\n"
 	  "window_height=%d\n\n"
@@ -152,11 +153,11 @@ void saveIni()
 	  "; Max Background FPS.\n"
 	  "; Limit maximum fps when game window is in background (inactive).\n"
 	  "background_fps=%s\n"
-	  "background_fps_value=%d\n"
-	  "mouse_lock=%s\n\n\n";
+	  "background_fps_value=%d\n\n\n";
 
 	sprintf_s(buf, screen_setting,
 	  boolString(App.window.fullscreen),
+	  boolString(App.mouse_lock),
 	  App.window.size.x,
 	  App.window.size.y,
 	  boolString(App.window.centered),
@@ -167,8 +168,7 @@ void saveIni()
 	  boolString(App.foreground_fps.active),
 	  App.foreground_fps.range.value,
 	  boolString(App.background_fps.active),
-	  App.background_fps.range.value),
-	  boolString(App.mouse_lock);
+	  App.background_fps.range.value);
 	out_file << buf;
 
 	std::string shader_str = "";

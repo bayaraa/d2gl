@@ -182,9 +182,9 @@ void Menu::draw()
 			childBegin("##w1", true, true);
 			drawCheckbox_m("Fullscreen", m_options.window.fullscreen, "Game will run in windowed mode if unchecked.", fullscreen);
 			drawSeparator();
+			drawCheckbox_m("Lock mouse", m_options.mouse_lock, "Cursor will not be allowed to leave game window.", mouse_lock);
+			drawSeparator();
 			ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCheckbox_m("Lock mouse", m_options.mouse_lock, "Cursor will not be allowed to leave game window.", mouse_lock);
-				drawSeparator();
 				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
 				ImGui::Dummy({ 0.0f, 6.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
