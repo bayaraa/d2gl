@@ -153,7 +153,7 @@ void saveIni()
 	  "; Limit maximum fps when game window is in background (inactive).\n"
 	  "background_fps=%s\n"
 	  "background_fps_value=%d\n"
-	  "mouse_lock=%d\n\n\n";
+	  "mouse_lock=%s\n\n\n";
 
 	sprintf_s(buf, screen_setting,
 	  boolString(App.window.fullscreen),
