@@ -60,7 +60,7 @@ struct GlideVertex {
 struct Vertices {
 	Vertex* ptr;
 	size_t count = 0;
-	std::array<Vertex, MAX_VERTICES> data;
+	std::array<Vertex, MAX_VERTICES> data[2];
 };
 
 struct VertexParams {
@@ -103,11 +103,17 @@ struct GLCaps {
 };
 
 class Context {
-	HGLRC m_context = nullptr;
+	HGLRC m_context_update = nullptr;
+	HGLRC m_context_render = nullptr;
+
+	HANDLE m_semaphore_cpu[2];
+	HANDLE m_semaphore_gpu[2];
+	bool m_rendering = true;
 
 	GLuint m_index_buffer;
 	GLuint m_vertex_array;
 	GLuint m_vertex_buffer;
+	uint32_t m_frame_index = 0;
 
 	bool m_delay_push = false;
 	Vertices m_vertices;
@@ -118,9 +124,33 @@ class Context {
 	FrameMetrics m_frame;
 	LimiterMetrics m_limiter;
 
+	std::unique_ptr<Pipeline> m_movie_pipeline;
+	std::unique_ptr<FrameBuffer> m_game_framebuffer;
+
+	std::unique_ptr<UniformBuffer> m_upscale_ubo;
+	std::unique_ptr<Texture> m_upscale_texture;
+	std::unique_ptr<Pipeline> m_upscale_pipeline;
+	int m_current_shader = -1;
+
+	glm::vec3 m_sharpen_data;
+	glm::uvec2 m_fxaa_work_size = { 0, 0 };
+	std::unique_ptr<UniformBuffer> m_postfx_ubo;
+	std::unique_ptr<Texture> m_postfx_texture;
+	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
+	std::unique_ptr<Pipeline> m_postfx_pipeline;
+	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
+
+	std::unique_ptr<Pipeline> m_mod_pipeline;
+
 public:
 	Context();
 	~Context();
+
+	static void renderThread(void* context);
+
+	void onInitialize();
+	void onResize(bool game_resized);
+	void onShaderChange(bool texture = false);
 
 	void beginFrame();
 	void bindDefaultFrameBuffer();
@@ -154,6 +184,7 @@ public:
 	inline const uint32_t getFrameCount() { return m_frame.frame_count; }
 	inline const uint32_t getVertexCount() { return m_frame.vertex_count; }
 	inline const uint32_t getDrawCallCount() { return m_frame.drawcall_count; }
+	inline const uint32_t getFrameIndex() { return m_frame_index; }
 
 	void toggleVsync();
 	void setFpsLimit(bool active, int max_fps);

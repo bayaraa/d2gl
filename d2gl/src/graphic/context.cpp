@@ -18,7 +18,11 @@
 
 #include "pch.h"
 #include "context.h"
+#include "extra/pd2_fixes.h"
 #include "helpers.h"
+#include "modules/hd_text.h"
+#include "modules/motion_prediction.h"
+#include "option/menu.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -68,17 +72,21 @@ Context::Context()
 		if (App.debug)
 			attribs[5] |= WGL_CONTEXT_DEBUG_BIT_ARB;
 
-		if (m_context = wglCreateContextAttribsARB(App.hdc, 0, attribs))
+		if (m_context_update = wglCreateContextAttribsARB(App.hdc, 0, attribs)) {
+			m_context_render = wglCreateContextAttribsARB(App.hdc, 0, attribs);
 			break;
+		}
 	}
 
-	if (!m_context) {
+	if (!m_context_update) {
 		MessageBoxA(App.hwnd, "Requires OpenGL 3.3 or newer!", "Unsupported OpenGL version!", MB_OK | MB_ICONERROR);
 		error_log("Requires OpenGL 3.3 or newer! exiting.");
 		exit(1);
 	}
 
-	wglMakeCurrent(App.hdc, m_context);
+	wglShareLists(m_context_update, m_context_render);
+
+	wglMakeCurrent(App.hdc, m_context_update);
 	glewInit();
 
 	GLint major_version, minor_version;
@@ -168,38 +176,230 @@ Context::Context()
 	setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
 
 	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data.data();
+	m_vertices_mod.ptr = m_vertices_mod.data[m_frame_index].data();
 
 	m_frame.vertex_count = 0;
 	m_frame.drawcall_count = 0;
+
+	for (uint32_t i = 0; i < 2; i++) {
+		m_semaphore_cpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
+		m_semaphore_gpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
+	}
+
+	ReleaseSemaphore(m_semaphore_gpu[0], 1, NULL);
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Context::renderThread, reinterpret_cast<void*>(this), 0, NULL);
 }
 
 Context::~Context()
 {
 	imguiDestroy();
 
+	m_rendering = false;
+	for (uint32_t i = 0; i < 2; i++) {
+		ReleaseSemaphore(m_semaphore_cpu[i], 1, NULL);
+	}
+	for (uint32_t i = 0; i < 2; i++) {
+		WaitForSingleObject(m_semaphore_gpu[i], INFINITE);
+	}
+	wglDeleteContext(m_context_render);
+
 	glDeleteBuffers(1, &m_index_buffer);
 	glDeleteBuffers(1, &m_vertex_buffer);
 	glDeleteVertexArrays(1, &m_vertex_array);
 
 	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(m_context);
+	wglDeleteContext(m_context_update);
+}
+
+void Context::renderThread(void* context)
+{
+	using namespace std::chrono_literals;
+	Context* ctx = reinterpret_cast<Context*>(context);
+	wglMakeCurrent(App.hdc, ctx->m_context_render);
+
+	uint32_t frame_index = 0;
+
+	while (ctx->m_rendering) {
+		ReleaseSemaphore(ctx->m_semaphore_gpu[!frame_index], 1, NULL);
+		WaitForSingleObject(ctx->m_semaphore_cpu[frame_index], INFINITE);
+		// trace("frame: %d", frame_index);
+		// trace("%d", ctx->m_frame.frame_count);
+		// std::this_thread::sleep_for(100ms);
+
+		frame_index = frame_index ? 0 : 1;
+	}
+
+	wglMakeCurrent(NULL, NULL);
+}
+
+void Context::onInitialize()
+{
+	PipelineCreateInfo movie_pipeline_ci;
+	movie_pipeline_ci.shader = g_shader_movie;
+	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", TEXTURE_SLOT_DEFAULT } };
+	m_movie_pipeline = Context::createPipeline(movie_pipeline_ci);
+
+	UniformBufferCreateInfo upscale_ubo_ci;
+	upscale_ubo_ci.variables = { { "out_size", sizeof(glm::vec2) }, { "tex_size", sizeof(glm::vec2) }, { "rel_size", sizeof(glm::vec2) } };
+	m_upscale_ubo = Context::createUniformBuffer(upscale_ubo_ci);
+
+	UniformBufferCreateInfo postfx_ubo_ci;
+	postfx_ubo_ci.variables = { { "sharpen", sizeof(glm::vec4) }, { "rel_size", sizeof(glm::vec2) } };
+	m_postfx_ubo = Context::createUniformBuffer(postfx_ubo_ci);
+
+	m_sharpen_data = { App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value };
+	m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));
+
+	PipelineCreateInfo postfx_pipeline_ci;
+	postfx_pipeline_ci.shader = g_shader_postfx;
+	postfx_pipeline_ci.bindings = {
+		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
+		{ BindingType::Texture, "u_Texture0", TEXTURE_SLOT_POSTFX1 },
+		{ BindingType::Texture, "u_Texture1", TEXTURE_SLOT_POSTFX2 },
+	};
+	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
+	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
+
+	if (App.gl_caps.compute_shader) {
+		PipelineCreateInfo fxaa_pipeline_ci;
+		fxaa_pipeline_ci.shader = g_shader_postfx;
+		fxaa_pipeline_ci.bindings = {
+			{ BindingType::Texture, "u_InTexture", TEXTURE_SLOT_POSTFX2 },
+			{ BindingType::Image, "u_OutTexture", IMAGE_UNIT_FXAA },
+		};
+		fxaa_pipeline_ci.compute = true;
+		m_fxaa_compute_pipeline = Context::createPipeline(fxaa_pipeline_ci);
+	}
+
+	PipelineCreateInfo mod_pipeline_ci;
+	mod_pipeline_ci.shader = g_shader_mod;
+	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
+	mod_pipeline_ci.bindings = {
+		{ BindingType::Texture, "u_MapTexture", TEXTURE_SLOT_MAP },
+		{ BindingType::Texture, "u_CursorTexture", TEXTURE_SLOT_CURSOR },
+		{ BindingType::Texture, "u_FontTexture", TEXTURE_SLOT_FONTS },
+	};
+	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
+}
+
+void Context::onResize(bool game_resized)
+{
+	static glm::uvec2 game_size = { 0, 0 };
+	game_size = App.game.size;
+
+	static glm::uvec2 window_size = { 0, 0 };
+	bool window_resized = (App.window.resized || window_size != App.window.size);
+	window_size = App.window.size;
+	App.window.resized = false;
+
+	if (game_resized) {
+		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
+		modules::HDText::Instance().setMVP(mvp);
+
+		FrameBufferCreateInfo frambuffer_ci;
+		frambuffer_ci.size = game_size;
+		if (App.api == Api::Glide)
+			frambuffer_ci.attachments = {
+				{ TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
+				{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
+			};
+		else
+			frambuffer_ci.attachments = { { TEXTURE_SLOT_GAME } };
+		m_game_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+
+		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
+		m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
+
+		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
+		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
+	}
+
+	if (window_resized) {
+		toggleVsync();
+
+		glm::vec2 scale = { (float)window_size.x / 640, (float)window_size.y / 360 };
+		float offset_x = ((scale.x > scale.y) ? scale.x / scale.y : 1.0f) * 1.00f;
+		float offset_y = ((scale.x < scale.y) ? scale.y / scale.x : 1.0f) * 0.75f;
+		m_movie_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f * offset_x, 1.0f * offset_x, 1.0f * offset_y, -1.0f * offset_y));
+	}
+
+	FrameBufferCreateInfo frambuffer_ci;
+	frambuffer_ci.size = App.viewport.size;
+	frambuffer_ci.attachments = { { TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
+	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+	if (App.gl_caps.compute_shader)
+		m_postfx_framebuffer->getTexture()->bindImage(IMAGE_UNIT_FXAA);
+
+	m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
+
+	TextureCreateInfo texture_ci;
+	texture_ci.size = App.viewport.size;
+	texture_ci.slot = TEXTURE_SLOT_POSTFX2;
+	texture_ci.min_filter = GL_LINEAR;
+	texture_ci.mag_filter = GL_LINEAR;
+	m_postfx_texture = Context::createTexture(texture_ci);
+
+	onShaderChange(game_resized);
+	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
+	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
+	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+}
+
+void Context::onShaderChange(bool texture)
+{
+	const auto shader = g_shader_upscale[App.shader.selected];
+
+	if (texture || m_current_shader != App.shader.selected) {
+		TextureCreateInfo texture_ci;
+		texture_ci.size = App.game.tex_size;
+		texture_ci.slot = TEXTURE_SLOT_UPSCALE;
+		if (shader.linear) {
+			texture_ci.min_filter = GL_LINEAR;
+			texture_ci.mag_filter = GL_LINEAR;
+		}
+		m_upscale_texture = Context::createTexture(texture_ci);
+	}
+
+	if (m_current_shader != App.shader.selected) {
+		PipelineCreateInfo pipeline_ci;
+		pipeline_ci.shader = shader.source;
+		pipeline_ci.bindings = {
+			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
+			{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_UPSCALE },
+		};
+		m_upscale_pipeline = Context::createPipeline(pipeline_ci);
+	}
+
+	m_upscale_pipeline->setUniformMat4f("u_MVP", glm::ortho(-App.game.tex_scale.x, App.game.tex_scale.x, -App.game.tex_scale.y, App.game.tex_scale.y));
+	m_current_shader = App.shader.selected;
 }
 
 void Context::beginFrame()
 {
+	ReleaseSemaphore(m_semaphore_cpu[!m_frame_index], 1, NULL);
+	WaitForSingleObject(m_semaphore_gpu[m_frame_index], INFINITE);
+
 	m_vertices.count = 0;
-	m_vertices.ptr = m_vertices.data.data();
+	m_vertices.ptr = m_vertices.data[0].data();
 
 	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data.data();
+	m_vertices_mod.ptr = m_vertices_mod.data[0].data();
 
 	m_delay_push = false;
 	m_vertices_late.count = 0;
-	m_vertices_late.ptr = m_vertices_late.data.data();
+	m_vertices_late.ptr = m_vertices_late.data[0].data();
 
 	m_frame.vertex_count = 0;
 	m_frame.drawcall_count = 0;
+
+	modules::HDText::Instance().reset();
+	modules::MotionPrediction::Instance().update();
+
+	if (App.game.screen != GameScreen::Movie) {
+		bindFrameBuffer(m_game_framebuffer);
+		setViewport(App.game.size);
+	}
 }
 
 void Context::bindDefaultFrameBuffer()
@@ -213,7 +413,67 @@ void Context::bindDefaultFrameBuffer()
 
 void Context::presentFrame()
 {
+	if (App.game.screen == GameScreen::Movie) {
+		bindDefaultFrameBuffer();
+		setViewport(App.window.size);
+		bindPipeline(m_movie_pipeline);
+		pushQuad();
+	} else {
+		if (m_current_shader != App.shader.selected)
+			onShaderChange();
+
+		if (App.sharpen.active) {
+			const auto sharpen_data = glm::vec3(App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value);
+			if (m_sharpen_data != sharpen_data) {
+				m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(sharpen_data, 1.0f));
+				m_sharpen_data = sharpen_data;
+			}
+		}
+
+		m_upscale_texture->fillFromBuffer(m_game_framebuffer);
+
+		if (App.sharpen.active || App.fxaa) {
+			bindFrameBuffer(m_postfx_framebuffer, false);
+			setViewport(App.viewport.size);
+		} else {
+			bindDefaultFrameBuffer();
+			setViewport(App.viewport.size, App.viewport.offset);
+		}
+		bindPipeline(m_upscale_pipeline);
+		pushQuad();
+
+		if (App.sharpen.active) {
+			if (App.fxaa)
+				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
+			else {
+				bindDefaultFrameBuffer();
+				setViewport(App.viewport.size, App.viewport.offset);
+			}
+			bindPipeline(m_postfx_pipeline);
+			pushQuad(0, App.fxaa);
+		}
+
+		if (App.fxaa) {
+			if (App.gl_caps.compute_shader) {
+				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
+				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			}
+			bindDefaultFrameBuffer();
+			setViewport(App.viewport.size, App.viewport.offset);
+			bindPipeline(m_postfx_pipeline);
+			pushQuad(1 + App.gl_caps.compute_shader);
+		}
+
+		modules::HDText::Instance().update(m_mod_pipeline);
+		bindPipeline(m_mod_pipeline);
+		flushVerticesMod();
+	}
+
 	flushVertices();
+
+	option::Menu::instance().draw();
+
+	fixPD2invItemActions();
 
 	Sleep(1);
 	SwapBuffers(App.hdc);
@@ -232,6 +492,8 @@ void Context::presentFrame()
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
 	m_frame.frame_count++;
+
+	m_frame_index = m_frame_index ? 0 : 1;
 }
 
 void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
@@ -288,11 +550,11 @@ void Context::flushVertices()
 	if (m_vertices.count == 0)
 		return;
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices.count * sizeof(Vertex), m_vertices.data.data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices.count * sizeof(Vertex), m_vertices.data[0].data());
 	glDrawElements(GL_TRIANGLES, m_vertices.count / 4 * 6, GL_UNSIGNED_INT, 0);
 
 	m_vertices.count = 0;
-	m_vertices.ptr = m_vertices.data.data();
+	m_vertices.ptr = m_vertices.data[0].data();
 	m_frame.drawcall_count++;
 }
 
@@ -322,11 +584,11 @@ void Context::flushVerticesMod()
 	if (m_vertices_mod.count == 0)
 		return;
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices_mod.count * sizeof(Vertex), m_vertices_mod.data.data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices_mod.count * sizeof(Vertex), m_vertices_mod.data[0].data());
 	glDrawElements(GL_TRIANGLES, m_vertices_mod.count / 4 * 6, GL_UNSIGNED_INT, 0);
 
 	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data.data();
+	m_vertices_mod.ptr = m_vertices_mod.data[0].data();
 	m_frame.drawcall_count++;
 }
 
@@ -335,14 +597,14 @@ void Context::appendDelayedObjects()
 	if (m_vertices_late.count == 0)
 		return;
 
-	memcpy(m_vertices_mod.ptr, m_vertices_late.data.data(), m_vertices_late.count * sizeof(Vertex));
+	memcpy(m_vertices_mod.ptr, m_vertices_late.data[0].data(), m_vertices_late.count * sizeof(Vertex));
 
 	m_vertices_mod.count += m_vertices_late.count;
 	m_vertices_mod.ptr += m_vertices_late.count;
 
 	m_delay_push = false;
 	m_vertices_late.count = 0;
-	m_vertices_late.ptr = m_vertices_late.data.data();
+	m_vertices_late.ptr = m_vertices_late.data[0].data();
 }
 
 void Context::toggleVsync()

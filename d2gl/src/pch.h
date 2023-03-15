@@ -27,12 +27,14 @@
 #include <timeapi.h>
 
 #include <array>
+#include <chrono>
 #include <deque>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <thread>
 #include <unordered_map>
 
 #include <GL/glew.h>

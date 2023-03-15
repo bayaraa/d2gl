@@ -41,12 +41,10 @@ class Wrapper {
 	std::map<uint32_t, std::pair<uint32_t, BlendType>> m_blend_types;
 
 	std::unique_ptr<Texture> m_movie_texture;
-	std::unique_ptr<Pipeline> m_movie_pipeline;
 	GrLfbInfo_t m_movie_buffer = { 0 };
 
 	std::unique_ptr<UniformBuffer> m_game_color_ubo;
 	std::unique_ptr<TextureManager> m_game_texture;
-	std::unique_ptr<FrameBuffer> m_game_framebuffer;
 	std::unique_ptr<Pipeline> m_game_pipeline;
 	uint32_t m_current_blend_index = 0;
 	bool m_blend_locked = false;
@@ -63,27 +61,11 @@ class Wrapper {
 	std::unique_ptr<Texture> m_prefx_texture;
 	std::unique_ptr<Pipeline> m_prefx_pipeline;
 
-	std::unique_ptr<UniformBuffer> m_upscale_ubo;
-	std::unique_ptr<Texture> m_upscale_texture;
-	std::unique_ptr<Pipeline> m_upscale_pipeline;
-	int m_current_shader = -1;
-
-	glm::vec3 m_sharpen_data;
-	glm::uvec2 m_fxaa_work_size = { 0, 0 };
-	std::unique_ptr<UniformBuffer> m_postfx_ubo;
-	std::unique_ptr<Texture> m_postfx_texture;
-	std::unique_ptr<FrameBuffer> m_postfx_framebuffer;
-	std::unique_ptr<Pipeline> m_postfx_pipeline;
-	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
-
-	std::unique_ptr<Pipeline> m_mod_pipeline;
-
 public:
 	Wrapper();
 	~Wrapper();
 
 	void onResize();
-	void onShaderChange(bool texture = false);
 	void onStageChange();
 	void onBufferClear();
 	void onBufferSwap();
