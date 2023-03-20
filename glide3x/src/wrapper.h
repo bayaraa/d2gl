@@ -40,11 +40,11 @@ class Wrapper {
 
 	std::map<uint32_t, std::pair<uint32_t, BlendType>> m_blend_types;
 
-	std::unique_ptr<Texture> m_movie_texture;
+	std::array<std::unique_ptr<Texture>, 2> m_movie_texture;
 	GrLfbInfo_t m_movie_buffer = { 0 };
 
 	std::unique_ptr<UniformBuffer> m_game_color_ubo;
-	std::unique_ptr<TextureManager> m_game_texture;
+	std::array<std::unique_ptr<TextureManager>, 2> m_game_texture;
 	std::unique_ptr<Pipeline> m_game_pipeline;
 	uint32_t m_current_blend_index = 0;
 	bool m_blend_locked = false;

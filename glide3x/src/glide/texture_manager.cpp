@@ -23,7 +23,7 @@ namespace d2gl {
 
 GlideTexture g_glide_texture;
 
-TextureManager::TextureManager(const SubTextureCounts& size_counts)
+TextureManager::TextureManager(const SubTextureCounts& size_counts, uint32_t slot)
 	: m_size_counts(size_counts)
 {
 	uint16_t tex_start = 0;
@@ -76,6 +76,7 @@ TextureManager::TextureManager(const SubTextureCounts& size_counts)
 	texture_create_info.size = { 512, 512 };
 	texture_create_info.layer_count = tex_start;
 	texture_create_info.format = GL_RED;
+	texture_create_info.slot = slot;
 	m_texture = std::make_unique<Texture>(texture_create_info);
 }
 

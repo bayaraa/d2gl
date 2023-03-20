@@ -54,7 +54,8 @@ layout(std140) uniform ubo_Colors {
 	vec4 u_Gamma[256];
 };
 
-uniform sampler2DArray u_Texture;
+uniform sampler2DArray u_Texture0;
+uniform sampler2DArray u_Texture1;
 
 in vec2 v_TexCoord;
 in vec4 v_Color1;
@@ -68,7 +69,12 @@ void main()
 		FragColor = v_Color2;
 	else
 	{
-		float red = texture(u_Texture, vec3(v_TexCoord, v_TexIds.y)).r;
+		float red;
+		if (v_TexIds.x == 0)
+			red = texture(u_Texture0, vec3(v_TexCoord, v_TexIds.y)).r;
+		else
+			red = texture(u_Texture1, vec3(v_TexCoord, v_TexIds.y)).r;
+
 		if (v_Flags.x == 1 && red == 0.0)
 			discard;
 

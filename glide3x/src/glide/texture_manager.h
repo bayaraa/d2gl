@@ -55,7 +55,7 @@ class TextureManager {
 	SubTextureCounts m_size_counts;
 
 public:
-	TextureManager(const SubTextureCounts& size_counts);
+	TextureManager(const SubTextureCounts& size_counts, uint32_t slot);
 	~TextureManager() = default;
 
 	inline Texture* getTexture() { return m_texture.get(); }

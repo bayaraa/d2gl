@@ -107,7 +107,7 @@ Menu::Menu()
 	m_fonts[14] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 14.0f) : io.Fonts->Fonts[0];
 	m_fonts[12] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 12.0f) : io.Fonts->Fonts[0];
 
-	App.menu_title += (App.api == Api::Glide ? " (Glide / " : " (DDraw, ");
+	App.menu_title += (App.api == Api::Glide ? " (Glide / " : " (DDraw / ");
 	App.menu_title += "OpenGL: " + App.version + " / D2LoD: " + helpers::getVersionString() + ")";
 }
 
@@ -125,30 +125,31 @@ void Menu::toggle(bool force)
 
 void Menu::draw()
 {
+#ifdef _DEBUG
+	App.context->imguiStartFrame();
+
+	ImGui::SetNextWindowPos({ 10.f, 220.f });
+	ImGui::SetNextWindowBgAlpha(0.85f);
+	ImGui::Begin("Glide", (bool*)true, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
+	ImGui::Separator();
+	ImGui::Text("256: 1024 / %d / %d", App.var1, App.var7);
+	ImGui::Text("128: 2464 / %d / %d", App.var2, App.var8);
+	ImGui::Text(" 64: 4096 / %d / %d", App.var3, App.var9);
+	ImGui::Text(" 32: 8192 / %d / %d", App.var4, App.var10);
+	ImGui::Text(" 16: 5120 / %d / %d", App.var5, App.var11);
+	ImGui::Text("  8: 4096 / %d / %d", App.var6, App.var12);
+	// ImGui::Checkbox("aaa", (bool*)&App.var9);
+	// ImGui::Checkbox("aaa", (bool*)&App.var10);
+	ImGui::End();
+
+	App.context->imguiRender();
+#endif
+
 	if (!m_visible)
 		return;
 
 	App.context->imguiStartFrame();
-
-#ifdef _DEBUG
-	static bool show_info = true;
-	ImGui::SetNextWindowPos({ 10.f, 220.f });
-	ImGui::SetNextWindowBgAlpha(0.85f);
-	ImGui::Begin("Glide", &show_info, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
-	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
-	ImGui::Separator();
-	ImGui::Text("256: 1024 / %d", App.var1);
-	ImGui::Text("128: 2464 / %d", App.var2);
-	ImGui::Text(" 64: 4096 / %d", App.var3);
-	ImGui::Text(" 32: 8192 / %d", App.var4);
-	ImGui::Text(" 16: 5120 / %d", App.var5);
-	ImGui::Text("  8: 4096 / %d", App.var6);
-	ImGui::Checkbox("image", (bool*)&App.var7);
-	ImGui::Checkbox("shifted", (bool*)&App.var8);
-	// ImGui::Checkbox("aaa", (bool*)&App.var9);
-	// ImGui::Checkbox("aaa", (bool*)&App.var10);
-	ImGui::End();
-#endif
 
 	ImVec2 window_pos = { (float)App.window.size.x * 0.5f, (float)App.window.size.y * 0.5f };
 	ImVec2 max_size = { (float)App.window.size.x - 20.0f, (float)App.window.size.y - 20.0f };

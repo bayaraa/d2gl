@@ -28,26 +28,66 @@
 
 namespace d2gl {
 
-#define MAX_INDICES 6 * 20000
-#define MAX_VERTICES 4 * 20000
+#define MAX_INDICES 6 * 50000
+#define MAX_VERTICES 4 * 50000
 #define FRAMETIME_SAMPLE_COUNT 120
 
-#define TEXTURE_SLOT_DEFAULT 0
-#define TEXTURE_SLOT_GAME 1
-#define TEXTURE_SLOT_UPSCALE 4
-#define TEXTURE_SLOT_POSTFX1 5
-#define TEXTURE_SLOT_POSTFX2 6
-#define TEXTURE_SLOT_MAP 7
-#define TEXTURE_SLOT_LUT 8
-#define TEXTURE_SLOT_PREFX 9
-#define TEXTURE_SLOT_BLOOM1 10
-#define TEXTURE_SLOT_BLOOM2 11
+#define TEXTURE_SLOT_DEFAULT0 0
+#define TEXTURE_SLOT_DEFAULT1 1
+#define TEXTURE_SLOT_GAME 2
+#define TEXTURE_SLOT_UPSCALE 5
+#define TEXTURE_SLOT_POSTFX1 6
+#define TEXTURE_SLOT_POSTFX2 7
+#define TEXTURE_SLOT_MAP 8
+#define TEXTURE_SLOT_LUT 9
+#define TEXTURE_SLOT_PREFX 10
+#define TEXTURE_SLOT_BLOOM1 11
+#define TEXTURE_SLOT_BLOOM2 12
 
-#define TEXTURE_SLOT_CURSOR 2
-#define TEXTURE_SLOT_FONTS 3
+#define TEXTURE_SLOT_CURSOR 3
+#define TEXTURE_SLOT_FONTS 4
 
 #define IMAGE_UNIT_BLUR 0
 #define IMAGE_UNIT_FXAA 1
+
+enum class CommandType {
+	Clear,
+	BindPipeline,
+	BindFrameBuffer,
+	SetViewport,
+	DrawIndexed,
+};
+
+struct Command {
+	CommandType type;
+	union {
+		struct {
+			glm::vec4 color;
+		} clear;
+		struct {
+			FrameBuffer* object;
+			bool clear;
+		} framebuffer;
+		struct {
+			Pipeline* object;
+			uint32_t index;
+		} pipeline;
+		struct {
+			glm::ivec2 size;
+			glm::ivec2 offset;
+		} viewport;
+		struct {
+			void* data;
+			uint32_t size;
+		} draw;
+	};
+};
+
+struct CommandBuffer {
+	Command* ptr;
+	uint32_t count = 0;
+	std::array<Command, 1024> commands;
+};
 
 struct GlideVertex {
 	float x, y;
@@ -57,10 +97,12 @@ struct GlideVertex {
 	uint32_t unused;
 };
 
+template <size_t size>
 struct Vertices {
 	Vertex* ptr;
-	size_t count = 0;
-	std::array<Vertex, MAX_VERTICES> data[2];
+	uint32_t count = 0;
+	uint32_t start = 0;
+	std::array<Vertex, MAX_VERTICES> data[size];
 };
 
 struct VertexParams {
@@ -116,10 +158,13 @@ class Context {
 	uint32_t m_frame_index = 0;
 
 	bool m_delay_push = false;
-	Vertices m_vertices;
-	Vertices m_vertices_mod;
-	Vertices m_vertices_late;
+	Vertices<2> m_vertices;
+	Vertices<2> m_vertices_mod;
+	Vertices<1> m_vertices_late;
 	VertexParams m_vertex_params;
+
+	CommandBuffer* m_command_buffer;
+	CommandBuffer m_command_buffers[2];
 
 	FrameMetrics m_frame;
 	LimiterMetrics m_limiter;
@@ -157,8 +202,8 @@ public:
 	void presentFrame();
 
 	void setViewport(glm::ivec2 size, glm::ivec2 offset = { 0, 0 });
-	inline void bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear = true) { framebuffer->bind(clear); }
-	inline void bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index = 0) { pipeline->bind(index); }
+	void bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear = true);
+	void bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index = 0);
 
 	void pushVertex(const GlideVertex* vertex, glm::vec2 fix = { 0.0f, 0.0f }, glm::ivec2 offset = { 0, 0 });
 	void pushQuad(int8_t x = 0, int8_t y = 0, int8_t z = 0, int8_t w = 0);

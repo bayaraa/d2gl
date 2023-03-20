@@ -236,7 +236,10 @@ void Context::onInitialize()
 {
 	PipelineCreateInfo movie_pipeline_ci;
 	movie_pipeline_ci.shader = g_shader_movie;
-	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", TEXTURE_SLOT_DEFAULT } };
+	movie_pipeline_ci.bindings = {
+		{ BindingType::Texture, "u_Texture0", TEXTURE_SLOT_DEFAULT0 },
+		{ BindingType::Texture, "u_Texture1", TEXTURE_SLOT_DEFAULT1 },
+	};
 	m_movie_pipeline = Context::createPipeline(movie_pipeline_ci);
 
 	UniformBufferCreateInfo upscale_ubo_ci;
@@ -380,11 +383,15 @@ void Context::beginFrame()
 	ReleaseSemaphore(m_semaphore_cpu[!m_frame_index], 1, NULL);
 	WaitForSingleObject(m_semaphore_gpu[m_frame_index], INFINITE);
 
-	m_vertices.count = 0;
-	m_vertices.ptr = m_vertices.data[0].data();
+	m_command_buffer = &m_command_buffers[m_frame_index];
+	m_command_buffer->ptr = m_command_buffer->commands.data();
+	m_command_buffer->count = 0;
 
-	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data[0].data();
+	m_vertices.count = m_vertices.start = 0;
+	m_vertices.ptr = m_vertices.data[m_frame_index].data();
+
+	m_vertices_mod.count = m_vertices_mod.start = 0;
+	m_vertices_mod.ptr = m_vertices_mod.data[m_frame_index].data();
 
 	m_delay_push = false;
 	m_vertices_late.count = 0;
@@ -409,6 +416,17 @@ void Context::bindDefaultFrameBuffer()
 	FrameBuffer::unBind();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	// TODO
+	m_command_buffer->ptr->type = CommandType::BindFrameBuffer;
+	m_command_buffer->ptr->framebuffer.object = nullptr;
+	m_command_buffer->ptr++;
+
+	m_command_buffer->ptr->type = CommandType::Clear;
+	m_command_buffer->ptr->clear.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	m_command_buffer->ptr++;
+
+	m_command_buffer->count += 2;
 }
 
 void Context::presentFrame()
@@ -417,7 +435,7 @@ void Context::presentFrame()
 		bindDefaultFrameBuffer();
 		setViewport(App.window.size);
 		bindPipeline(m_movie_pipeline);
-		pushQuad();
+		pushQuad(m_frame_index);
 	} else {
 		if (m_current_shader != App.shader.selected)
 			onShaderChange();
@@ -505,6 +523,37 @@ void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
 
 	glViewport(offset.x, offset.y, size.x, size.y);
 	viewport_metrics = metrics;
+
+	// TODO
+	m_command_buffer->ptr->type = CommandType::SetViewport;
+	m_command_buffer->ptr->viewport.size = size;
+	m_command_buffer->ptr->viewport.offset = offset;
+	m_command_buffer->ptr++;
+	m_command_buffer->count++;
+}
+
+void Context::bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear)
+{
+	framebuffer->bind(clear);
+
+	// TODO
+	m_command_buffer->ptr->type = CommandType::BindFrameBuffer;
+	m_command_buffer->ptr->framebuffer.object = framebuffer.get();
+	m_command_buffer->ptr->framebuffer.clear = clear;
+	m_command_buffer->ptr++;
+	m_command_buffer->count++;
+}
+
+void Context::bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index)
+{
+	pipeline->bind(index);
+
+	// TODO
+	m_command_buffer->ptr->type = CommandType::BindFrameBuffer;
+	m_command_buffer->ptr->pipeline.object = pipeline.get();
+	m_command_buffer->ptr->pipeline.index = index;
+	m_command_buffer->ptr++;
+	m_command_buffer->count++;
 }
 
 void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 offset)
@@ -550,12 +599,19 @@ void Context::flushVertices()
 	if (m_vertices.count == 0)
 		return;
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices.count * sizeof(Vertex), m_vertices.data[0].data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices.count * sizeof(Vertex), &m_vertices.data[m_frame_index][m_vertices.start]);
 	glDrawElements(GL_TRIANGLES, m_vertices.count / 4 * 6, GL_UNSIGNED_INT, 0);
 
+	m_vertices.start += m_vertices.count;
 	m_vertices.count = 0;
-	m_vertices.ptr = m_vertices.data[0].data();
 	m_frame.drawcall_count++;
+
+	// TODO
+	m_command_buffer->ptr->type = CommandType::DrawIndexed;
+	m_command_buffer->ptr->draw.data = &m_vertices.data[m_frame_index][m_vertices.start];
+	m_command_buffer->ptr->draw.size = m_vertices.count * sizeof(Vertex);
+	m_command_buffer->ptr++;
+	m_command_buffer->count++;
 }
 
 void Context::pushObject(const std::unique_ptr<Object>& object)
@@ -584,12 +640,19 @@ void Context::flushVerticesMod()
 	if (m_vertices_mod.count == 0)
 		return;
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices_mod.count * sizeof(Vertex), m_vertices_mod.data[0].data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices_mod.count * sizeof(Vertex), &m_vertices_mod.data[m_frame_index][m_vertices_mod.start]);
 	glDrawElements(GL_TRIANGLES, m_vertices_mod.count / 4 * 6, GL_UNSIGNED_INT, 0);
 
+	m_vertices_mod.start += m_vertices_mod.count;
 	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data[0].data();
 	m_frame.drawcall_count++;
+
+	// TODO
+	m_command_buffer->ptr->type = CommandType::DrawIndexed;
+	m_command_buffer->ptr->draw.data = &m_vertices_mod.data[m_frame_index][m_vertices_mod.start];
+	m_command_buffer->ptr->draw.size = m_vertices_mod.count * sizeof(Vertex);
+	m_command_buffer->ptr++;
+	m_command_buffer->count++;
 }
 
 void Context::appendDelayedObjects()
