@@ -38,6 +38,8 @@ const char* g_shader_prefx = {
 #include "shaders/prefx.glsl.h"
 };
 
+Texture* game_tex[2];
+
 Wrapper::Wrapper()
 	: ctx(App.context.get())
 {
@@ -67,6 +69,8 @@ Wrapper::Wrapper()
 	SubTextureCounts sub_texture_counts = { { 256, 256 }, { 128, 154 }, { 64, 64 }, { 32, 32 }, { 16, 5 }, { 8, 1 } };
 	m_game_texture[0] = std::make_unique<TextureManager>(sub_texture_counts, TEXTURE_SLOT_DEFAULT0);
 	m_game_texture[1] = std::make_unique<TextureManager>(sub_texture_counts, TEXTURE_SLOT_DEFAULT1);
+	game_tex[0] = m_game_texture[0]->getTexture();
+	game_tex[1] = m_game_texture[1]->getTexture();
 
 	PipelineCreateInfo game_pipeline_ci;
 	game_pipeline_ci.shader = g_shader_game;

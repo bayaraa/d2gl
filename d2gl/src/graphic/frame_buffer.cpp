@@ -67,18 +67,21 @@ FrameBuffer::~FrameBuffer()
 void FrameBuffer::bind(bool clear)
 {
 	if (current_binded_fbo == m_id) {
-		if (clear)
-			clearBuffer();
+		if (clear) {
+			const auto command_buffer = App.context->getCommandBuffer();
+			command_buffer->clearFrameBuffer(this);
+		}
 		return;
 	}
 
 	App.context->flushVertices();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+	const auto command_buffer = App.context->getCommandBuffer();
+	command_buffer->bindFrameBuffer(this);
 	current_binded_fbo = m_id;
 
 	if (clear)
-		clearBuffer();
+		command_buffer->clearFrameBuffer(this);
 }
 
 void FrameBuffer::unBind()
@@ -86,7 +89,8 @@ void FrameBuffer::unBind()
 	if (current_binded_fbo == 0)
 		return;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	const auto command_buffer = App.context->getCommandBuffer();
+	command_buffer->unbindFrameBuffer();
 	current_binded_fbo = 0;
 }
 

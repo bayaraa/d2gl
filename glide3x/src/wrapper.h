@@ -33,6 +33,7 @@ class Wrapper;
 extern const char* g_shader_game;
 extern const char* g_shader_prefx;
 extern std::unique_ptr<Wrapper> GlideWrapper;
+extern Texture* game_tex[2];
 
 class Wrapper {
 	Context* ctx;

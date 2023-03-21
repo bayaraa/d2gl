@@ -94,16 +94,25 @@ void Pipeline::bind(uint32_t index)
 
 	App.context->flushVertices();
 
-	if (current_program != m_id) {
-		glUseProgram(m_id);
-		current_program = m_id;
-		current_blend_index = 10;
-	}
+	const auto command_buffer = App.context->getCommandBuffer();
+
+	trace("%d", m_id);
+	// if (current_program != m_id) {
+	command_buffer->useProgram(this);
+	current_program = m_id;
+	current_blend_index = 10;
+	//}
 
 	if (current_blend_index != index) {
-		setBlendState(index);
+		command_buffer->setBlendState(this, index);
 		current_blend_index = index;
 	}
+}
+
+void Pipeline::useProgram()
+{
+	glUseProgram(m_id);
+	current_program = 0;
 }
 
 void Pipeline::setBlendState(uint32_t index)
@@ -139,26 +148,30 @@ BlendFactors Pipeline::blendFactor(BlendType type)
 
 void Pipeline::setUniform1i(const std::string& name, int value)
 {
-	bind();
+	useProgram();
 	glUniform1i(getUniformLocation(name), value);
+	glUseProgram(0);
 }
 
 void Pipeline::setUniformVec2f(const std::string& name, const glm::vec2& value)
 {
-	bind();
+	useProgram();
 	glUniform2fv(getUniformLocation(name), 1, &value.x);
+	glUseProgram(0);
 }
 
 void Pipeline::setUniformVec4f(const std::string& name, const glm::vec4& value)
 {
-	bind();
+	useProgram();
 	glUniform4fv(getUniformLocation(name), 1, &value.x);
+	glUseProgram(0);
 }
 
 void Pipeline::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
-	bind();
+	useProgram();
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
+	glUseProgram(0);
 }
 
 GLint Pipeline::getUniformLocation(const std::string& name)

@@ -30,6 +30,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\mini_map.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\patch.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\app.h" />
@@ -59,6 +60,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\mini_map.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />

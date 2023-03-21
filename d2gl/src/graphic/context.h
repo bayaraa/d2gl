@@ -20,6 +20,7 @@
 
 #include "types.h"
 
+#include "command_buffer.h"
 #include "frame_buffer.h"
 #include "object.h"
 #include "pipeline.h"
@@ -49,45 +50,6 @@ namespace d2gl {
 
 #define IMAGE_UNIT_BLUR 0
 #define IMAGE_UNIT_FXAA 1
-
-enum class CommandType {
-	Clear,
-	BindPipeline,
-	BindFrameBuffer,
-	SetViewport,
-	DrawIndexed,
-};
-
-struct Command {
-	CommandType type;
-	union {
-		struct {
-			glm::vec4 color;
-		} clear;
-		struct {
-			FrameBuffer* object;
-			bool clear;
-		} framebuffer;
-		struct {
-			Pipeline* object;
-			uint32_t index;
-		} pipeline;
-		struct {
-			glm::ivec2 size;
-			glm::ivec2 offset;
-		} viewport;
-		struct {
-			void* data;
-			uint32_t size;
-		} draw;
-	};
-};
-
-struct CommandBuffer {
-	Command* ptr;
-	uint32_t count = 0;
-	std::array<Command, 1024> commands;
-};
 
 struct GlideVertex {
 	float x, y;
@@ -150,6 +112,7 @@ class Context {
 
 	HANDLE m_semaphore_cpu[2];
 	HANDLE m_semaphore_gpu[2];
+	CommandBuffer m_command_buffer[2];
 	bool m_rendering = true;
 
 	GLuint m_index_buffer;
@@ -162,9 +125,6 @@ class Context {
 	Vertices<2> m_vertices_mod;
 	Vertices<1> m_vertices_late;
 	VertexParams m_vertex_params;
-
-	CommandBuffer* m_command_buffer;
-	CommandBuffer m_command_buffers[2];
 
 	FrameMetrics m_frame;
 	LimiterMetrics m_limiter;
@@ -201,9 +161,12 @@ public:
 	void bindDefaultFrameBuffer();
 	void presentFrame();
 
+	inline const uint32_t getFrameIndex() { return m_frame_index; }
+	inline CommandBuffer* getCommandBuffer() { return &m_command_buffer[m_frame_index]; }
+
 	void setViewport(glm::ivec2 size, glm::ivec2 offset = { 0, 0 });
-	void bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear = true);
-	void bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index = 0);
+	inline void bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear = true) { framebuffer->bind(clear); }
+	inline void bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index = 0) { pipeline->bind(index); }
 
 	void pushVertex(const GlideVertex* vertex, glm::vec2 fix = { 0.0f, 0.0f }, glm::ivec2 offset = { 0, 0 });
 	void pushQuad(int8_t x = 0, int8_t y = 0, int8_t z = 0, int8_t w = 0);
@@ -229,7 +192,6 @@ public:
 	inline const uint32_t getFrameCount() { return m_frame.frame_count; }
 	inline const uint32_t getVertexCount() { return m_frame.vertex_count; }
 	inline const uint32_t getDrawCallCount() { return m_frame.drawcall_count; }
-	inline const uint32_t getFrameIndex() { return m_frame_index; }
 
 	void toggleVsync();
 	void setFpsLimit(bool active, int max_fps);

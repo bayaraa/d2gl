@@ -30,6 +30,7 @@
 
 namespace d2gl {
 
+extern Texture* game_tex[2];
 Context::Context()
 {
 	PIXELFORMATDESCRIPTOR pfd;
@@ -84,7 +85,7 @@ Context::Context()
 		exit(1);
 	}
 
-	wglShareLists(m_context_update, m_context_render);
+	wglShareLists(m_context_render, m_context_update);
 
 	wglMakeCurrent(App.hdc, m_context_update);
 	glewInit();
@@ -126,7 +127,7 @@ Context::Context()
 
 	glBlendEquation(GL_FUNC_ADD);
 
-	uint32_t offset = 0;
+	/*uint32_t offset = 0;
 	uint32_t* indices = new uint32_t[MAX_INDICES];
 	for (size_t i = 0; i < MAX_INDICES; i += 6) {
 		indices[i + 0] = offset + 0;
@@ -163,9 +164,7 @@ Context::Context()
 	glEnableVertexAttribArray(5);
 	glVertexAttribIPointer(5, 4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void*)offsetof(Vertex, flags));
 	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, extra));
-
-	imguiInit();
+	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, extra));*/
 
 	LARGE_INTEGER qpf;
 	QueryPerformanceFrequency(&qpf);
@@ -186,13 +185,12 @@ Context::Context()
 		m_semaphore_gpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
 	}
 
-	ReleaseSemaphore(m_semaphore_gpu[0], 1, NULL);
 	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Context::renderThread, reinterpret_cast<void*>(this), 0, NULL);
 }
 
 Context::~Context()
 {
-	imguiDestroy();
+	// imguiDestroy();
 
 	m_rendering = false;
 	for (uint32_t i = 0; i < 2; i++) {
@@ -217,14 +215,73 @@ void Context::renderThread(void* context)
 	Context* ctx = reinterpret_cast<Context*>(context);
 	wglMakeCurrent(App.hdc, ctx->m_context_render);
 
-	uint32_t frame_index = 0;
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+
+	glBlendEquation(GL_FUNC_ADD);
+
+	uint32_t offset = 0;
+	uint32_t* indices = new uint32_t[MAX_INDICES];
+	for (size_t i = 0; i < MAX_INDICES; i += 6) {
+		indices[i + 0] = offset + 0;
+		indices[i + 1] = offset + 1;
+		indices[i + 2] = offset + 2;
+		indices[i + 3] = offset + 2;
+		indices[i + 4] = offset + 3;
+		indices[i + 5] = offset + 0;
+		offset += 4;
+	}
+
+	glGenVertexArrays(1, &ctx->m_vertex_array);
+	glBindVertexArray(ctx->m_vertex_array);
+
+	glGenBuffers(1, &ctx->m_index_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->m_index_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * MAX_INDICES, indices, GL_STATIC_DRAW);
+	delete[] indices;
+
+	glGenBuffers(1, &ctx->m_vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->m_vertex_buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->m_vertices.data), nullptr, GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coord));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, color1));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, color2));
+	glEnableVertexAttribArray(4);
+	glVertexAttribIPointer(4, 2, GL_UNSIGNED_SHORT, sizeof(Vertex), (const void*)offsetof(Vertex, texture_ids));
+	glEnableVertexAttribArray(5);
+	glVertexAttribIPointer(5, 4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void*)offsetof(Vertex, flags));
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, extra));
+
+	ctx->imguiInit();
+
+	uint32_t frame_index = 1;
+	static glm::ivec4 viewport_metrics = { 0, 0, 0, 0 };
 
 	while (ctx->m_rendering) {
 		ReleaseSemaphore(ctx->m_semaphore_gpu[!frame_index], 1, NULL);
 		WaitForSingleObject(ctx->m_semaphore_cpu[frame_index], INFINITE);
+
+		glViewport(0, 0, 800, 600);
 		// trace("frame: %d", frame_index);
 		// trace("%d", ctx->m_frame.frame_count);
-		// std::this_thread::sleep_for(100ms);
+		std::this_thread::sleep_for(100ms);
+		// glActiveTexture(GL_TEXTURE0 + frame_index);
+		if (game_tex[frame_index])
+			game_tex[frame_index]->bind();
+		ctx->m_command_buffer[frame_index].execute();
+
+		// option::Menu::instance().draw();
+
+		SwapBuffers(App.hdc);
+		trace("gpu: %d => drawn", frame_index);
 
 		frame_index = frame_index ? 0 : 1;
 	}
@@ -383,9 +440,7 @@ void Context::beginFrame()
 	ReleaseSemaphore(m_semaphore_cpu[!m_frame_index], 1, NULL);
 	WaitForSingleObject(m_semaphore_gpu[m_frame_index], INFINITE);
 
-	m_command_buffer = &m_command_buffers[m_frame_index];
-	m_command_buffer->ptr = m_command_buffer->commands.data();
-	m_command_buffer->count = 0;
+	m_command_buffer[m_frame_index].begin();
 
 	m_vertices.count = m_vertices.start = 0;
 	m_vertices.ptr = m_vertices.data[m_frame_index].data();
@@ -404,7 +459,8 @@ void Context::beginFrame()
 	modules::MotionPrediction::Instance().update();
 
 	if (App.game.screen != GameScreen::Movie) {
-		bindFrameBuffer(m_game_framebuffer);
+		bindDefaultFrameBuffer();
+		// bindFrameBuffer(m_game_framebuffer);
 		setViewport(App.game.size);
 	}
 }
@@ -414,19 +470,7 @@ void Context::bindDefaultFrameBuffer()
 	flushVertices();
 
 	FrameBuffer::unBind();
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	// TODO
-	m_command_buffer->ptr->type = CommandType::BindFrameBuffer;
-	m_command_buffer->ptr->framebuffer.object = nullptr;
-	m_command_buffer->ptr++;
-
-	m_command_buffer->ptr->type = CommandType::Clear;
-	m_command_buffer->ptr->clear.color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	m_command_buffer->ptr++;
-
-	m_command_buffer->count += 2;
+	m_command_buffer[m_frame_index].clearBuffer();
 }
 
 void Context::presentFrame()
@@ -448,7 +492,7 @@ void Context::presentFrame()
 			}
 		}
 
-		m_upscale_texture->fillFromBuffer(m_game_framebuffer);
+		/*m_upscale_texture->fillFromBuffer(m_game_framebuffer);
 
 		if (App.sharpen.active || App.fxaa) {
 			bindFrameBuffer(m_postfx_framebuffer, false);
@@ -484,17 +528,19 @@ void Context::presentFrame()
 
 		modules::HDText::Instance().update(m_mod_pipeline);
 		bindPipeline(m_mod_pipeline);
-		flushVerticesMod();
+		flushVerticesMod();*/
 	}
 
 	flushVertices();
 
-	option::Menu::instance().draw();
+	// option::Menu::instance().draw();
 
 	fixPD2invItemActions();
 
-	Sleep(1);
-	SwapBuffers(App.hdc);
+	// Sleep(1);
+	// SwapBuffers(App.hdc);
+
+	trace("cpu: %d => submit", m_frame_index);
 
 	if (m_limiter.active) {
 		WaitForSingleObject(m_limiter.timer, (DWORD)m_limiter.frame_len_ms + 1);
@@ -521,39 +567,8 @@ void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
 	if (viewport_metrics == metrics)
 		return;
 
-	glViewport(offset.x, offset.y, size.x, size.y);
+	m_command_buffer[m_frame_index].setViewport(size, offset);
 	viewport_metrics = metrics;
-
-	// TODO
-	m_command_buffer->ptr->type = CommandType::SetViewport;
-	m_command_buffer->ptr->viewport.size = size;
-	m_command_buffer->ptr->viewport.offset = offset;
-	m_command_buffer->ptr++;
-	m_command_buffer->count++;
-}
-
-void Context::bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear)
-{
-	framebuffer->bind(clear);
-
-	// TODO
-	m_command_buffer->ptr->type = CommandType::BindFrameBuffer;
-	m_command_buffer->ptr->framebuffer.object = framebuffer.get();
-	m_command_buffer->ptr->framebuffer.clear = clear;
-	m_command_buffer->ptr++;
-	m_command_buffer->count++;
-}
-
-void Context::bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index)
-{
-	pipeline->bind(index);
-
-	// TODO
-	m_command_buffer->ptr->type = CommandType::BindFrameBuffer;
-	m_command_buffer->ptr->pipeline.object = pipeline.get();
-	m_command_buffer->ptr->pipeline.index = index;
-	m_command_buffer->ptr++;
-	m_command_buffer->count++;
 }
 
 void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 offset)
@@ -570,6 +585,7 @@ void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 of
 	m_vertices.ptr->color2 = m_vertex_params.color;
 	m_vertices.ptr->texture_ids = m_vertex_params.texture_ids;
 	m_vertices.ptr->flags = m_vertex_params.flags;
+	m_vertices.ptr->color1 = 0xffffffff;
 
 	m_vertices.ptr++;
 	m_vertices.count++;
@@ -599,19 +615,11 @@ void Context::flushVertices()
 	if (m_vertices.count == 0)
 		return;
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices.count * sizeof(Vertex), &m_vertices.data[m_frame_index][m_vertices.start]);
-	glDrawElements(GL_TRIANGLES, m_vertices.count / 4 * 6, GL_UNSIGNED_INT, 0);
+	m_command_buffer[m_frame_index].drawIndexed(&m_vertices.data[m_frame_index][m_vertices.start], m_vertices.count);
 
 	m_vertices.start += m_vertices.count;
 	m_vertices.count = 0;
 	m_frame.drawcall_count++;
-
-	// TODO
-	m_command_buffer->ptr->type = CommandType::DrawIndexed;
-	m_command_buffer->ptr->draw.data = &m_vertices.data[m_frame_index][m_vertices.start];
-	m_command_buffer->ptr->draw.size = m_vertices.count * sizeof(Vertex);
-	m_command_buffer->ptr++;
-	m_command_buffer->count++;
 }
 
 void Context::pushObject(const std::unique_ptr<Object>& object)
@@ -640,19 +648,11 @@ void Context::flushVerticesMod()
 	if (m_vertices_mod.count == 0)
 		return;
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices_mod.count * sizeof(Vertex), &m_vertices_mod.data[m_frame_index][m_vertices_mod.start]);
-	glDrawElements(GL_TRIANGLES, m_vertices_mod.count / 4 * 6, GL_UNSIGNED_INT, 0);
+	m_command_buffer[m_frame_index].drawIndexed(&m_vertices_mod.data[m_frame_index][m_vertices.start], m_vertices_mod.count);
 
 	m_vertices_mod.start += m_vertices_mod.count;
 	m_vertices_mod.count = 0;
 	m_frame.drawcall_count++;
-
-	// TODO
-	m_command_buffer->ptr->type = CommandType::DrawIndexed;
-	m_command_buffer->ptr->draw.data = &m_vertices_mod.data[m_frame_index][m_vertices_mod.start];
-	m_command_buffer->ptr->draw.size = m_vertices_mod.count * sizeof(Vertex);
-	m_command_buffer->ptr++;
-	m_command_buffer->count++;
 }
 
 void Context::appendDelayedObjects()

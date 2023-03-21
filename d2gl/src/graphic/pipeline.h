@@ -78,6 +78,7 @@ public:
 	~Pipeline();
 
 	void bind(uint32_t index = 0);
+	void setBlendState(uint32_t index = 0);
 	void dispatchCompute(int flag, glm::ivec2 work_size, GLbitfield barrier = 0);
 
 	void setUniform1i(const std::string& name, int value);
@@ -88,7 +89,7 @@ public:
 	inline const GLuint getId() const { return m_id; }
 
 private:
-	void setBlendState(uint32_t index = 0);
+	void useProgram();
 	GLint getUniformLocation(const std::string& name);
 
 	static BlendFactors blendFactor(BlendType type);
