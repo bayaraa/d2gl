@@ -78,7 +78,6 @@ public:
 	~Pipeline();
 
 	void bind(uint32_t index = 0);
-	void setBlendState(uint32_t index = 0);
 	void dispatchCompute(int flag, glm::ivec2 work_size, GLbitfield barrier = 0);
 
 	void setUniform1i(const std::string& name, int value);
@@ -89,16 +88,20 @@ public:
 	inline const GLuint getId() const { return m_id; }
 
 private:
-	void useProgram();
+	void setBlendState(uint32_t index = 0);
 	GLint getUniformLocation(const std::string& name);
 
 	static BlendFactors blendFactor(BlendType type);
 	static GLuint createShader(const char* source, int type);
 };
 
+extern const char* g_shader_glide;
 extern const char* g_shader_movie;
+extern const char* g_shader_prefx;
 extern const char* g_shader_postfx;
 extern const char* g_shader_mod;
 extern const std::vector<UpscaleShader> g_shader_upscale;
+
+extern const std::map<uint32_t, std::pair<uint32_t, BlendType>> g_blend_types;
 
 }

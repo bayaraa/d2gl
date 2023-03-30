@@ -36,18 +36,15 @@
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
-layout(location = 5) in ivec4 Flags;
 
 uniform mat4 u_MVP;
 
 out vec2 v_TexCoord;
-flat out ivec4 v_Flags;
 
 void main()
 {
 	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
-	v_Flags = Flags;
 }
 
 // =============================================================
@@ -55,11 +52,9 @@ void main()
 
 layout(location = 0) out vec4 FragColor;
 
-uniform sampler2D u_Texture0;
-uniform sampler2D u_Texture1;
+uniform sampler2D u_Texture;
 
 in vec2 v_TexCoord;
-flat in ivec4 v_Flags;
 
 vec2 u_TexSize = vec2(640.0, 480.0);
 vec2 u_RelSize = 1.0 / u_TexSize;
@@ -87,8 +82,7 @@ float min_w = 0.03; // min filter weight
 float lum_add = 0.33; // affects smoothing
 vec3 dt = vec3(1.0);
 
-#define P0(x) texture(u_Texture0, x).rgb
-#define P1(x) texture(u_Texture1, x).rgb
+#define P(x) texture(u_Texture, x).rgb
 
 vec3 Upscale()
 {
@@ -110,20 +104,19 @@ vec3 Upscale()
 	vec4 t5 = vec4(tc - dg1, tc - dg2);
 	vec4 t6 = vec4(tc + dg1, tc + dg2);
 
-	int fx = v_Flags.x;
-	vec3 c  = fx == 0 ? P0(tc) : P1(tc);
-	vec3 i1 = fx == 0 ? P0(t1.xy) : P1(t1.xy);
-	vec3 i2 = fx == 0 ? P0(t2.xy) : P1(t2.xy);
-	vec3 i3 = fx == 0 ? P0(t3.xy) : P1(t3.xy);
-	vec3 i4 = fx == 0 ? P0(t4.xy) : P1(t4.xy);
-	vec3 o1 = fx == 0 ? P0(t5.xy) : P1(t5.xy);
-	vec3 o3 = fx == 0 ? P0(t6.xy) : P1(t6.xy);
-	vec3 o2 = fx == 0 ? P0(t5.zw) : P1(t5.zw);
-	vec3 o4 = fx == 0 ? P0(t6.zw) : P1(t6.zw);
-	vec3 s1 = fx == 0 ? P0(t1.zw) : P1(t1.zw);
-	vec3 s2 = fx == 0 ? P0(t2.zw) : P1(t2.zw);
-	vec3 s3 = fx == 0 ? P0(t3.zw) : P1(t3.zw);
-	vec3 s4 = fx == 0 ? P0(t4.zw) : P1(t4.zw);
+	vec3 c  = P(tc);
+	vec3 i1 = P(t1.xy);
+	vec3 i2 = P(t2.xy);
+	vec3 i3 = P(t3.xy);
+	vec3 i4 = P(t4.xy);
+	vec3 o1 = P(t5.xy);
+	vec3 o3 = P(t6.xy);
+	vec3 o2 = P(t5.zw);
+	vec3 o4 = P(t6.zw);
+	vec3 s1 = P(t1.zw);
+	vec3 s2 = P(t2.zw);
+	vec3 s3 = P(t3.zw);
+	vec3 s4 = P(t4.zw);
 
 	float ko1=dot(abs(o1-c),dt);
 	float ko2=dot(abs(o2-c),dt);

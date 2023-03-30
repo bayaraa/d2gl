@@ -65,14 +65,6 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 					setUniform1i(binding.name, binding.value);
 					break;
 				}
-				case BindingType::TextureArray: {
-					for (int i = 0; i < 4; i++) {
-						char uf_name[20];
-						sprintf_s(uf_name, "u_Textures[%d]", i);
-						setUniform1i(uf_name, i);
-					}
-					break;
-				}
 			};
 		}
 	}
@@ -92,27 +84,18 @@ void Pipeline::bind(uint32_t index)
 	if (current_program == m_id && current_blend_index == index)
 		return;
 
-	App.context->flushVertices();
+	// App.context->flushVertices();//TODO
 
-	const auto command_buffer = App.context->getCommandBuffer();
-
-	trace("%d", m_id);
-	// if (current_program != m_id) {
-	command_buffer->useProgram(this);
-	current_program = m_id;
-	current_blend_index = 10;
-	//}
+	if (current_program != m_id) {
+		glUseProgram(m_id);
+		current_program = m_id;
+		current_blend_index = 10;
+	}
 
 	if (current_blend_index != index) {
-		command_buffer->setBlendState(this, index);
+		setBlendState(index);
 		current_blend_index = index;
 	}
-}
-
-void Pipeline::useProgram()
-{
-	glUseProgram(m_id);
-	current_program = 0;
 }
 
 void Pipeline::setBlendState(uint32_t index)
@@ -148,30 +131,26 @@ BlendFactors Pipeline::blendFactor(BlendType type)
 
 void Pipeline::setUniform1i(const std::string& name, int value)
 {
-	useProgram();
+	bind();
 	glUniform1i(getUniformLocation(name), value);
-	glUseProgram(0);
 }
 
 void Pipeline::setUniformVec2f(const std::string& name, const glm::vec2& value)
 {
-	useProgram();
+	bind();
 	glUniform2fv(getUniformLocation(name), 1, &value.x);
-	glUseProgram(0);
 }
 
 void Pipeline::setUniformVec4f(const std::string& name, const glm::vec4& value)
 {
-	useProgram();
+	bind();
 	glUniform4fv(getUniformLocation(name), 1, &value.x);
-	glUseProgram(0);
 }
 
 void Pipeline::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
-	useProgram();
+	bind();
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
-	glUseProgram(0);
 }
 
 GLint Pipeline::getUniformLocation(const std::string& name)
@@ -231,8 +210,16 @@ GLuint Pipeline::createShader(const char* source, int type)
 	return id;
 }
 
+const char* g_shader_glide = {
+#include "shaders/glide.glsl.h"
+};
+
 const char* g_shader_movie = {
 #include "shaders/movie.glsl.h"
+};
+
+const char* g_shader_prefx = {
+#include "shaders/prefx.glsl.h"
 };
 
 const char* g_shader_postfx = {
@@ -268,5 +255,12 @@ const std::vector<UpscaleShader> g_shader_upscale = {
 	}, true },
 };
 // clang-format on
+
+const std::map<uint32_t, std::pair<uint32_t, BlendType>> g_blend_types = {
+	{ 0, { 0, BlendType::One_Zero } },
+	{ 2, { 1, BlendType::Zero_SColor } },
+	{ 4, { 2, BlendType::One_One } },
+	{ 5, { 3, BlendType::SAlpha_OneMinusSAlpha } },
+};
 
 }

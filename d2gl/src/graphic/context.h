@@ -32,21 +32,21 @@ namespace d2gl {
 #define MAX_INDICES 6 * 50000
 #define MAX_VERTICES 4 * 50000
 #define FRAMETIME_SAMPLE_COUNT 120
+#define PIXEL_BUFFER_SIZE 256 * 256 * 1024
 
-#define TEXTURE_SLOT_DEFAULT0 0
-#define TEXTURE_SLOT_DEFAULT1 1
-#define TEXTURE_SLOT_GAME 2
-#define TEXTURE_SLOT_UPSCALE 5
-#define TEXTURE_SLOT_POSTFX1 6
-#define TEXTURE_SLOT_POSTFX2 7
-#define TEXTURE_SLOT_MAP 8
-#define TEXTURE_SLOT_LUT 9
-#define TEXTURE_SLOT_PREFX 10
-#define TEXTURE_SLOT_BLOOM1 11
-#define TEXTURE_SLOT_BLOOM2 12
+#define TEXTURE_SLOT_DEFAULT 0
+#define TEXTURE_SLOT_GAME 1
+#define TEXTURE_SLOT_UPSCALE 4
+#define TEXTURE_SLOT_POSTFX1 5
+#define TEXTURE_SLOT_POSTFX2 6
+#define TEXTURE_SLOT_MAP 7
+#define TEXTURE_SLOT_LUT 8
+#define TEXTURE_SLOT_PREFX 9
+#define TEXTURE_SLOT_BLOOM1 10
+#define TEXTURE_SLOT_BLOOM2 11
 
-#define TEXTURE_SLOT_CURSOR 3
-#define TEXTURE_SLOT_FONTS 4
+#define TEXTURE_SLOT_CURSOR 2
+#define TEXTURE_SLOT_FONTS 3
 
 #define IMAGE_UNIT_BLUR 0
 #define IMAGE_UNIT_FXAA 1
@@ -107,9 +107,7 @@ struct GLCaps {
 };
 
 class Context {
-	HGLRC m_context_update = nullptr;
-	HGLRC m_context_render = nullptr;
-
+	HGLRC m_context = nullptr;
 	HANDLE m_semaphore_cpu[2];
 	HANDLE m_semaphore_gpu[2];
 	CommandBuffer m_command_buffer[2];
@@ -118,6 +116,7 @@ class Context {
 	GLuint m_index_buffer;
 	GLuint m_vertex_array;
 	GLuint m_vertex_buffer;
+	GLuint m_pixel_buffer;
 	uint32_t m_frame_index = 0;
 
 	bool m_delay_push = false;
@@ -147,14 +146,36 @@ class Context {
 
 	std::unique_ptr<Pipeline> m_mod_pipeline;
 
+	// Glide
+	std::unique_ptr<Texture> m_game_texture;
+	std::map<uint32_t, std::pair<uint32_t, BlendType>> m_blend_types;
+
+	std::unique_ptr<Texture> m_movie_texture;
+
+	std::unique_ptr<UniformBuffer> m_game_color_ubo;
+	std::unique_ptr<Pipeline> m_game_pipeline;
+	uint32_t m_current_blend_index = 0;
+	bool m_blend_locked = false;
+
+	glm::vec2 m_bloom_data;
+	glm::uvec2 m_bloom_tex_size = { 0, 0 };
+	glm::uvec2 m_bloom_work_size = { 0, 0 };
+	std::unique_ptr<UniformBuffer> m_bloom_ubo;
+	std::unique_ptr<Texture> m_bloom_texture;
+	std::unique_ptr<FrameBuffer> m_bloom_framebuffer;
+	std::unique_ptr<Pipeline> m_blur_compute_pipeline;
+
+	std::unique_ptr<Texture> m_lut_texture;
+	std::unique_ptr<Texture> m_prefx_texture;
+	std::unique_ptr<Pipeline> m_prefx_pipeline;
+
 public:
 	Context();
 	~Context();
 
 	static void renderThread(void* context);
 
-	void onInitialize();
-	void onResize(bool game_resized);
+	void onResize();
 	void onShaderChange(bool texture = false);
 
 	void beginFrame();

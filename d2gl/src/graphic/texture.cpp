@@ -55,13 +55,13 @@ Texture::~Texture()
 
 void Texture::bind()
 {
-	// if (active_texture_slot != m_slot) {
-	glActiveTexture(GL_TEXTURE0 + m_slot);
-	active_texture_slot = m_slot;
-	//}
+	if (active_texture_slot != m_slot) {
+		glActiveTexture(GL_TEXTURE0 + m_slot);
+		active_texture_slot = m_slot;
+	}
 
-	// if (current_binded_texture[m_slot] == m_id)
-	// return;
+	if (current_binded_texture[m_slot] == m_id)
+		return;
 
 	glBindTexture(m_target, m_id);
 	current_binded_texture[m_slot] = m_id;

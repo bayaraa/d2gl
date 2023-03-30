@@ -29,38 +29,17 @@ namespace d2gl {
 #define GLIDE_TEX_MEMORY 16 * 1024 * 1024
 
 class Wrapper;
-
-extern const char* g_shader_game;
-extern const char* g_shader_prefx;
 extern std::unique_ptr<Wrapper> GlideWrapper;
-extern Texture* game_tex[2];
 
 class Wrapper {
 	Context* ctx;
 	bool m_swapped = true;
 
-	std::map<uint32_t, std::pair<uint32_t, BlendType>> m_blend_types;
-
-	std::array<std::unique_ptr<Texture>, 2> m_movie_texture;
 	GrLfbInfo_t m_movie_buffer = { 0 };
+	std::unique_ptr<TextureManager> m_texture_manager;
 
-	std::unique_ptr<UniformBuffer> m_game_color_ubo;
-	std::array<std::unique_ptr<TextureManager>, 2> m_game_texture;
-	std::unique_ptr<Pipeline> m_game_pipeline;
 	uint32_t m_current_blend_index = 0;
 	bool m_blend_locked = false;
-
-	glm::vec2 m_bloom_data;
-	glm::uvec2 m_bloom_tex_size = { 0, 0 };
-	glm::uvec2 m_bloom_work_size = { 0, 0 };
-	std::unique_ptr<UniformBuffer> m_bloom_ubo;
-	std::unique_ptr<Texture> m_bloom_texture;
-	std::unique_ptr<FrameBuffer> m_bloom_framebuffer;
-	std::unique_ptr<Pipeline> m_blur_compute_pipeline;
-
-	std::unique_ptr<Texture> m_lut_texture;
-	std::unique_ptr<Texture> m_prefx_texture;
-	std::unique_ptr<Pipeline> m_prefx_pipeline;
 
 public:
 	Wrapper();

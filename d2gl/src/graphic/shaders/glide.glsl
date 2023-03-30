@@ -54,8 +54,7 @@ layout(std140) uniform ubo_Colors {
 	vec4 u_Gamma[256];
 };
 
-uniform sampler2DArray u_Texture0;
-uniform sampler2DArray u_Texture1;
+uniform sampler2DArray u_Texture;
 
 in vec2 v_TexCoord;
 in vec4 v_Color1;
@@ -69,32 +68,26 @@ void main()
 		FragColor = v_Color2;
 	else
 	{
-		FragColor = v_Color1;
-		float red;
-		if (v_TexIds.x == 0)
-			red = texture(u_Texture0, vec3(v_TexCoord, v_TexIds.y)).r;
-		else
-			red = texture(u_Texture1, vec3(v_TexCoord, v_TexIds.y)).r;
+		float red = texture(u_Texture, vec3(v_TexCoord, v_TexIds.y)).r;
 
-		//if (v_Flags.x == 1 && red == 0.0)
-		//	discard;
+		if (v_Flags.x == 1 && red == 0.0)
+			discard;
 
-		//FragColor = v_Color1 * u_Palette[int(red * 255)];
-		//FragColor = vec4(red, 0.0, 0.0, 1.0);
+		FragColor = v_Color1 * u_Palette[int(red * 255)];
 	}
 
-	//FragColor.r = u_Gamma[int(FragColor.r * 255)].r;
-	//FragColor.g = u_Gamma[int(FragColor.g * 255)].g;
-	//FragColor.b = u_Gamma[int(FragColor.b * 255)].b;
-	//FragColor.a = (v_Flags.z == 1) ? v_Color2.a : 1.0;
-	//
-	//FragColorMap = vec4(0.0);
-	//if (v_Flags.w > 0)
-	//{
-	//	FragColorMap = vec4(FragColor.rgb, 0.9);
-	//	if (v_Flags.w > 1)
-	//		FragColor = vec4(0.0);
-	//}
+	FragColor.r = u_Gamma[int(FragColor.r * 255)].r;
+	FragColor.g = u_Gamma[int(FragColor.g * 255)].g;
+	FragColor.b = u_Gamma[int(FragColor.b * 255)].b;
+	FragColor.a = (v_Flags.z == 1) ? v_Color2.a : 1.0;
+	
+	FragColorMap = vec4(0.0);
+	if (v_Flags.w > 0)
+	{
+		FragColorMap = vec4(FragColor.rgb, 0.9);
+		if (v_Flags.w > 1)
+			FragColor = vec4(0.0);
+	}
 }
 
 #endif

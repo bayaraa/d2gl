@@ -47,12 +47,14 @@ public:
 
 	void bind(bool clear = true);
 	static void unBind();
-	void clearBuffer();
 
 	inline const GLuint getId() const { return m_id; };
 	inline Texture* getTexture(uint32_t index = 0) { return m_textures[index].get(); };
 	inline const uint32_t getWidth() const { return m_width; }
 	inline const uint32_t getHeight() const { return m_height; }
+
+private:
+	void clearBuffer();
 };
 
 }

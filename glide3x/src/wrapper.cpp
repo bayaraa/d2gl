@@ -30,145 +30,18 @@ namespace d2gl {
 
 std::unique_ptr<Wrapper> GlideWrapper;
 
-const char* g_shader_game = {
-#include "shaders/game.glsl.h"
-};
-
-const char* g_shader_prefx = {
-#include "shaders/prefx.glsl.h"
-};
-
-Texture* game_tex[2];
-
 Wrapper::Wrapper()
 	: ctx(App.context.get())
 {
 	g_glide_texture.memory = new uint8_t[GLIDE_TEX_MEMORY * GLIDE_MAX_NUM_TMU];
 
-	m_blend_types = {
-		{ 0, { 0, BlendType::One_Zero } },
-		{ 2, { 1, BlendType::Zero_SColor } },
-		{ 4, { 2, BlendType::One_One } },
-		{ 5, { 3, BlendType::SAlpha_OneMinusSAlpha } },
-	};
-
-	TextureCreateInfo movie_texture_ci;
-	movie_texture_ci.size = { 640, 480 };
-	movie_texture_ci.min_filter = GL_LINEAR;
-	movie_texture_ci.mag_filter = GL_LINEAR;
-	movie_texture_ci.format = GL_BGRA;
-	movie_texture_ci.slot = TEXTURE_SLOT_DEFAULT0;
-	m_movie_texture[0] = Context::createTexture(movie_texture_ci);
-	movie_texture_ci.slot = TEXTURE_SLOT_DEFAULT1;
-	m_movie_texture[1] = Context::createTexture(movie_texture_ci);
-
-	UniformBufferCreateInfo game_ubo_ci;
-	game_ubo_ci.variables = { { "palette", 256 * sizeof(glm::vec4) }, { "gamma", 256 * sizeof(glm::vec4) } };
-	m_game_color_ubo = Context::createUniformBuffer(game_ubo_ci);
-
 	SubTextureCounts sub_texture_counts = { { 256, 256 }, { 128, 154 }, { 64, 64 }, { 32, 32 }, { 16, 5 }, { 8, 1 } };
-	m_game_texture[0] = std::make_unique<TextureManager>(sub_texture_counts, TEXTURE_SLOT_DEFAULT0);
-	m_game_texture[1] = std::make_unique<TextureManager>(sub_texture_counts, TEXTURE_SLOT_DEFAULT1);
-	game_tex[0] = m_game_texture[0]->getTexture();
-	game_tex[1] = m_game_texture[1]->getTexture();
-
-	PipelineCreateInfo game_pipeline_ci;
-	game_pipeline_ci.shader = g_shader_game;
-	game_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Colors", m_game_color_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture0", TEXTURE_SLOT_DEFAULT0 },
-		{ BindingType::Texture, "u_Texture1", TEXTURE_SLOT_DEFAULT1 },
-	};
-	game_pipeline_ci.attachment_blends.clear();
-	for (auto& blend : m_blend_types)
-		game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha });
-	m_game_pipeline = Context::createPipeline(game_pipeline_ci);
-
-	TextureCreateInfo texture_create_info;
-	texture_create_info.size = { 1024, 32 };
-	texture_create_info.layer_count = 14;
-	texture_create_info.slot = TEXTURE_SLOT_LUT;
-	m_lut_texture = Context::createTexture(texture_create_info);
-
-	auto image_data = helpers::loadImage("assets\\textures\\lut.png", false);
-	m_lut_texture->fillImage(image_data, 1, 14);
-	helpers::clearImage(image_data);
-
-	if (App.gl_caps.compute_shader) {
-		PipelineCreateInfo blur_pipeline_ci;
-		blur_pipeline_ci.shader = g_shader_prefx;
-		blur_pipeline_ci.bindings = {
-			{ BindingType::Texture, "u_InTexture", TEXTURE_SLOT_BLOOM2 },
-			{ BindingType::Image, "u_OutTexture", IMAGE_UNIT_BLUR },
-		};
-		blur_pipeline_ci.compute = true;
-		m_blur_compute_pipeline = Context::createPipeline(blur_pipeline_ci);
-	}
-
-	UniformBufferCreateInfo bloom_ubo_ci;
-	bloom_ubo_ci.variables = { { "bloom", sizeof(glm::vec2) }, { "rel_size", sizeof(glm::vec2) } };
-	m_bloom_ubo = Context::createUniformBuffer(bloom_ubo_ci);
-
-	m_bloom_data = { App.bloom.exposure.value, App.bloom.gamma.value };
-	m_bloom_ubo->updateDataVec2f("bloom", m_bloom_data);
-
-	PipelineCreateInfo prefx_pipeline_ci;
-	prefx_pipeline_ci.shader = g_shader_prefx;
-	prefx_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Metrics", m_bloom_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_PREFX },
-		{ BindingType::Texture, "u_BloomTexture1", TEXTURE_SLOT_BLOOM1 },
-		{ BindingType::Texture, "u_BloomTexture2", TEXTURE_SLOT_BLOOM2 },
-		{ BindingType::Texture, "u_LUTTexture", m_lut_texture->getSlot() },
-	};
-	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
-	m_prefx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
-
-	ctx->onInitialize();
+	m_texture_manager = std::make_unique<TextureManager>(sub_texture_counts);
 }
 
 Wrapper::~Wrapper()
 {
 	delete[] g_glide_texture.memory;
-}
-
-void Wrapper::onResize()
-{
-	static glm::uvec2 game_size = { 0, 0 };
-	bool game_resized = game_size != App.game.size;
-	game_size = App.game.size;
-
-	if (game_resized) {
-		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
-		m_game_pipeline->setUniformMat4f("u_MVP", mvp);
-
-		m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
-		m_bloom_tex_size = { game_size.x / 4, game_size.y / 4 };
-		m_bloom_work_size = { ceil((float)m_bloom_tex_size.x / 16), ceil((float)m_bloom_tex_size.y / 16) };
-
-		FrameBufferCreateInfo bloom_frambuffer_ci;
-		bloom_frambuffer_ci.size = m_bloom_tex_size;
-		bloom_frambuffer_ci.attachments = { { TEXTURE_SLOT_BLOOM1, {}, GL_LINEAR, GL_LINEAR }, { TEXTURE_SLOT_BLOOM2 } };
-		m_bloom_framebuffer = Context::createFrameBuffer(bloom_frambuffer_ci);
-		if (App.gl_caps.compute_shader)
-			m_bloom_framebuffer->getTexture()->bindImage(IMAGE_UNIT_BLUR);
-
-		TextureCreateInfo bloom_texture_ci;
-		bloom_texture_ci.size = m_bloom_tex_size;
-		bloom_texture_ci.slot = TEXTURE_SLOT_BLOOM2;
-		bloom_texture_ci.min_filter = GL_LINEAR;
-		bloom_texture_ci.mag_filter = GL_LINEAR;
-		m_bloom_texture = Context::createTexture(bloom_texture_ci);
-
-		TextureCreateInfo prefx_texture_ci;
-		prefx_texture_ci.size = game_size;
-		prefx_texture_ci.slot = TEXTURE_SLOT_PREFX;
-		m_prefx_texture = Context::createTexture(prefx_texture_ci);
-	}
-
-	ctx->onResize(game_resized);
-
-	modules::MiniMap::Instance().resize();
 }
 
 void Wrapper::onStageChange()
@@ -181,6 +54,7 @@ void Wrapper::onStageChange()
 			break;
 		case DrawStage::UI:
 			/*if (App.bloom.active || App.lut.selected) {
+				App.context->flushVertices();
 				m_prefx_texture->fillFromBuffer(m_game_framebuffer);
 				ctx->bindPipeline(m_prefx_pipeline);
 
@@ -219,24 +93,24 @@ void Wrapper::onStageChange()
 			}*/
 			break;
 		case DrawStage::Map:
-			if (App.mini_map.active && App.hd_cursor) {
-				ctx->flushVertices();
+			// if (App.mini_map.active && App.hd_cursor) {
+			//	ctx->flushVertices();
 
-				m_blend_locked = true;
-				ctx->bindPipeline(m_game_pipeline, 3);
-				ctx->setVertexFlagW(1 + !*d2::automap_on);
-			}
+			//	m_blend_locked = true;
+			//	ctx->bindPipeline(ctx->getGamePipeline(), 3);
+			//	ctx->setVertexFlagW(1 + !*d2::automap_on);
+			//}
 			break;
 		case DrawStage::HUD:
-			if (App.mini_map.active && App.hd_cursor) {
-				ctx->flushVertices();
+			// if (App.mini_map.active && App.hd_cursor) {
+			//	ctx->flushVertices();
 
-				m_blend_locked = false;
-				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
-				ctx->setVertexFlagW(0);
+			//	m_blend_locked = false;
+			//	ctx->bindPipeline(ctx->getGamePipeline(), m_current_blend_index);
+			//	ctx->setVertexFlagW(0);
 
-				modules::MiniMap::Instance().draw();
-			}
+			//	modules::MiniMap::Instance().draw();
+			//}
 			modules::HDText::Instance().drawFpsCounter();
 			break;
 		case DrawStage::Cursor:
@@ -253,13 +127,14 @@ void Wrapper::onBufferClear()
 		return;
 	m_swapped = false;
 
-	if (App.window.resized)
-		onResize();
+	// if (App.window.resized)
+	// ctx->onResize();
 
 	ctx->beginFrame();
 
 	App.game.draw_stage = DrawStage::World;
 	onStageChange();
+	// trace("clear---");
 }
 
 void Wrapper::onBufferSwap()
@@ -268,7 +143,7 @@ void Wrapper::onBufferSwap()
 		return;
 	m_swapped = true;
 
-	if (App.game.screen != GameScreen::Movie) {
+	/*if (App.game.screen != GameScreen::Movie) {
 		if (App.bloom.active) {
 			const auto bloom_data = glm::vec2(App.bloom.exposure.value, App.bloom.gamma.value);
 			if (m_bloom_data != bloom_data) {
@@ -276,23 +151,17 @@ void Wrapper::onBufferSwap()
 				m_bloom_data = bloom_data;
 			}
 		}
-	}
+	}*/
 
-	App.var1 = m_game_texture[0]->getUsage(256);
-	App.var2 = m_game_texture[0]->getUsage(128);
-	App.var3 = m_game_texture[0]->getUsage(64);
-	App.var4 = m_game_texture[0]->getUsage(32);
-	App.var5 = m_game_texture[0]->getUsage(16);
-	App.var6 = m_game_texture[0]->getUsage(8);
-
-	App.var7 = m_game_texture[1]->getUsage(256);
-	App.var8 = m_game_texture[1]->getUsage(128);
-	App.var9 = m_game_texture[1]->getUsage(64);
-	App.var10 = m_game_texture[1]->getUsage(32);
-	App.var11 = m_game_texture[1]->getUsage(16);
-	App.var12 = m_game_texture[1]->getUsage(8);
+	App.var1 = m_texture_manager->getUsage(256);
+	App.var2 = m_texture_manager->getUsage(128);
+	App.var3 = m_texture_manager->getUsage(64);
+	App.var4 = m_texture_manager->getUsage(32);
+	App.var5 = m_texture_manager->getUsage(16);
+	App.var6 = m_texture_manager->getUsage(8);
 
 	ctx->presentFrame();
+	// trace("swap---");
 }
 
 void Wrapper::grDrawPoint(const void* pt)
@@ -358,9 +227,11 @@ void Wrapper::grDrawVertexArrayContiguous(FxU32 mode, FxU32 count, void* pointer
 
 void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)
 {
-	m_current_blend_index = m_blend_types.at(static_cast<uint32_t>(rgb_df)).first;
+	App.context->flushVertices();
+
+	m_current_blend_index = g_blend_types.at(static_cast<uint32_t>(rgb_df)).first;
 	if (!m_blend_locked)
-		ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
+		ctx->getCommandBuffer()->setBlendState(m_current_blend_index);
 }
 
 void Wrapper::grAlphaCombine(GrCombineFunction_t function)
@@ -391,7 +262,7 @@ void Wrapper::grLoadGammaTable(FxU32 nentries, FxU32* red, FxU32* green, FxU32* 
 		gamma[i].g = (float)green[i] / 255;
 		gamma[i].b = (float)blue[i] / 255;
 	}
-	m_game_color_ubo->updateData("gamma", &gamma[0]);
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Gamma, &gamma[0]);
 }
 
 void Wrapper::guGammaCorrectionRGB(FxFloat red, FxFloat green, FxFloat blue)
@@ -403,7 +274,7 @@ void Wrapper::guGammaCorrectionRGB(FxFloat red, FxFloat green, FxFloat blue)
 		gamma[i].g = powf(v, 1.0f / green);
 		gamma[i].b = powf(v, 1.0f / blue);
 	}
-	m_game_color_ubo->updateData("gamma", &gamma[0]);
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Gamma, &gamma[0]);
 }
 
 void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
@@ -414,7 +285,7 @@ void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
 
 	const auto frame_index = ctx->getFrameIndex();
 	const auto frame_count = ctx->getFrameCount();
-	const auto sub_tex_info = m_game_texture[frame_index]->getSubTextureInfo(start_address, size, width, height, frame_count);
+	const auto sub_tex_info = m_texture_manager->getSubTextureInfo(start_address, size, width, height, frame_count);
 	if (sub_tex_info) {
 		ctx->setVertexTexIds({ frame_index, sub_tex_info->tex_num });
 		ctx->setVertexOffset(sub_tex_info->offset);
@@ -448,7 +319,7 @@ void Wrapper::grTexDownloadTable(void* data)
 		palette[i].g = (float)((pal[i] >> 8) & 0xFF) / 255;
 		palette[i].b = (float)((pal[i]) & 0xFF) / 255;
 	}
-	m_game_color_ubo->updateData("palette", &palette[0]);
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Palette, &palette[0]);
 	old_hash = hash;
 }
 
@@ -475,8 +346,8 @@ FxBool Wrapper::grLfbUnlock()
 {
 	App.game.screen = GameScreen::Movie;
 
-	const auto frame_index = ctx->getFrameIndex();
-	m_movie_texture[frame_index]->fill((uint8_t*)m_movie_buffer.lfbPtr, 640, 480);
+	// const auto frame_index = ctx->getFrameIndex();
+	// m_movie_texture->fill((uint8_t*)m_movie_buffer.lfbPtr, 640, 480);
 
 	onBufferClear();
 	onBufferSwap();
@@ -493,8 +364,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 	if (App.game.screen == GameScreen::InGame) {
 		App.game.screen = GameScreen::Loading;
 
-		GlideWrapper->m_game_texture[0]->clearCache();
-		GlideWrapper->m_game_texture[1]->clearCache();
+		GlideWrapper->m_texture_manager->clearCache();
 	}
 
 	glm::uvec2 old_size = App.game.size;
@@ -515,7 +385,6 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 		if (old_size != App.game.size) {
 			win32::setWindowMetrics();
 			win32::windowResize();
-			GlideWrapper->onResize();
 		}
 		return 1;
 	}
@@ -526,7 +395,6 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 
 	App.context = std::make_unique<Context>();
 	GlideWrapper = std::make_unique<Wrapper>();
-	GlideWrapper->onResize();
 
 	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;

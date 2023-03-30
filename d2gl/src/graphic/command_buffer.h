@@ -1,32 +1,43 @@
 #pragma once
 
-#include "frame_buffer.h"
-#include "pipeline.h"
-
 namespace d2gl {
 
 enum class CommandType {
-	BindFrameBuffer,
-	ClearFrameBuffer,
-	UnbindFrameBuffer,
-	ClearBuffer,
-	SetViewport,
-	UseProgram,
+	None,
+	Begin,
+	ColorUpdate,
+	TextureUpdate,
 	SetBlendState,
 	DrawIndexed,
+	PreFx,
+	Submit,
+};
+
+enum class UBOType {
+	Gamma,
+	Palette,
+};
+
+struct UBOData {
+	UBOType type = UBOType::Gamma;
+	glm::vec4 value[256] = { glm::vec4(0.0f) };
 };
 
 struct Command {
-	CommandType type;
+	CommandType type = CommandType::None;
 	union {
-		FrameBuffer* framebuffer;
+		struct {
+			uint32_t storage_offset;
+			uint16_t tex_num;
+			glm::vec<2, uint16_t> size;
+			glm::vec<2, uint16_t> offset;
+		} texture;
 
 		struct {
-			glm::ivec2 size;
-			glm::ivec2 offset;
-		} viewport;
+			void* data;
+			UBOType type;
+		} color;
 
-		Pipeline* pipeline;
 		uint32_t blend_index;
 
 		struct {
@@ -36,30 +47,36 @@ struct Command {
 	};
 };
 
+struct UBOStorage {
+	uint32_t count = 0;
+	std::array<UBOData, 10> data;
+};
+
+struct TextureStorage {
+	uint32_t offset = 0;
+	uint8_t* data = nullptr;
+};
+
 class CommandBuffer {
-	std::array<Command, 1024> m_commands;
 	uint32_t m_count = 0;
-	Command* m_command;
+	Command* m_command = nullptr;
+	std::array<Command, 1200> m_commands;
+	UBOStorage m_ubo_storage;
+	TextureStorage m_texture_storage;
+
+	friend class Context;
 
 public:
-	CommandBuffer() = default;
-	~CommandBuffer() = default;
+	CommandBuffer();
+	~CommandBuffer();
 
-	void begin();
-	inline void next();
-	void execute();
+	void reset();
+	void next();
 
-	void bindFrameBuffer(FrameBuffer* framebuffer);
-	void clearFrameBuffer(FrameBuffer* framebuffer);
-	void unbindFrameBuffer();
-
-	void clearBuffer();
-
-	void setViewport(glm::ivec2 size, glm::ivec2 offset);
-
-	void useProgram(Pipeline* pipeline);
-	void setBlendState(Pipeline* pipeline, uint32_t index);
-
+	void pushCommand(CommandType type);
+	void colorUpdate(UBOType type, const void* data);
+	void textureUpdate(uint8_t* data, uint16_t tex_num, glm::vec<2, uint16_t> size, glm::vec<2, uint16_t> offset);
+	void setBlendState(uint32_t index);
 	void drawIndexed(void* data, uint32_t count);
 };
 

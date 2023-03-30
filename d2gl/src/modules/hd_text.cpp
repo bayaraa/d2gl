@@ -134,8 +134,8 @@ void HDText::update(const std::unique_ptr<Pipeline>& pipeline)
 {
 	static bool mask = false;
 	if (m_masking != mask) {
-		pipeline->setUniformVec4f("u_TextMask", m_text_mask);
-		pipeline->setUniform1i("u_IsMasking", m_masking);
+		pipeline->setUniformVec4f("u_TextMask", m_text_mask); // TODO: command buffer
+		pipeline->setUniform1i("u_IsMasking", m_masking); // TODO: command buffer
 		mask = m_masking;
 	}
 	m_cur_level_no = App.game.screen == GameScreen::InGame ? *d2::level_no : 0;
