@@ -91,10 +91,10 @@ void Object::setFlags(glm::vec<4, int8_t> flags)
 
 void Object::setExtra(glm::vec2 extra)
 {
-	m_vertices[0].extra = extra;
-	m_vertices[1].extra = extra;
-	m_vertices[2].extra = extra;
-	m_vertices[3].extra = extra;
+	// m_vertices[0].extra = extra;
+	// m_vertices[1].extra = extra;
+	// m_vertices[2].extra = extra;
+	// m_vertices[3].extra = extra;
 }
 
 }

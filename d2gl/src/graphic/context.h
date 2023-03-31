@@ -107,17 +107,21 @@ struct GLCaps {
 };
 
 class Context {
-	HGLRC m_context = nullptr;
+	HGLRC m_context_render = nullptr;
+	HGLRC m_context_update = nullptr;
 	HANDLE m_semaphore_cpu[2];
 	HANDLE m_semaphore_gpu[2];
 	CommandBuffer m_command_buffer[2];
 	bool m_rendering = true;
+	HANDLE m_initialized;
 
 	GLuint m_index_buffer;
 	GLuint m_vertex_array;
 	GLuint m_vertex_buffer;
-	GLuint m_pixel_buffer;
 	uint32_t m_frame_index = 0;
+
+	GLuint m_pixel_buffer[3];
+	void* m_pixel_buffer_ptr = nullptr;
 
 	bool m_delay_push = false;
 	Vertices<2> m_vertices;
@@ -175,6 +179,8 @@ public:
 
 	static void renderThread(void* context);
 
+	void onInit();
+	void onDestroy();
 	void onResize();
 	void onShaderChange(bool texture = false);
 
@@ -184,6 +190,7 @@ public:
 
 	inline const uint32_t getFrameIndex() { return m_frame_index; }
 	inline CommandBuffer* getCommandBuffer() { return &m_command_buffer[m_frame_index]; }
+	inline void* getPixelBufferPtr() { return m_pixel_buffer_ptr; }
 
 	void setViewport(glm::ivec2 size, glm::ivec2 offset = { 0, 0 });
 	inline void bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear = true) { framebuffer->bind(clear); }

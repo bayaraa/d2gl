@@ -70,13 +70,14 @@ enum class D2DrawFn {
 };
 
 struct Vertex {
-	glm::vec2 position;
+	// glm::vec2 position;
+	glm::vec<2, int16_t> position;
 	glm::vec2 tex_coord;
 	uint32_t color1;
 	uint32_t color2;
 	glm::vec<2, int16_t> texture_ids;
 	glm::vec<4, int8_t> flags;
-	glm::vec2 extra;
+	// glm::vec2 extra;
 };
 
 struct Offset {

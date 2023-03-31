@@ -27,7 +27,7 @@ void logTraceDef(uint8_t type, const char* format, ...);
 bool logFileOpen(const char* mode);
 void logFileWrite(uint8_t type, const char* format, ...);
 void logFileClose();
-
+#define _DEBUG 1
 // clang-format off
 #define C_GRAY    FOREGROUND_INTENSITY
 #define C_WHITE   FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE

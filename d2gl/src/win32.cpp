@@ -418,7 +418,7 @@ void windowResize()
 	setCursorUnlock();
 
 	setWindowMetrics();
-	//App.context->getCommandBuffer()->resize();//TODO
+	App.context->getCommandBuffer()->pushCommand(CommandType::Resize);
 	App.window.resized = true;
 
 	if (cursor_lock)

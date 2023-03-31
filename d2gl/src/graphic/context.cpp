@@ -73,17 +73,19 @@ Context::Context()
 		if (App.debug)
 			attribs[5] |= WGL_CONTEXT_DEBUG_BIT_ARB;
 
-		if (m_context = wglCreateContextAttribsARB(App.hdc, 0, attribs))
+		if (m_context_update = wglCreateContextAttribsARB(App.hdc, 0, attribs)) {
+			m_context_render = wglCreateContextAttribsARB(App.hdc, m_context_update, attribs);
 			break;
+		}
 	}
 
-	if (!m_context) {
+	if (!m_context_update || !m_context_render) {
 		MessageBoxA(App.hwnd, "Requires OpenGL 3.3 or newer!", "Unsupported OpenGL version!", MB_OK | MB_ICONERROR);
 		error_log("Requires OpenGL 3.3 or newer! exiting.");
 		exit(1);
 	}
 
-	wglMakeCurrent(App.hdc, m_context);
+	wglMakeCurrent(App.hdc, m_context_update);
 	glewInit();
 
 	GLint major_version, minor_version;
@@ -117,6 +119,167 @@ Context::Context()
 		trace_log("OpenGL: Independent blending available.");
 	}
 
+	for (uint32_t i = 0; i < 3; i++) {
+		glGenBuffers(1, &m_pixel_buffer[i]);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixel_buffer[i]);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, PIXEL_BUFFER_SIZE, NULL, GL_STREAM_DRAW);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	}
+
+	LARGE_INTEGER qpf;
+	QueryPerformanceFrequency(&qpf);
+	m_frame.frequency = double(qpf.QuadPart) / 1000.0;
+	m_frame.frame_times.assign(FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
+
+	m_limiter.timer = CreateWaitableTimer(NULL, TRUE, NULL);
+	setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
+
+	m_vertices_mod.count = 0;
+	m_vertices_mod.ptr = m_vertices_mod.data[m_frame_index].data();
+
+	m_frame.vertex_count = 0;
+	m_frame.drawcall_count = 0;
+
+	for (uint32_t i = 0; i < 2; i++) {
+		m_semaphore_cpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
+		m_semaphore_gpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
+		ReleaseSemaphore(m_semaphore_gpu[i], 1, NULL);
+	}
+
+	m_initialized = CreateSemaphore(NULL, 0, 1, NULL);
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Context::renderThread, reinterpret_cast<void*>(this), 0, NULL);
+	WaitForSingleObject(m_initialized, INFINITE);
+
+	// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixel_buffer[m_frame_index]);
+	//  m_pixel_buffer_ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, PIXEL_BUFFER_SIZE, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
+}
+
+Context::~Context()
+{
+	m_rendering = false;
+	for (uint32_t i = 0; i < 2; i++)
+		ReleaseSemaphore(m_semaphore_cpu[i], 1, NULL);
+
+	for (uint32_t i = 0; i < 2; i++)
+		WaitForSingleObject(m_semaphore_gpu[i], INFINITE);
+
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(m_context_update);
+	wglDeleteContext(m_context_render);
+}
+
+void Context::renderThread(void* context)
+{
+	Context* ctx = reinterpret_cast<Context*>(context);
+	wglMakeCurrent(App.hdc, ctx->m_context_render);
+	uint32_t frame_index = 0;
+	uint32_t pbo_index = 0;
+
+	ctx->onInit();
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ctx->m_pixel_buffer[pbo_index]);
+	ctx->m_pixel_buffer_ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, PIXEL_BUFFER_SIZE, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
+	ReleaseSemaphore(ctx->m_initialized, 1, NULL);
+
+	while (ctx->m_rendering) {
+		WaitForSingleObject(ctx->m_semaphore_cpu[frame_index], INFINITE);
+
+		// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ctx->m_pixel_buffer[frame_index]);
+		// glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+		// trace("=== render ===");
+		const auto command_buffer = &ctx->m_command_buffer[frame_index];
+
+		// command_buffer->m_texture_storage.data;
+		// command_buffer->m_texture_storage.offset;
+		// glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, command_buffer->m_texture_storage.offset, command_buffer->m_texture_storage.data);
+
+		const auto cmd = &ctx->m_command_buffer[!frame_index];
+		ReleaseSemaphore(cmd->m_semaphore, 1, NULL);
+		EnterCriticalSection(&cmd->m_cs);
+		for (uint32_t i = 0; i < command_buffer->m_count; i++) {
+			const auto command = &command_buffer->m_commands[i];
+			switch (command->type) {
+				case CommandType::TextureUpdate:
+					glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, command->texture.storage_offset, command->texture.size.x * command->texture.size.y);
+					break;
+			}
+		}
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+		for (uint32_t i = 0; i < command_buffer->m_count; i++) {
+			const auto command = &command_buffer->m_commands[i];
+			switch (command->type) {
+				case CommandType::TextureUpdate:
+					trace("fill: %d | %dx%d", command->texture.storage_offset, command->texture.size.x, command->texture.size.y);
+					ctx->m_game_texture->fill((uint8_t*)command->texture.storage_offset, command->texture.size.x, command->texture.size.y, command->texture.offset.x, command->texture.offset.y, command->texture.tex_num);
+					break;
+			}
+		}
+		pbo_index++;
+		if (pbo_index > 2)
+			pbo_index = 0;
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ctx->m_pixel_buffer[pbo_index]);
+		ctx->m_pixel_buffer_ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, PIXEL_BUFFER_SIZE, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
+		LeaveCriticalSection(&cmd->m_cs);
+
+		for (uint32_t i = 0; i < command_buffer->m_count; i++) {
+			const auto command = &command_buffer->m_commands[i];
+
+			switch (command->type) {
+				case CommandType::Begin:
+					ctx->bindDefaultFrameBuffer();
+					// ctx->bindFrameBuffer(ctx->m_game_framebuffer);
+					ctx->setViewport(App.game.size);
+					break;
+				case CommandType::ColorUpdate:
+					ctx->m_game_color_ubo->updateData(command->color.type == UBOType::Gamma ? "gamma" : "palette", command->color.data);
+					break;
+				case CommandType::TextureUpdate:
+					// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ctx->m_pixel_buffer[frame_index]);
+					//  glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, command.texture.pbo_offset, command.texture.size.x * command.texture.size.y);
+					// trace("fill: %dx%d", command->texture.size.x, command->texture.size.y);
+					// ctx->m_game_texture->fill((uint8_t*)command->texture.storage_offset, command->texture.size.x, command->texture.size.y, command->texture.offset.x, command->texture.offset.y, command->texture.tex_num);
+					// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+					break;
+				case CommandType::SetBlendState:
+					ctx->bindPipeline(ctx->m_game_pipeline, command->blend_index);
+					break;
+				case CommandType::PreFx:
+					break;
+				case CommandType::DrawIndexed:
+					if (command->draw.count > 0) {
+						glBufferSubData(GL_ARRAY_BUFFER, 0, command->draw.count * sizeof(Vertex), command->draw.data);
+						glDrawElements(GL_TRIANGLES, command->draw.count / 4 * 6, GL_UNSIGNED_INT, 0);
+					}
+					break;
+				case CommandType::Submit:
+					break;
+				case CommandType::Resize:
+					ctx->onResize();
+					break;
+			}
+		}
+
+		// using namespace std::chrono_literals;
+		// std::this_thread::sleep_for(50ms);
+		// trace("gpu: %d", frame_index);
+
+
+		// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
+
+		SwapBuffers(App.hdc);
+		// option::Menu::instance().draw();
+
+		frame_index = frame_index ? 0 : 1;
+	}
+
+	ctx->onDestroy();
+	wglMakeCurrent(NULL, NULL);
+	for (uint32_t i = 0; i < 2; i++)
+		ReleaseSemaphore(ctx->m_semaphore_gpu[i], 1, NULL);
+}
+
+void Context::onInit()
+{
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
@@ -145,10 +308,10 @@ Context::Context()
 
 	glGenBuffers(1, &m_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices.data), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices.data), nullptr, GL_STREAM_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
+	glVertexAttribPointer(0, 2, GL_HALF_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coord));
 	glEnableVertexAttribArray(2);
@@ -159,13 +322,8 @@ Context::Context()
 	glVertexAttribIPointer(4, 2, GL_UNSIGNED_SHORT, sizeof(Vertex), (const void*)offsetof(Vertex, texture_ids));
 	glEnableVertexAttribArray(5);
 	glVertexAttribIPointer(5, 4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void*)offsetof(Vertex, flags));
-	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, extra));
-
-	glGenBuffers(1, &m_pixel_buffer);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixel_buffer);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, PIXEL_BUFFER_SIZE, NULL, GL_STREAM_DRAW);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	// glEnableVertexAttribArray(6);
+	// glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, extra));
 
 	imguiInit();
 
@@ -287,123 +445,15 @@ Context::Context()
 	}
 
 	onResize();
-
-	LARGE_INTEGER qpf;
-	QueryPerformanceFrequency(&qpf);
-	m_frame.frequency = double(qpf.QuadPart) / 1000.0;
-	m_frame.frame_times.assign(FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
-
-	m_limiter.timer = CreateWaitableTimer(NULL, TRUE, NULL);
-	setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
-
-	m_vertices_mod.count = 0;
-	m_vertices_mod.ptr = m_vertices_mod.data[m_frame_index].data();
-
-	m_frame.vertex_count = 0;
-	m_frame.drawcall_count = 0;
-
-	for (uint32_t i = 0; i < 2; i++) {
-		m_semaphore_cpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
-		m_semaphore_gpu[i] = CreateSemaphore(NULL, 0, 1, NULL);
-		ReleaseSemaphore(m_semaphore_gpu[i], 1, NULL);
-	}
-
-	wglMakeCurrent(NULL, NULL);
-	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Context::renderThread, reinterpret_cast<void*>(this), 0, NULL);
 }
 
-Context::~Context()
+void Context::onDestroy()
 {
-	m_rendering = false;
-	for (uint32_t i = 0; i < 2; i++)
-		ReleaseSemaphore(m_semaphore_cpu[i], 1, NULL);
-
-	for (uint32_t i = 0; i < 2; i++)
-		WaitForSingleObject(m_semaphore_gpu[i], INFINITE);
-
-	wglMakeCurrent(App.hdc, m_context);
-
 	imguiDestroy();
 
 	glDeleteBuffers(1, &m_index_buffer);
 	glDeleteBuffers(1, &m_vertex_buffer);
 	glDeleteVertexArrays(1, &m_vertex_array);
-
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(m_context);
-}
-
-void Context::renderThread(void* context)
-{
-	Context* ctx = reinterpret_cast<Context*>(context);
-	wglMakeCurrent(App.hdc, ctx->m_context);
-	uint32_t frame_index = 0;
-
-	while (ctx->m_rendering) {
-		WaitForSingleObject(ctx->m_semaphore_cpu[frame_index], INFINITE);
-		// glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-		const auto command_buffer = &ctx->m_command_buffer[frame_index];
-
-		// for (uint32_t i = 0; i < command_buffer.m_count; i++) {
-		//	const auto command = command_buffer.m_commands[i];
-		//	switch (command.type) {
-		//		case CommandType::TextureUpdate:
-		//			glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, command.texture.pbo_offset, command.texture.size.x * command.texture.size.y);
-		//			break;
-		//	}
-		// }
-		// glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-		for (uint32_t i = 0; i < command_buffer.m_count; i++) {
-			const auto command = command_buffer.m_commands[i];
-
-			switch (command.type) {
-				case CommandType::Begin:
-					ctx->bindDefaultFrameBuffer();
-					// ctx->bindFrameBuffer(ctx->m_game_framebuffer);
-					ctx->setViewport(App.game.size);
-					break;
-				case CommandType::ColorUpdate:
-					ctx->m_game_color_ubo->updateData(command.color.type == UBOType::Gamma ? "gamma" : "palette", command.color.data);
-					break;
-				case CommandType::TextureUpdate:
-					// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ctx->m_pixel_buffer[frame_index]);
-					//  glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, command.texture.pbo_offset, command.texture.size.x * command.texture.size.y);
-					// ctx->m_game_texture->fill((uint8_t*)command.texture.pbo_offset, command.texture.size.x, command.texture.size.y, command.texture.offset.x, command.texture.offset.y, command.texture.num);
-					// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-					break;
-				case CommandType::SetBlendState:
-					ctx->bindPipeline(ctx->m_game_pipeline, command.blend_index);
-					break;
-				case CommandType::PreFx:
-					break;
-				case CommandType::DrawIndexed:
-					if (command.draw.count > 0) {
-						glBufferSubData(GL_ARRAY_BUFFER, 0, command.draw.count * sizeof(Vertex), command.draw.data);
-						glDrawElements(GL_TRIANGLES, command.draw.count / 4 * 6, GL_UNSIGNED_INT, 0);
-					}
-					break;
-				case CommandType::Submit:
-					break;
-			}
-		}
-
-		// using namespace std::chrono_literals;
-		// std::this_thread::sleep_for(50ms);
-		// trace("gpu: %d", frame_index);
-
-		// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ctx->m_pixel_buffer[!frame_index]);
-		// ctx->m_pixel_buffer_ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, PIXEL_BUFFER_SIZE, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
-		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
-		// option::Menu::instance().draw();
-		SwapBuffers(App.hdc);
-		frame_index = frame_index ? 0 : 1;
-	}
-
-	wglMakeCurrent(NULL, NULL);
-	for (uint32_t i = 0; i < 2; i++)
-		ReleaseSemaphore(ctx->m_semaphore_gpu[i], 1, NULL);
 }
 
 void Context::onResize()
@@ -551,12 +601,13 @@ void Context::beginFrame()
 	modules::MotionPrediction::Instance().update();
 
 	if (App.game.screen != GameScreen::Movie)
-		m_command_buffer->pushCommand(CommandType::Begin);
+		m_command_buffer[m_frame_index].pushCommand(CommandType::Begin);
+	// trace("=== begin ===");
 }
 
 void Context::bindDefaultFrameBuffer()
 {
-	flushVertices();
+	// flushVertices();
 
 	FrameBuffer::unBind();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -632,6 +683,21 @@ void Context::presentFrame()
 
 	// trace("cpu: %d", m_frame_index);
 
+
+	// glFinish();
+	//  glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	//  glFlush();
+
+	ReleaseSemaphore(m_semaphore_cpu[m_frame_index], 1, NULL);
+	m_frame_index = m_frame_index ? 0 : 1;
+
+	WaitForSingleObject(m_semaphore_gpu[m_frame_index], INFINITE);
+	m_command_buffer[m_frame_index].reset();
+
+	// glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixel_buffer[m_frame_index]);
+	//  m_pixel_buffer_ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, PIXEL_BUFFER_SIZE, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
+
 	if (m_limiter.active) {
 		WaitForSingleObject(m_limiter.timer, (DWORD)m_limiter.frame_len_ms + 1);
 		m_limiter.due_time.QuadPart += m_limiter.frame_len_ns;
@@ -646,12 +712,7 @@ void Context::presentFrame()
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
 	m_frame.frame_count++;
-
-	ReleaseSemaphore(m_semaphore_cpu[m_frame_index], 1, NULL);
-	m_frame_index = m_frame_index ? 0 : 1;
-
-	WaitForSingleObject(m_semaphore_gpu[m_frame_index], INFINITE);
-	m_command_buffer[m_frame_index].reset();
+	// trace("=== present ===");
 }
 
 void Context::setViewport(glm::ivec2 size, glm::ivec2 offset)
@@ -670,7 +731,10 @@ void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 of
 	if (m_vertices.count >= MAX_VERTICES - 4)
 		flushVertices();
 
-	m_vertices.ptr->position = { vertex->x - (float)offset.x, vertex->y - (float)offset.y };
+	m_vertices.ptr->position = {
+		glm::detail::toFloat16(vertex->x - (float)offset.x),
+		glm::detail::toFloat16(vertex->y - (float)offset.y),
+	};
 	m_vertices.ptr->tex_coord = {
 		((float)((uint32_t)vertex->s >> m_vertex_params.texture_shift) + (float)m_vertex_params.offsets.x) / (512.0f + fix.x),
 		((float)((uint32_t)vertex->t >> m_vertex_params.texture_shift) + (float)m_vertex_params.offsets.y) / (512.0f + fix.y),

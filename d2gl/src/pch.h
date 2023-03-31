@@ -44,5 +44,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <glm/detail/type_half.hpp>
+
 #include "app.h"
 #include "log.h"
