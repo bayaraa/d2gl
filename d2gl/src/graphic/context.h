@@ -29,10 +29,11 @@
 
 namespace d2gl {
 
+#define MAX_FRAMES 6
 #define MAX_INDICES 6 * 50000
 #define MAX_VERTICES 4 * 50000
+#define PIXEL_BUFFER_SIZE 16 * 1024 * 1024
 #define FRAMETIME_SAMPLE_COUNT 120
-#define PIXEL_BUFFER_SIZE 256 * 256 * 1024
 
 #define TEXTURE_SLOT_DEFAULT 0
 #define TEXTURE_SLOT_GAME 1
@@ -61,7 +62,7 @@ struct GlideVertex {
 
 template <size_t size>
 struct Vertices {
-	Vertex* ptr;
+	Vertex* ptr = nullptr;
 	uint32_t count = 0;
 	uint32_t start = 0;
 	std::array<Vertex, MAX_VERTICES> data[size];
@@ -69,10 +70,10 @@ struct Vertices {
 
 struct VertexParams {
 	uint32_t color;
-	uint8_t texture_shift;
-	glm::vec<2, int16_t> texture_ids;
+	uint8_t tex_shift;
+	uint16_t tex_num;
 	glm::vec<2, uint16_t> offsets;
-	glm::vec<4, int8_t> flags;
+	uint16_t flags;
 };
 
 struct SharpenData {
@@ -109,22 +110,21 @@ struct GLCaps {
 class Context {
 	HGLRC m_context_render = nullptr;
 	HGLRC m_context_update = nullptr;
-	HANDLE m_semaphore_cpu[2];
-	HANDLE m_semaphore_gpu[2];
-	CommandBuffer m_command_buffer[2];
+	HANDLE m_semaphore_cpu[MAX_FRAMES];
+	HANDLE m_semaphore_gpu[MAX_FRAMES];
+	GLsync m_sync_upload[MAX_FRAMES];
+	GLsync m_sync_render[MAX_FRAMES];
+	CommandBuffer m_command_buffer[MAX_FRAMES];
 	bool m_rendering = true;
-	HANDLE m_initialized;
 
 	GLuint m_index_buffer;
 	GLuint m_vertex_array;
-	GLuint m_vertex_buffer;
+	GLuint m_vertex_buffer[MAX_FRAMES];
+	GLuint m_pixel_buffer[MAX_FRAMES];
 	uint32_t m_frame_index = 0;
 
-	GLuint m_pixel_buffer[3];
-	void* m_pixel_buffer_ptr = nullptr;
-
 	bool m_delay_push = false;
-	Vertices<2> m_vertices;
+	Vertices<MAX_FRAMES> m_vertices;
 	Vertices<2> m_vertices_mod;
 	Vertices<1> m_vertices_late;
 	VertexParams m_vertex_params;
@@ -179,8 +179,6 @@ public:
 
 	static void renderThread(void* context);
 
-	void onInit();
-	void onDestroy();
 	void onResize();
 	void onShaderChange(bool texture = false);
 
@@ -190,7 +188,8 @@ public:
 
 	inline const uint32_t getFrameIndex() { return m_frame_index; }
 	inline CommandBuffer* getCommandBuffer() { return &m_command_buffer[m_frame_index]; }
-	inline void* getPixelBufferPtr() { return m_pixel_buffer_ptr; }
+	inline UniformBuffer* getGameColorUBO() { return m_game_color_ubo.get(); }
+	inline Texture* getGameTexture() { return m_game_texture.get(); }
 
 	void setViewport(glm::ivec2 size, glm::ivec2 offset = { 0, 0 });
 	inline void bindFrameBuffer(const std::unique_ptr<FrameBuffer>& framebuffer, bool clear = true) { framebuffer->bind(clear); }
@@ -206,14 +205,10 @@ public:
 	inline void toggleDelayPush(bool delay) { m_delay_push = delay; }
 
 	inline void setVertexColor(uint32_t color) { m_vertex_params.color = color; }
-	inline void setVertexTexShift(uint8_t shift) { m_vertex_params.texture_shift = shift; }
-	inline void setVertexTexIds(glm::vec<2, int16_t> ids) { m_vertex_params.texture_ids = ids; }
+	inline void setVertexTexShift(uint8_t shift) { m_vertex_params.tex_shift = shift; }
+	inline void setVertexTexNum(uint16_t num) { m_vertex_params.tex_num = num; }
 	inline void setVertexOffset(glm::vec<2, uint16_t> offsets) { m_vertex_params.offsets = offsets; }
-	inline void setVertexFlags(int8_t x, int8_t y = 0, int8_t z = 0, int8_t w = 0) { m_vertex_params.flags = { x, y, z, w }; }
-	inline void setVertexFlagX(int8_t x) { m_vertex_params.flags.x = x; }
-	inline void setVertexFlagY(int8_t y) { m_vertex_params.flags.y = y; }
-	inline void setVertexFlagZ(int8_t z) { m_vertex_params.flags.z = z; }
-	inline void setVertexFlagW(int8_t w) { m_vertex_params.flags.w = w; }
+	inline void setVertexFlag(bool set, uint16_t flag) { m_vertex_params.flags = set ? (m_vertex_params.flags | flag) : (m_vertex_params.flags & ~flag); }
 
 	const double getAvgFrameTime();
 	inline const double getFrameTime() { return m_frame.frame_time; }

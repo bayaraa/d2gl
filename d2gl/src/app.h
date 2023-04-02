@@ -45,6 +45,7 @@ struct D2GLApp {
 	std::unique_ptr<Context> context;
 	std::string version = "";
 	bool vsync = true;
+	uint32_t frames_in_flight = 3;
 	GLCaps gl_caps;
 	uint8_t gl_ver_major = 4;
 	uint8_t gl_ver_minor = 6;

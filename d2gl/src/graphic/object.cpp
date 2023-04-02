@@ -27,8 +27,8 @@ Object::Object(glm::vec2 position, glm::vec2 size)
 	for (size_t i = 0; i < 4; i++) {
 		m_vertices[i].color1 = 0xFFFFFFFF;
 		m_vertices[i].color2 = 0xFFFFFFFF;
-		m_vertices[i].texture_ids = { 0, 0 };
-		m_vertices[i].flags = { 0, 0, 0, 0 };
+		// m_vertices[i].texture_ids = { 0, 0 };
+		// m_vertices[i].flags = { 0, 0, 0, 0 };
 	}
 	setPosition(position);
 	setTexCoord({ 0.0f, 0.0f, 1.0f, 1.0f });
@@ -60,10 +60,10 @@ void Object::setTexCoord(glm::vec4 tex_coord)
 
 void Object::setTexIds(glm::vec<2, int16_t> tex_ids)
 {
-	m_vertices[0].texture_ids = tex_ids;
-	m_vertices[1].texture_ids = tex_ids;
-	m_vertices[2].texture_ids = tex_ids;
-	m_vertices[3].texture_ids = tex_ids;
+	// m_vertices[0].texture_ids = tex_ids;
+	// m_vertices[1].texture_ids = tex_ids;
+	// m_vertices[2].texture_ids = tex_ids;
+	// m_vertices[3].texture_ids = tex_ids;
 }
 
 void Object::setColor(uint32_t color, int num)
@@ -83,10 +83,10 @@ void Object::setColor(uint32_t color, int num)
 
 void Object::setFlags(glm::vec<4, int8_t> flags)
 {
-	m_vertices[0].flags = flags;
-	m_vertices[1].flags = flags;
-	m_vertices[2].flags = flags;
-	m_vertices[3].flags = flags;
+	// m_vertices[0].flags = flags;
+	// m_vertices[1].flags = flags;
+	// m_vertices[2].flags = flags;
+	// m_vertices[3].flags = flags;
 }
 
 void Object::setExtra(glm::vec2 extra)

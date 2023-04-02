@@ -40,6 +40,7 @@ class Wrapper {
 
 	uint32_t m_current_blend_index = 0;
 	bool m_blend_locked = false;
+	uint32_t m_gamma_hash = 0;
 
 public:
 	Wrapper();

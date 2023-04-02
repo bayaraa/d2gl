@@ -227,7 +227,7 @@ void Wrapper::grDrawVertexArrayContiguous(FxU32 mode, FxU32 count, void* pointer
 
 void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)
 {
-	App.context->flushVertices();
+	ctx->flushVertices();
 
 	m_current_blend_index = g_blend_types.at(static_cast<uint32_t>(rgb_df)).first;
 	if (!m_blend_locked)
@@ -236,17 +236,17 @@ void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)
 
 void Wrapper::grAlphaCombine(GrCombineFunction_t function)
 {
-	ctx->setVertexFlagZ(function == GR_COMBINE_FUNCTION_LOCAL ? 1 : 0);
+	ctx->setVertexFlag(function == GR_COMBINE_FUNCTION_LOCAL, 0x04);
 }
 
 void Wrapper::grChromakeyMode(GrChromakeyMode_t mode)
 {
-	ctx->setVertexFlagX(mode == GR_CHROMAKEY_ENABLE ? 1 : 0);
+	ctx->setVertexFlag(mode == GR_CHROMAKEY_ENABLE, 0x01);
 }
 
 void Wrapper::grColorCombine(GrCombineFunction_t function)
 {
-	ctx->setVertexFlagY(function == GR_COMBINE_FUNCTION_LOCAL ? 1 : 0);
+	ctx->setVertexFlag(function == GR_COMBINE_FUNCTION_LOCAL, 0x02);
 }
 
 void Wrapper::grConstantColorValue(GrColor_t value)
@@ -262,7 +262,14 @@ void Wrapper::grLoadGammaTable(FxU32 nentries, FxU32* red, FxU32* green, FxU32* 
 		gamma[i].g = (float)green[i] / 255;
 		gamma[i].b = (float)blue[i] / 255;
 	}
+
+	const uint32_t hash = helpers::hash(&gamma[0], sizeof(glm::vec4) * 256);
+	if (m_gamma_hash == hash)
+		return;
+
+	ctx->flushVertices();
 	ctx->getCommandBuffer()->colorUpdate(UBOType::Gamma, &gamma[0]);
+	m_gamma_hash = hash;
 }
 
 void Wrapper::guGammaCorrectionRGB(FxFloat red, FxFloat green, FxFloat blue)
@@ -274,7 +281,14 @@ void Wrapper::guGammaCorrectionRGB(FxFloat red, FxFloat green, FxFloat blue)
 		gamma[i].g = powf(v, 1.0f / green);
 		gamma[i].b = powf(v, 1.0f / blue);
 	}
+
+	const uint32_t hash = helpers::hash(&gamma[0], sizeof(glm::vec4) * 256);
+	if (m_gamma_hash == hash)
+		return;
+
+	ctx->flushVertices();
 	ctx->getCommandBuffer()->colorUpdate(UBOType::Gamma, &gamma[0]);
+	m_gamma_hash = hash;
 }
 
 void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
@@ -287,7 +301,7 @@ void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
 	const auto frame_count = ctx->getFrameCount();
 	const auto sub_tex_info = m_texture_manager->getSubTextureInfo(start_address, size, width, height, frame_count);
 	if (sub_tex_info) {
-		ctx->setVertexTexIds({ frame_index, sub_tex_info->tex_num });
+		ctx->setVertexTexNum(sub_tex_info->tex_num);
 		ctx->setVertexOffset(sub_tex_info->offset);
 		ctx->setVertexTexShift(sub_tex_info->shift);
 	}
@@ -309,6 +323,8 @@ void Wrapper::grTexDownloadTable(void* data)
 	const uint32_t hash = helpers::hash(data, sizeof(uint32_t) * 256);
 	if (old_hash == hash)
 		return;
+
+	ctx->flushVertices();
 
 	glm::vec4 palette[256];
 	uint32_t* pal = (uint32_t*)data;

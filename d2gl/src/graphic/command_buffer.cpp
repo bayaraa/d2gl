@@ -21,6 +21,7 @@ void CommandBuffer::reset()
 	m_ubo_update_queue.count = 0;
 	m_tex_update_queue.count = 0;
 	m_tex_update_queue.data_offset = 0;
+	m_vertex_count = 0;
 }
 
 inline void CommandBuffer::next()
@@ -38,15 +39,16 @@ void CommandBuffer::pushCommand(CommandType type)
 void CommandBuffer::setBlendState(uint32_t index)
 {
 	m_command->type = CommandType::SetBlendState;
-	m_command->blend_index = index;
+	m_command->index = index;
 	next();
 }
 
-void CommandBuffer::drawIndexed(void* data, uint32_t count)
+void CommandBuffer::drawIndexed(uint32_t start, uint32_t count)
 {
+	m_vertex_count += count;
 	m_command->type = CommandType::DrawIndexed;
-	m_command->draw.data = data;
-	m_command->draw.count = count;
+	m_command->draw.start = start;
+	m_command->draw.count = count / 4 * 6;
 	next();
 }
 
@@ -54,9 +56,12 @@ void CommandBuffer::colorUpdate(UBOType type, const void* data)
 {
 	memcpy(m_ubo_update_queue.data[m_ubo_update_queue.count].value, data, sizeof(glm::vec4) * 256);
 	m_ubo_update_queue.data[m_ubo_update_queue.count].type = type;
-	m_ubo_update_queue.count++;
 
-	if (m_ubo_update_queue.count > 9)
+	m_command->type = CommandType::UBOUpdate;
+	m_command->index = m_ubo_update_queue.count++;
+	next();
+
+	if (m_ubo_update_queue.count > 32)
 		m_ubo_update_queue.count = 0;
 }
 
