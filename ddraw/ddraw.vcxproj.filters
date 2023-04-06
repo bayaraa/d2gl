@@ -55,7 +55,6 @@
     <None Include="ddraw.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="src\shaders\game.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ddraw.rc">

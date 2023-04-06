@@ -45,7 +45,8 @@ struct D2GLApp {
 	std::unique_ptr<Context> context;
 	std::string version = "";
 	bool vsync = true;
-	uint32_t frames_in_flight = 3;
+	uint32_t frame_latency = 1;
+
 	GLCaps gl_caps;
 	uint8_t gl_ver_major = 4;
 	uint8_t gl_ver_minor = 6;
@@ -77,23 +78,23 @@ struct D2GLApp {
 
 	struct {
 		uint32_t bpp = 8;
-		glm::uvec2 size = { 0, 0 };
+		glm::uvec2 size = { 640, 480 };
 		glm::uvec2 custom_size = { 0, 0 };
 		GameScreen screen = GameScreen::Movie;
 		DrawStage draw_stage = DrawStage::World;
 		glm::uvec2 tex_size = { 0, 0 };
 		glm::vec2 tex_scale = { 1.0f, 1.0f };
-		onStageChange_t onStageChange = nullptr;
 	} game;
 
 	struct {
 		bool locked = false;
 		glm::vec2 scale = { 1.0f, 1.0f };
 		glm::vec2 unscale = { 1.0f, 1.0f };
+		bool no_lock = false;
 	} cursor;
 
 	Select<glm::uvec2> resolutions = {};
-	glm::uvec2 desktop_resolution  = { 0, 0 };
+	glm::ivec4 desktop_resolution  = { 0, 0, 0, 0 };
 
 	struct ForegroundFPS {
 		bool active = false;
@@ -122,11 +123,12 @@ struct D2GLApp {
 		Range<float> gamma = { 1.0f, 0.5f, 1.2f };
 	} bloom;
 
+	bool hd_cursor = false;
+	bool hd_text = false;
 	bool motion_prediction = false;
 	bool skip_intro = false;
 	bool no_pickup = false;
-	bool hd_cursor = false;
-	bool hd_text = false;
+	bool show_fps = false;
 
 	struct {
 		bool active = false;
@@ -136,10 +138,10 @@ struct D2GLApp {
 	struct {
 		bool active = false;
 		bool available = true;
+		bool text_over = true;
+		Range<int> width = { 200, 200, 300 };
+		Range<int> height = { 140, 100, 200 };
 	} mini_map;
-
-	bool show_fps = false;
-	bool pd2_fix = false;
 
 	int var1 = 0;
 	int var2 = 0;

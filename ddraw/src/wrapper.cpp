@@ -20,77 +20,16 @@
 #include "wrapper.h"
 #include "d2/common.h"
 #include "ddraw/surface.h"
-#include "modules/hd_cursor.h"
-#include "modules/hd_text.h"
+#include "helpers.h"
 #include "win32.h"
 
 namespace d2gl {
 
 std::unique_ptr<Wrapper> DDrawWrapper;
 
-const char* g_shader_game = {
-#include "shaders/game.glsl.h"
-};
-
 Wrapper::Wrapper()
 	: ctx(App.context.get())
-{
-	UniformBufferCreateInfo ubo_ci;
-	ubo_ci.variables = { { "palette", 256 * sizeof(glm::vec4) } };
-	m_game_palette_ubo = Context::createUniformBuffer(ubo_ci);
-
-	PipelineCreateInfo game_pipeline_ci;
-	game_pipeline_ci.shader = g_shader_game;
-	game_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Colors", m_game_palette_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_DEFAULT },
-	};
-	m_game_pipeline = Context::createPipeline(game_pipeline_ci);
-	m_game_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f));
-
-	ctx->onInitialize();
-}
-
-void Wrapper::onResize()
-{
-	static glm::uvec2 game_size = { 0, 0 };
-	bool game_resized = game_size != App.game.size;
-	game_size = App.game.size;
-
-	if (game_resized) {
-		TextureCreateInfo texture_ci;
-		texture_ci.size = game_size;
-		texture_ci.format = App.game.bpp == 8 ? GL_RED : GL_BGRA;
-		texture_ci.min_filter = GL_LINEAR;
-		texture_ci.mag_filter = GL_LINEAR;
-		m_ddraw_texture = Context::createTexture(texture_ci);
-	}
-
-	ctx->onResize(game_resized);
-}
-
-void Wrapper::onStageChange()
-{
-	if (App.game.screen == GameScreen::Movie)
-		return;
-
-	switch (App.game.draw_stage) {
-		case DrawStage::World:
-			break;
-		case DrawStage::UI:
-			break;
-		case DrawStage::Map:
-			break;
-		case DrawStage::HUD:
-			modules::HDText::Instance().drawFpsCounter();
-			break;
-		case DrawStage::Cursor:
-			ctx->appendDelayedObjects();
-			modules::HDText::Instance().drawEntryText();
-			modules::HDCursor::Instance().draw();
-			break;
-	}
-}
+{}
 
 void Wrapper::onBufferClear()
 {
@@ -98,13 +37,7 @@ void Wrapper::onBufferClear()
 		return;
 	m_swapped = false;
 
-	if (App.window.resized)
-		onResize();
-
 	ctx->beginFrame();
-
-	App.game.draw_stage = DrawStage::World;
-	onStageChange();
 }
 
 void Wrapper::onBufferSwap(bool flip)
@@ -116,14 +49,19 @@ void Wrapper::onBufferSwap(bool flip)
 		return;
 	m_swapped = true;
 
-	m_ddraw_texture->fill(DDrawSurface->getData(), App.game.size.x, App.game.size.y);
-
-	if (App.game.screen != GameScreen::Movie) {
-		ctx->bindPipeline(m_game_pipeline);
-		ctx->pushQuad();
-	}
-
+	ctx->getCommandBuffer()->gameTextureUpdate((uint8_t*)DDrawSurface->getData(), { App.game.size.x, App.game.size.y }, App.game.bpp == 8 ? 1 : 4);
 	ctx->presentFrame();
+}
+
+void Wrapper::updatePalette(const glm::vec4* data)
+{
+	static uint32_t old_hash = 0;
+	const uint32_t hash = helpers::hash(data, sizeof(glm::vec4) * 256);
+	if (old_hash == hash)
+		return;
+
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Palette, data);
+	old_hash = hash;
 }
 
 HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
@@ -136,8 +74,6 @@ HRESULT Wrapper::setCooperativeLevel(HWND hwnd, DWORD flags)
 
 	App.context = std::make_unique<Context>();
 	DDrawWrapper = std::make_unique<Wrapper>();
-
-	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
 	helpers::loadDlls(App.dlls_late, true);
@@ -163,7 +99,6 @@ HRESULT Wrapper::setDisplayMode(DWORD width, DWORD height, DWORD bpp)
 	if (!App.video_test && App.hwnd && old_size != App.game.size) {
 		win32::setWindowMetrics();
 		win32::windowResize();
-		DDrawWrapper->onResize();
 
 		old_size = App.game.size;
 	}

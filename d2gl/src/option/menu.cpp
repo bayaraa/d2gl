@@ -21,6 +21,7 @@
 #include "d2/common.h"
 #include "helpers.h"
 #include "ini.h"
+#include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 #include "win32.h"
 
@@ -120,31 +121,49 @@ void Menu::toggle(bool force)
 		m_options.window = App.window;
 		m_options.foreground_fps = App.foreground_fps;
 		m_options.background_fps = App.background_fps;
+
+		m_closing = false;
+	}
+}
+
+void Menu::check()
+{
+	if (m_closing) {
+		win32::setCursorLock();
+		m_closing = false;
+	}
+
+	if (m_changed) {
+		App.context->setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
+
+		win32::setWindowRect();
+		win32::windowResize();
+		m_changed = false;
 	}
 }
 
 void Menu::draw()
 {
-#ifdef _DEBUG
-	App.context->imguiStartFrame();
-
-	ImGui::SetNextWindowPos({ 10.f, 220.f });
-	ImGui::SetNextWindowBgAlpha(0.85f);
-	ImGui::Begin("Glide", (bool*)true, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
-	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
-	ImGui::Separator();
-	ImGui::Text("256: 1024 / %d / %d", App.var1, App.var7);
-	ImGui::Text("128: 2464 / %d / %d", App.var2, App.var8);
-	ImGui::Text(" 64: 4096 / %d / %d", App.var3, App.var9);
-	ImGui::Text(" 32: 8192 / %d / %d", App.var4, App.var10);
-	ImGui::Text(" 16: 5120 / %d / %d", App.var5, App.var11);
-	ImGui::Text("  8: 4096 / %d / %d", App.var6, App.var12);
-	// ImGui::Checkbox("aaa", (bool*)&App.var9);
-	// ImGui::Checkbox("aaa", (bool*)&App.var10);
-	ImGui::End();
-
-	App.context->imguiRender();
-#endif
+	// #ifdef _DEBUG
+	//	App.context->imguiStartFrame();
+	//
+	//	ImGui::SetNextWindowPos({ 10.f, 220.f });
+	//	ImGui::SetNextWindowBgAlpha(0.85f);
+	//	ImGui::Begin("Glide", (bool*)true, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	//	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
+	//	ImGui::Separator();
+	//	ImGui::Text("256: 1024 / %d / %d", App.var1, App.var7);
+	//	ImGui::Text("128: 2464 / %d / %d", App.var2, App.var8);
+	//	ImGui::Text(" 64: 4096 / %d / %d", App.var3, App.var9);
+	//	ImGui::Text(" 32: 8192 / %d / %d", App.var4, App.var10);
+	//	ImGui::Text(" 16: 5120 / %d / %d", App.var5, App.var11);
+	//	ImGui::Text("  8: 4096 / %d / %d", App.var6, App.var12);
+	//	// ImGui::Checkbox("aaa", (bool*)&App.var9);
+	//	// ImGui::Checkbox("aaa", (bool*)&App.var10);
+	//	ImGui::End();
+	//
+	//	App.context->imguiRender();
+	// #endif
 
 	if (!m_visible)
 		return;
@@ -184,23 +203,25 @@ void Menu::draw()
 			drawSeparator();
 			ImGui::BeginDisabled(m_options.window.fullscreen);
 				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
-				ImGui::Dummy({ 0.0f, 6.0f });
+				ImGui::Dummy({ 0.0f, 4.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
-					drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, App.desktop_resolution);
+				drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, { App.desktop_resolution.z, App.desktop_resolution.w });
 				ImGui::EndDisabled();
 				drawSeparator();
 				drawCheckbox_m("Centered Window", m_options.window.centered, "Make window centered to desktop screen.", centered_window);
-				ImGui::Dummy({ 0.0f, 6.0f });
+				ImGui::Dummy({ 0.0f, 4.0f });
 				ImGui::BeginDisabled(m_options.window.centered);
-					drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { 0, 0 }, App.desktop_resolution);
+				drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { App.desktop_resolution.x, App.desktop_resolution.y }, { App.desktop_resolution.z, App.desktop_resolution.w });
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			childSeparator("##w2", true);
 			drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
 			drawSeparator();
-			drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
-			ImGui::BeginDisabled(!m_options.foreground_fps.active);
-				drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
+			ImGui::BeginDisabled(m_options.vsync);
+				drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
+				ImGui::BeginDisabled(!m_options.foreground_fps.active);
+					drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
+				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			drawSeparator();
 			drawCheckbox_m("Max Background FPS", m_options.background_fps.active, "", background_fps);
@@ -208,9 +229,7 @@ void Menu::draw()
 				drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
 			ImGui::EndDisabled();
 			drawSeparator();
-			ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
-			ImGui::EndDisabled();
+			drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
 			childEnd();
 			if (drawNav("Apply")) {
 				if (App.resolutions.selected) {
@@ -246,10 +265,7 @@ void Menu::draw()
 				saveBool("Screen", "background_fps", App.background_fps.active);
 				saveInt("Screen", "background_fps_value", App.background_fps.range.value);
 
-				App.context->setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
-
-				win32::setWindowRect();
-				win32::windowResize();
+				m_changed = true;
 			}
 			tabEnd();
 		}
@@ -320,27 +336,45 @@ void Menu::draw()
 					d2::patch_hd_text->toggle(App.hd_text);
 					saveBool("Feature", "hd_text", App.hd_text);
 				}
-				drawSeparator();
-				ImGui::BeginDisabled(true);
-					drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs. (coming soon)", hd_orbs)
-						saveBool("Feature", "hd_orbs", App.hd_orbs.active);
-					ImGui::Spacing();
-					ImGui::Spacing();
-					ImGui::SameLine(36.0f);
-					ImGui::BeginDisabled(!App.hd_orbs.active);
-						drawCheckbox_m("Centered", App.hd_orbs.centered, "", hd_orbs_centered)
-							saveBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
-					ImGui::EndDisabled();
-				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			drawSeparator();
 			ImGui::BeginDisabled(App.api != Api::Glide || !App.hd_cursor || !App.mini_map.available);
-				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on Minimap widget.", mini_map)
+				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on minimap widget.", mini_map)
 				{
 					d2::patch_minimap->toggle(App.mini_map.active);
 					saveBool("Feature", "mini_map", App.mini_map.active);
 				}
+				ImGui::BeginDisabled(!App.mini_map.active);
+					ImGui::Spacing();
+					ImGui::Spacing();
+					ImGui::SameLine(20.0f);
+					drawCheckbox_m("Text over map", App.mini_map.text_over, "", mini_map_text_over)
+						saveBool("Feature", "mini_map_text_over", App.mini_map.text_over);
+					ImGui::Dummy({ 0.0f, 2.0f });
+					drawSlider_m(int, "", App.mini_map.width, "%d", "Minimap width.", mini_map_width_val)
+					{
+						modules::MiniMap::Instance().resize();
+						saveInt("Feature", "mini_map_width", App.mini_map.width.value);
+					}
+					drawSlider_m(int, "", App.mini_map.height, "%d", "Minimap height.", mini_map_height_val)
+					{
+						modules::MiniMap::Instance().resize();
+						saveInt("Feature", "mini_map_height", App.mini_map.height.value);
+					}
+				ImGui::EndDisabled();
 			ImGui::EndDisabled();
+			/*drawSeparator();
+			ImGui::BeginDisabled(true);
+				drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs. (coming soon)", hd_orbs)
+					saveBool("Feature", "hd_orbs", App.hd_orbs.active);
+				ImGui::Spacing();
+				ImGui::Spacing();
+				ImGui::SameLine(36.0f);
+				ImGui::BeginDisabled(!App.hd_orbs.active);
+					drawCheckbox_m("Centered", App.hd_orbs.centered, "", hd_orbs_centered)
+						saveBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
+				ImGui::EndDisabled();
+			ImGui::EndDisabled();*/
 			childSeparator("##w6");
 			drawCheckbox_m("Motion Prediction", App.motion_prediction, "D2DX's motion prediction feature.", motion_prediction)
 			{
@@ -356,6 +390,9 @@ void Menu::draw()
 			drawSeparator();
 			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 				saveBool("Feature", "show_fps", App.show_fps);
+			drawSeparator();
+			drawCheckbox_m("No Cursor Lock", App.cursor.no_lock, "Cursor will not locked within window.", no_cursor_lock)
+				saveBool("Feature", "no_cursor_lock", App.cursor.no_lock);
 			childEnd();
 			tabEnd();
 		}
@@ -366,7 +403,7 @@ void Menu::draw()
 
 	// clang-format on
 	if (!m_visible)
-		win32::setCursorLock();
+		m_closing = true;
 
 	App.context->imguiRender();
 }

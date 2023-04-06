@@ -33,14 +33,14 @@ CursorObject::CursorObject(const std::unique_ptr<Texture>& texture, const std::s
 
 	m_start_layer = tex_data.start_layer;
 	m_object = std::make_unique<Object>(glm::vec2(0.0f, 0.0f), glm::vec2(40.0f, 40.0f));
-	m_object->setFlags({ 1, 0, 0, 0 });
+	m_object->setFlags(1);
 }
 
 void CursorObject::draw(uint8_t frame)
 {
 	glm::ivec2 pos = d2::getCursorPos();
 	m_object->setPosition({ (float)pos.x - m_offset.x, (float)pos.y - m_offset.y });
-	m_object->setTexIds({ TEXTURE_SLOT_CURSOR, m_start_layer + frame - 1 });
+	m_object->setTexIds(m_start_layer + frame - 1);
 
 	App.context->pushObject(m_object);
 }

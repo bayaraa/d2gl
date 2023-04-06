@@ -20,8 +20,8 @@
 #include "hd_text.h"
 #include "d2/common.h"
 #include "d2/stubs.h"
-#include "extra/pd2_fixes.h"
 #include "font.h"
+#include "modules/mini_map.h"
 
 namespace d2gl::modules {
 
@@ -130,12 +130,11 @@ void HDText::reset()
 	m_map_text_line = 1;
 }
 
-void HDText::update(const std::unique_ptr<Pipeline>& pipeline)
+void HDText::update()
 {
 	static bool mask = false;
 	if (m_masking != mask) {
-		pipeline->setUniformVec4f("u_TextMask", m_text_mask); // TODO: command buffer
-		pipeline->setUniform1i("u_IsMasking", m_masking); // TODO: command buffer
+		App.context->getCommandBuffer()->setHDTextMasking(m_masking, m_text_mask);
 		mask = m_masking;
 	}
 	m_cur_level_no = App.game.screen == GameScreen::InGame ? *d2::level_no : 0;
@@ -177,7 +176,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 	}
 
 	static bool map_text = false;
-	if (App.mini_map.active && App.hd_cursor && App.game.draw_stage == DrawStage::Map) {
+	if (App.game.draw_stage == DrawStage::Map && modules::MiniMap::Instance().isActive()) {
 		if (m_text_size == 6 && !*d2::automap_on)
 			return true;
 		else if (m_text_size != 6) {
@@ -187,27 +186,24 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			map_text = true;
 			App.context->toggleDelayPush(true);
 
-			font = getFont(6);
+			font = getFont(m_map_text_line == 1 || !App.mini_map.text_over ? 11 : 6);
 			m_fonts[font.id]->setSize(font.size);
 			m_fonts[font.id]->setMetrics(font);
 			const auto size = m_fonts[font.id]->getTextSize(str);
-			pos.x = App.game.size.x - 12.0f - size.x;
-			pos.y = 9.0f + m_map_text_line * font.size * 1.3f;
+
+			if (m_map_text_line == 1) {
+				pos.x = App.game.size.x - 50.0f - size.x;
+				pos.y = 15.2f;
+			} else {
+				pos.x = App.game.size.x - 12.0f - size.x;
+				pos.y = 10.0f + m_map_text_line * font.size * 1.34f;
+				if (!App.mini_map.text_over) {
+					pos.x += 7.0f;
+					pos.y += (float)App.mini_map.height.value - 5.0f;
+				}
+			}
 			m_map_text_line++;
 		}
-	}
-
-	if (pd2_draw_ui) {
-		font = getFont(99);
-		m_fonts[font.id]->setSize(font.size);
-		m_fonts[font.id]->setMetrics(font);
-		m_fonts[font.id]->setStroke(2);
-		if (color == 15)
-			text_color = g_text_colors.at(L'\x30');
-
-		auto size = m_fonts[font.id]->getTextSize(str);
-		pos.x += ((float)m_last_text_width / 2.0f) - size.x / 2.0f;
-		pos.y -= 1.0f;
 	}
 
 	m_fonts[font.id]->setBoxed(false);
@@ -254,10 +250,10 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	if (unit && unit->dwType == d2::UnitType::Item) {
 		padding = { 3.4f, font.size * 0.05f * line_count };
 		pos = { (float)x - padding.x - 1.0f, (float)y - size.y - padding.y + 1.0f };
-		m_object_bg->setFlags({ 2, 0, 0, 0 });
+		m_object_bg->setFlags(2);
 	} else {
 		pos = { (float)x - padding.x, (float)y - size.y - padding.y };
-		m_object_bg->setFlags({ 2, 2, 0, 0 });
+		m_object_bg->setFlags(2, 2);
 	}
 
 	glm::vec2 box_size = size + padding * 2.0f;
@@ -351,7 +347,7 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 	if (rect_transparency == 2) {
 		padding = { 10.0f, 6.0f };
 		m_object_bg->setColor(m_border_color, 2);
-		m_object_bg->setFlags({ 2, 2, 0, 0 });
+		m_object_bg->setFlags(2, 2);
 		m_object_bg->setExtra(size + padding * 2.0f);
 	} else {
 		if (rect_transparency == 1)
@@ -359,7 +355,7 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 		else if (rect_transparency == 5)
 			bg_color = m_alt_bg_hovered;
 
-		m_object_bg->setFlags({ 2, 0, 0, 0 });
+		m_object_bg->setFlags(2);
 	}
 
 	m_object_bg->setPosition(back_pos - padding);
@@ -435,10 +431,10 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 
 	if (draw_mode == 1 && top == App.game.size.y - 103 && height == 47) { // message input bg
 		m_object_bg->setColor(m_border_color, 2);
-		m_object_bg->setFlags({ 2, 4, 0, 0 });
+		m_object_bg->setFlags(2, 4);
 		m_object_bg->setExtra({ (float)width, (float)height });
 	} else
-		m_object_bg->setFlags({ 2, 0, 0, 0 });
+		m_object_bg->setFlags(2);
 
 	App.context->pushObject(m_object_bg);
 
@@ -644,7 +640,7 @@ void HDText::drawRectFrame()
 	m_object_bg->setSize(size);
 	m_object_bg->setColor(0x000000CC, 1);
 	m_object_bg->setColor(0x333333FF, 2);
-	m_object_bg->setFlags({ 4, 3, 0, 0 });
+	m_object_bg->setFlags(4, 3);
 	m_object_bg->setExtra(size);
 	App.context->pushObject(m_object_bg);
 
@@ -744,7 +740,7 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	if (text_size.x + 40.0f > bar_size.x)
 		bar_size.x = text_size.x + 40.0f;
 
-	m_object_bg->setFlags({ 2, 0, 0, 0 });
+	m_object_bg->setFlags(2);
 	glm::vec2 bar_pos = { center - bar_size.x / 2, 18.0f };
 
 	m_object_bg->setPosition(bar_pos);
@@ -785,7 +781,7 @@ void HDText::drawFpsCounter()
 		return;
 
 	static wchar_t str[20] = { 0 };
-	const float fps = round(1000.0f / App.context->getAvgFrameTime());
+	const float fps = (float)round(1000.0 / App.context->getAvgFrameTime());
 	swprintf_s(str, L"FPS: %.0f", fps);
 
 	d2::setTextSizeHooked(99);

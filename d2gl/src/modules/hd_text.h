@@ -82,7 +82,7 @@ public:
 	inline void setMVP(const glm::mat4& mvp) { m_mvp = mvp; }
 
 	void reset();
-	void update(const std::unique_ptr<Pipeline>& pipeline);
+	void update();
 
 	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 	bool drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);

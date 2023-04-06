@@ -18,7 +18,6 @@
 
 #include "pch.h"
 #include "ini.h"
-#include "extra/pd2_fixes.h"
 #include "helpers.h"
 
 namespace d2gl::option {
@@ -146,11 +145,11 @@ void saveIni()
 	  "; Game fps adapt screen refresh rate (might have input lag).\n"
 	  "vsync=%s\n\n"
 	  "; Max Foreground FPS.\n"
-	  "; Limit maximum fps when game window is focused (active).\n"
+	  "; Limit maximum fps when game window is focused(active) (vsync must be disabled).\n"
 	  "foreground_fps=%s\n"
 	  "foreground_fps_value=%d\n\n"
 	  "; Max Background FPS.\n"
-	  "; Limit maximum fps when game window is in background (inactive).\n"
+	  "; Limit maximum fps when game window is in background(inactive).\n"
 	  "background_fps=%s\n"
 	  "background_fps_value=%d\n\n\n";
 
@@ -182,7 +181,7 @@ void saveIni()
 	  "; Set one of following shaders.\n"
 	  "%s"
 	  "shader=%d\n\n"
-	  "; Color grading (LUT) (Only available in glide mode).\n"
+	  "; Color grading (LUT) (only available in glide mode).\n"
 	  "; Set one of 1-%d predefined luts. 0 = game default.\n"
 	  "lut=%d\n\n"
 	  "; Luma sharpen.\n"
@@ -221,8 +220,11 @@ void saveIni()
 	  "; HD life & mana orbs (HD cursor required).\n"
 	  "hd_orbs=%s\n"
 	  "hd_orbs_centered=%s\n\n"
-	  "; Always on Minimap widget (Only available in glide mode, HD cursor required).\n"
-	  "mini_map=%s\n\n"
+	  "; Always on Minimap widget (only available in glide mode, HD cursor required).\n"
+	  "mini_map=%s\n"
+	  "mini_map_text_over=%s\n"
+	  "mini_map_width=%d\n"
+	  "mini_map_height=%d\n\n"
 	  "; D2DX's Motion Prediction.\n"
 	  "motion_prediction=%s\n\n"
 	  "; Skip the Intro videos.\n"
@@ -230,7 +232,9 @@ void saveIni()
 	  "; Auto /nopickup option on launch (exclude 1.09d).\n"
 	  "no_pickup=%s\n\n"
 	  "; Show FPS Counter (bottom center).\n"
-	  "show_fps=%s\n\n\n";
+	  "show_fps=%s\n\n"
+	  "; No Cursor Lock (cursor will not locked within window).\n"
+	  "no_cursor_lock=%s\n\n\n";
 
 	sprintf_s(buf, feature_setting,
 	  boolString(App.hd_cursor),
@@ -238,10 +242,14 @@ void saveIni()
 	  boolString(App.hd_orbs.active),
 	  boolString(App.hd_orbs.centered),
 	  boolString(App.mini_map.active),
+	  boolString(App.mini_map.text_over),
+	  App.mini_map.width.value,
+	  App.mini_map.height.value,
 	  boolString(App.motion_prediction),
 	  boolString(App.skip_intro),
 	  boolString(App.no_pickup),
-	  boolString(App.show_fps));
+	  boolString(App.show_fps),
+	  boolString(App.cursor.no_lock));
 	out_file << buf;
 
 	static const char* other_setting =
@@ -251,20 +259,21 @@ void saveIni()
 	  "gl_ver_minor=%d\n\n"
 	  "; Use compute shader (enabling this might be better on some gpu).\n"
 	  "use_compute_shader=%s\n\n"
+	  "; Frame Latency (how many frames cpu generate before rendering).\n"
+	  "; Set 1-5 (increasing this value notice less frame stutter but introduces more input lag).\n"
+	  "frame_latency=%d\n\n"
 	  "; Comma delimitered DLLs to load (early: right after attached).\n"
 	  "load_dlls_early=%s\n\n"
 	  "; Comma delimitered DLLs to load (late: right after window created).\n"
-	  "load_dlls_late=%s\n\n"
-	  "; Apply fix some glide crash with Project Diablo 2.\n"
-	  "pd2_fix=%s\n";
+	  "load_dlls_late=%s\n";
 
 	sprintf_s(buf, other_setting,
 	  App.gl_ver_major,
 	  App.gl_ver_minor,
 	  boolString(App.use_compute_shader),
+	  App.frame_latency,
 	  App.dlls_early.c_str(),
-	  App.dlls_late.c_str(),
-	  boolString(App.pd2_fix));
+	  App.dlls_late.c_str());
 	out_file << buf;
 
 	out_file.close();
@@ -273,7 +282,12 @@ void saveIni()
 void loadIni()
 {
 	App.ini_file = std::string(helpers::getCurrentDir() + App.ini_file);
-	App.desktop_resolution = { GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) };
+	App.desktop_resolution = {
+		GetSystemMetrics(SM_XVIRTUALSCREEN),
+		GetSystemMetrics(SM_YVIRTUALSCREEN),
+		GetSystemMetrics(SM_CXVIRTUALSCREEN),
+		GetSystemMetrics(SM_CYVIRTUALSCREEN),
+	};
 
 	for (auto& shader : g_shader_upscale)
 		App.shader.items.push_back({ shader.name });
@@ -290,13 +304,13 @@ void loadIni()
 		App.window.dark_mode = getBool("Screen", "dark_mode", App.window.dark_mode);
 		App.vsync = getBool("Screen", "vsync", App.vsync);
 
-		App.window.size.x = getInt("Screen", "window_width", App.window.size.x, 800, App.desktop_resolution.x);
-		App.window.size.y = getInt("Screen", "window_height", App.window.size.y, 600, App.desktop_resolution.y);
+		App.window.size.x = getInt("Screen", "window_width", App.window.size.x, 800, App.desktop_resolution.z);
+		App.window.size.y = getInt("Screen", "window_height", App.window.size.y, 600, App.desktop_resolution.w);
 		App.window.size_save = App.window.size;
 
 		App.window.centered = getBool("Screen", "centered_window", App.window.centered);
-		App.window.position.x = getInt("Screen", "window_posx", App.window.position.x, 0, App.desktop_resolution.x);
-		App.window.position.y = getInt("Screen", "window_posy", App.window.position.y, 0, App.desktop_resolution.y);
+		App.window.position.x = getInt("Screen", "window_posx", App.window.position.x, App.desktop_resolution.x, App.desktop_resolution.z);
+		App.window.position.y = getInt("Screen", "window_posy", App.window.position.y, App.desktop_resolution.y, App.desktop_resolution.w);
 
 		App.foreground_fps.active = getBool("Screen", "foreground_fps", App.foreground_fps.active);
 		App.foreground_fps.range.value = getInt("Screen", "foreground_fps_value", App.foreground_fps.range.value, App.foreground_fps.range.min, App.foreground_fps.range.max);
@@ -318,14 +332,20 @@ void loadIni()
 
 		App.hd_cursor = getBool("Feature", "hd_cursor", App.hd_cursor);
 		App.hd_text = getBool("Feature", "hd_text", App.hd_text);
+
 		App.hd_orbs.active = getBool("Feature", "hd_orbs", App.hd_orbs.active);
 		App.hd_orbs.centered = getBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
+
 		App.mini_map.active = getBool("Feature", "mini_map", App.mini_map.active) && App.api == Api::Glide;
+		App.mini_map.text_over = getBool("Feature", "mini_map_text_over", App.mini_map.text_over);
+		App.mini_map.width.value = getInt("Feature", "mini_map_width", App.mini_map.width.value, App.mini_map.width.min, App.mini_map.width.max);
+		App.mini_map.height.value = getInt("Feature", "mini_map_height", App.mini_map.height.value, App.mini_map.height.min, App.mini_map.height.max);
 
 		App.motion_prediction = getBool("Feature", "motion_prediction", App.motion_prediction);
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);
 		App.no_pickup = getBool("Feature", "no_pickup", App.no_pickup);
 		App.show_fps = getBool("Feature", "show_fps", App.show_fps);
+		App.cursor.no_lock = getBool("Feature", "no_cursor_lock", App.cursor.no_lock);
 
 		App.gl_ver_major = getInt("Other", "gl_ver_major", App.gl_ver_major, 3, 4);
 		App.gl_ver_minor = getInt("Other", "gl_ver_minor", App.gl_ver_minor, 0, 6);
@@ -333,14 +353,10 @@ void loadIni()
 			App.gl_ver_minor = 3;
 
 		App.use_compute_shader = getBool("Other", "use_compute_shader", App.use_compute_shader);
+		App.frame_latency = getInt("Other", "frame_latency", App.frame_latency, 1, 5);
 
 		App.dlls_early = getString("Other", "load_dlls_early", App.dlls_early);
 		App.dlls_late = getString("Other", "load_dlls_late", App.dlls_late);
-
-		if (isPD2()) {
-			App.pd2_fix = getBool("Other", "pd2_fix", App.pd2_fix);
-			trace_log("Project Diablo 2 Detected.");
-		}
 	}
 
 	// clang-format off
@@ -354,7 +370,7 @@ void loadIni()
 	App.resolutions.items.push_back({ "Custom Size", glm::uvec2(0, 0) });
 	for (size_t i = 0; i < window_sizes.size(); i++) {
 		const auto& p = window_sizes[i];
-		if (App.desktop_resolution.x <= p.first || App.desktop_resolution.y <= p.second)
+		if (App.desktop_resolution.z <= p.first || App.desktop_resolution.w <= p.second)
 			continue;
 
 		char label[50] = { 0 };

@@ -31,26 +31,17 @@ class Wrapper {
 	Context* ctx;
 	bool m_swapped = true;
 
-	std::unique_ptr<Texture> m_ddraw_texture;
-
-	std::unique_ptr<UniformBuffer> m_game_palette_ubo;
-	std::unique_ptr<Pipeline> m_game_pipeline;
-
 public:
 	Wrapper();
 	~Wrapper() = default;
 
-	void onResize();
-	void onStageChange();
 	void onBufferClear();
 	void onBufferSwap(bool flip = false);
 
-	inline void updatePalette(const glm::vec4* data) { m_game_palette_ubo->updateData("palette", data); }
+	void updatePalette(const glm::vec4* data);
 
 	static HRESULT setCooperativeLevel(HWND hwnd, DWORD flags);
 	static HRESULT setDisplayMode(DWORD width, DWORD height, DWORD bpp);
-
-	static inline void onGameStageChange() { DDrawWrapper->onStageChange(); }
 };
 
 }

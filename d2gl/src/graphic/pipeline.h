@@ -96,6 +96,7 @@ private:
 };
 
 extern const char* g_shader_glide;
+extern const char* g_shader_ddraw;
 extern const char* g_shader_movie;
 extern const char* g_shader_prefx;
 extern const char* g_shader_postfx;

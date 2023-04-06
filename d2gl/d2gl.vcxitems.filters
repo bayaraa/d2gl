@@ -26,7 +26,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_cursor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_text.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\font.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\mini_map.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\patch.cpp" />
@@ -57,13 +56,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_cursor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\font.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\mini_map.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\upscale\catmull-rom.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\ddraw.glsl" />
   </ItemGroup>
 </Project>

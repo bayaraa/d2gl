@@ -35,6 +35,8 @@ public:
 		return instance;
 	}
 
+	inline bool isActive() { return App.api == Api::Glide && App.hd_cursor && App.mini_map.active; }
+
 	void resize();
 	void draw();
 };

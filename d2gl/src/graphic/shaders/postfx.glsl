@@ -174,12 +174,12 @@ vec3 FxaaPass(sampler2D tex, vec2 pos, vec2 rs)
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
-layout(location = 5) in ivec4 Flags;
+layout(location = 5) in uint Flags;
 
 uniform mat4 u_MVP;
 
 out vec2 v_TexCoord;
-flat out ivec4 v_Flags;
+flat out uint v_Flags;
 
 void main()
 {
@@ -205,7 +205,7 @@ uniform sampler2D u_Texture0;
 uniform sampler2D u_Texture1;
 
 in vec2 v_TexCoord;
-flat in ivec4 v_Flags;
+flat in uint v_Flags;
 
 #define CoefLuma vec3(0.2126, 0.7152, 0.0722)
 
@@ -227,22 +227,11 @@ vec3 LumaSharpen(sampler2D tex, vec2 tc)
 
 void main()
 {
-	switch(v_Flags.x) {
-		case 0: {
-			if (v_Flags.y == 0)
-				FragColor = vec4(LumaSharpen(u_Texture0, v_TexCoord), 1.0);
-			else
-				FragColor = vec4(LumaSharpen(u_Texture1, v_TexCoord), 1.0);
-		}
-		break;
-		case 1: {
-			if (v_Flags.y == 0)
-				FragColor = vec4(FxaaPass(u_Texture0, v_TexCoord, u_RelSize), 1.0);
-			else
-				FragColor = vec4(FxaaPass(u_Texture1, v_TexCoord, u_RelSize), 1.0);
-		}
-		break;
-		case 2: FragColor = vec4(P(u_Texture0, v_TexCoord), 1.0); break;
+	switch(v_Flags) {
+		case 0u: FragColor = vec4(LumaSharpen(u_Texture0, v_TexCoord), 1.0); break;
+		case 1u: FragColor = vec4(LumaSharpen(u_Texture1, v_TexCoord), 1.0); break;
+		case 2u: FragColor = vec4(FxaaPass(u_Texture0, v_TexCoord, u_RelSize), 1.0); break;
+		case 3u: FragColor = vec4(P(u_Texture0, v_TexCoord), 1.0); break;
 	}
 }
 

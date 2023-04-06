@@ -214,6 +214,10 @@ const char* g_shader_glide = {
 #include "shaders/glide.glsl.h"
 };
 
+const char* g_shader_ddraw = {
+#include "shaders/ddraw.glsl.h"
+};
+
 const char* g_shader_movie = {
 #include "shaders/movie.glsl.h"
 };

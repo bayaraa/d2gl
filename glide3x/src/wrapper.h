@@ -34,20 +34,14 @@ extern std::unique_ptr<Wrapper> GlideWrapper;
 class Wrapper {
 	Context* ctx;
 	bool m_swapped = true;
-
+	uint32_t m_gamma_hash = 0;
 	GrLfbInfo_t m_movie_buffer = { 0 };
 	std::unique_ptr<TextureManager> m_texture_manager;
-
-	uint32_t m_current_blend_index = 0;
-	bool m_blend_locked = false;
-	uint32_t m_gamma_hash = 0;
 
 public:
 	Wrapper();
 	~Wrapper();
 
-	void onResize();
-	void onStageChange();
 	void onBufferClear();
 	void onBufferSwap();
 
@@ -73,7 +67,6 @@ public:
 	static const char* grGetString(FxU32 pname);
 
 	static uint32_t getTexSize(GrTexInfo* info, uint32_t& width, uint32_t& height);
-	static inline void onGameStageChange() { GlideWrapper->onStageChange(); }
 };
 
 }

@@ -20,9 +20,6 @@
 #include "wrapper.h"
 #include "d2/common.h"
 #include "helpers.h"
-#include "modules/hd_cursor.h"
-#include "modules/hd_text.h"
-#include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 #include "win32.h"
 
@@ -44,97 +41,13 @@ Wrapper::~Wrapper()
 	delete[] g_glide_texture.memory;
 }
 
-void Wrapper::onStageChange()
-{
-	if (App.game.screen == GameScreen::Movie)
-		return;
-
-	switch (App.game.draw_stage) {
-		case DrawStage::World:
-			break;
-		case DrawStage::UI:
-			/*if (App.bloom.active || App.lut.selected) {
-				App.context->flushVertices();
-				m_prefx_texture->fillFromBuffer(m_game_framebuffer);
-				ctx->bindPipeline(m_prefx_pipeline);
-
-				if (App.bloom.active) {
-					ctx->bindFrameBuffer(m_bloom_framebuffer, false);
-					ctx->setViewport(m_bloom_tex_size);
-					ctx->pushQuad(0);
-
-					if (App.gl_caps.compute_shader) {
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-					} else {
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(1);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(2);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(1);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(2);
-					}
-
-					ctx->bindFrameBuffer(m_game_framebuffer, false);
-					ctx->setViewport(App.game.size);
-					ctx->bindPipeline(m_prefx_pipeline);
-				}
-				ctx->pushQuad(3, App.lut.selected, App.bloom.active);
-
-				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
-			}*/
-			break;
-		case DrawStage::Map:
-			// if (App.mini_map.active && App.hd_cursor) {
-			//	ctx->flushVertices();
-
-			//	m_blend_locked = true;
-			//	ctx->bindPipeline(ctx->getGamePipeline(), 3);
-			//	ctx->setVertexFlagW(1 + !*d2::automap_on);
-			//}
-			break;
-		case DrawStage::HUD:
-			// if (App.mini_map.active && App.hd_cursor) {
-			//	ctx->flushVertices();
-
-			//	m_blend_locked = false;
-			//	ctx->bindPipeline(ctx->getGamePipeline(), m_current_blend_index);
-			//	ctx->setVertexFlagW(0);
-
-			//	modules::MiniMap::Instance().draw();
-			//}
-			modules::HDText::Instance().drawFpsCounter();
-			break;
-		case DrawStage::Cursor:
-			ctx->appendDelayedObjects();
-			modules::HDText::Instance().drawEntryText();
-			modules::HDCursor::Instance().draw();
-			break;
-	}
-}
-
 void Wrapper::onBufferClear()
 {
 	if (!m_swapped)
 		return;
 	m_swapped = false;
 
-	// if (App.window.resized)
-	// ctx->onResize();
-
 	ctx->beginFrame();
-
-	App.game.draw_stage = DrawStage::World;
-	onStageChange();
-	// trace("clear---");
 }
 
 void Wrapper::onBufferSwap()
@@ -143,25 +56,16 @@ void Wrapper::onBufferSwap()
 		return;
 	m_swapped = true;
 
-	/*if (App.game.screen != GameScreen::Movie) {
-		if (App.bloom.active) {
-			const auto bloom_data = glm::vec2(App.bloom.exposure.value, App.bloom.gamma.value);
-			if (m_bloom_data != bloom_data) {
-				m_bloom_ubo->updateDataVec2f("bloom", bloom_data);
-				m_bloom_data = bloom_data;
-			}
-		}
-	}*/
-
+#ifdef _DEBUG
 	App.var1 = m_texture_manager->getUsage(256);
 	App.var2 = m_texture_manager->getUsage(128);
 	App.var3 = m_texture_manager->getUsage(64);
 	App.var4 = m_texture_manager->getUsage(32);
 	App.var5 = m_texture_manager->getUsage(16);
 	App.var6 = m_texture_manager->getUsage(8);
+#endif
 
 	ctx->presentFrame();
-	// trace("swap---");
 }
 
 void Wrapper::grDrawPoint(const void* pt)
@@ -227,11 +131,7 @@ void Wrapper::grDrawVertexArrayContiguous(FxU32 mode, FxU32 count, void* pointer
 
 void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)
 {
-	ctx->flushVertices();
-
-	m_current_blend_index = g_blend_types.at(static_cast<uint32_t>(rgb_df)).first;
-	if (!m_blend_locked)
-		ctx->getCommandBuffer()->setBlendState(m_current_blend_index);
+	ctx->setBlendState(static_cast<uint32_t>(rgb_df));
 }
 
 void Wrapper::grAlphaCombine(GrCombineFunction_t function)
@@ -361,9 +261,7 @@ FxBool Wrapper::grLfbLock(GrLfbWriteMode_t write_mode, GrOriginLocation_t origin
 FxBool Wrapper::grLfbUnlock()
 {
 	App.game.screen = GameScreen::Movie;
-
-	// const auto frame_index = ctx->getFrameIndex();
-	// m_movie_texture->fill((uint8_t*)m_movie_buffer.lfbPtr, 640, 480);
+	ctx->getCommandBuffer()->gameTextureUpdate((uint8_t*)m_movie_buffer.lfbPtr, { 640, 480 }, 4);
 
 	onBufferClear();
 	onBufferSwap();
@@ -411,8 +309,6 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 
 	App.context = std::make_unique<Context>();
 	GlideWrapper = std::make_unique<Wrapper>();
-
-	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
 	helpers::loadDlls(App.dlls_late, true);

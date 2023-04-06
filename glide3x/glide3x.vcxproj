@@ -139,6 +139,11 @@
   <ItemGroup>
     <ResourceCompile Include="glide3x.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="C:\Dev\d2gl\d2gl\src\graphic\shaders\ddraw.glsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

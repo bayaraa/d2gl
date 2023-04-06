@@ -110,8 +110,8 @@ Font::Font(const FontCreateInfo& info)
 	}
 
 	m_object = std::make_unique<Object>();
-	m_object->setTexIds({ TEXTURE_SLOT_FONTS, m_sub_tex_id });
-	m_object->setFlags({ 3, 0, 0, 0 });
+	m_object->setTexIds(m_sub_tex_id);
+	m_object->setFlags(3);
 }
 
 glm::vec2 Font::getTextSize(const wchar_t* str, const int max_chars)
@@ -226,7 +226,7 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 
 		m_object->setPosition(object_pos + glm::min(4.0f * m_scale, 1.2f));
 		m_object->setColor(m_shadow_color);
-		m_object->setFlags({ 3, 0, m_masking, 0 });
+		m_object->setFlags(3, 0, m_masking);
 		App.context->pushObject(m_object);
 
 		if (m_scale > 0.3f)
@@ -234,7 +234,7 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 
 		m_object->setPosition(object_pos);
 		m_object->setColor(color);
-		m_object->setFlags({ 3, 0, m_masking, m_stroke });
+		m_object->setFlags(3, 0, m_masking, m_stroke);
 		App.context->pushObject(m_object);
 
 		return glyph->advance * m_scale;
