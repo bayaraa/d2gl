@@ -419,6 +419,9 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (draw_mode == 2 && width == 24 && height <= 24) // PD2 buff timer bg
 		return false;
 
+	if (*d2::esc_menu_open && height == 30) // In-game option sliders
+		return false;
+
 	uint32_t bg_color = 0x000000FF;
 	switch (draw_mode) {
 		case 0: bg_color = 0x00000066; break;
