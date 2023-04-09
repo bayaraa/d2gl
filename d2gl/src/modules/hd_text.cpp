@@ -52,9 +52,10 @@ const std::vector<D2PopupInfo> g_popups = {
 	{ { 256, 256 }, {  84,  84 } }, // GWListBox.dc6 // PopUpLarge.dc6
 	{ { 256, 224 }, {  84, 224 } }, // PopUp_340x224.dc6
 	{ { 256, 256 }, { 229,  34 } }, // PopUpLargest.dc6 // PopUpLargest2.dc6
-	{ { 256, 245 }, { 154, 245 } }, // PopupWide.dc6
+	{ { 256, 245 }, { 154, 245 } }, // PopupWide.dc6 // PopUpWideNoHoles.dc6
 	{ { 256, 176 }, {   8, 176 } }, // popupok.dc6 // passwordbox.dc6 // PopUpOKCancel.DC6
 	{ { 256, 200 }, {  70, 200 } }, // DifficultyLevels.dc6
+	{ { 256, 256 }, {   0,   0 } }, // TileableDialog.dc6
 };
 
 const std::vector<D2TextInfo> g_options_texts = {
@@ -133,10 +134,21 @@ void HDText::reset()
 void HDText::update()
 {
 	static bool mask = false;
-	if (m_masking != mask) {
-		App.context->getCommandBuffer()->setHDTextMasking(m_masking, m_text_mask);
-		mask = m_masking;
+	if (App.game.screen == GameScreen::Menu) {
+		static glm::vec4 text_mask = glm::vec4(0.0f);
+
+		if (m_masking != mask || text_mask != m_text_mask) {
+			App.context->getCommandBuffer()->setHDTextMasking(m_masking, m_text_mask);
+			mask = m_masking;
+			text_mask = m_text_mask;
+		}
+	} else {
+		if (mask) {
+			App.context->getCommandBuffer()->setHDTextMasking(false, m_text_mask);
+			mask = false;
+		}
 	}
+
 	m_cur_level_no = App.game.screen == GameScreen::InGame ? *d2::level_no : 0;
 }
 
@@ -186,7 +198,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			map_text = true;
 			App.context->toggleDelayPush(true);
 
-			font = getFont(m_map_text_line == 1 || !App.mini_map.text_over ? 11 : 6);
+			font = getFont(m_map_text_line == 1 || !App.mini_map.text_over ? 99 : 6);
 			m_fonts[font.id]->setSize(font.size);
 			m_fonts[font.id]->setMetrics(font);
 			const auto size = m_fonts[font.id]->getTextSize(str);
@@ -208,7 +220,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 
 	m_fonts[font.id]->setBoxed(false);
 	m_fonts[font.id]->setMasking(m_masking);
-	m_fonts[font.id]->setAlign(centered ? TextAlign::Center : TextAlign::Left);
+	m_fonts[font.id]->setAlign(TextAlign::Left);
 	m_fonts[font.id]->drawText(str, pos, text_color);
 	m_fonts[font.id]->setStroke(0);
 
@@ -524,14 +536,14 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int 
 		if (!cell_file)
 			return true;
 
-		if ((cell_file->numcells == 2 || cell_file->numcells == 4) && d2::getCellNo(cell) == 0) {
+		if ((cell_file->numcells == 1 || cell_file->numcells == 2 || cell_file->numcells == 4) && d2::getCellNo(cell) == 0) {
 			const auto cell0 = cell_file->cells[0];
 			if (cell0->width != 256)
 				return true;
 
 			const auto cell1 = cell_file->cells[cell_file->numcells - 1];
 			for (auto& p : g_popups) {
-				if (p.size0.y == cell0->height && p.size1.x == cell1->width && p.size1.y == cell1->height) {
+				if (p.size0.y == cell0->height && (cell_file->numcells == 1 || (p.size1.x == cell1->width && p.size1.y == cell1->height))) {
 					const glm::vec2 pos = { (float)(x - 1), (float)(y - p.size0.y - 1) };
 					const glm::vec2 size = { (float)(p.size0.x + p.size1.x + 2), (float)(p.size0.y + (cell_file->numcells > 2 ? p.size1.y : 0) + 2) };
 
@@ -649,7 +661,7 @@ void HDText::drawRectFrame()
 
 void HDText::loadUIImage()
 {
-	if (d2::ui_image_path) {
+	if (App.ready && d2::ui_image_path) {
 		size_t len = strlen(d2::ui_image_path);
 		std::string path(d2::ui_image_path);
 		helpers::strToLower(path);

@@ -253,7 +253,7 @@ void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, ui
 
 bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data)
 {
-	// Drawing invisible tile crashes on glide mode
+	// Drawing invisible tile crashes on glide mode.
 	if (App.api == Api::Glide && tile) {
 		const auto len = strlen(tile->szTileName);
 		if (len > 8) {
@@ -292,6 +292,10 @@ void __fastcall takeScreenShotHooked()
 
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
+	// Glide mode light gray text appears black. So direct to dark gray.
+	if (App.api == Api::Glide && !App.hd_text && color == 15)
+		color = 5;
+
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalText);
 	if (!modules::HDText::Instance().drawText(str, pos.x, pos.y, color, centered))
 		drawNormalText(str, pos.x, pos.y, color, centered);

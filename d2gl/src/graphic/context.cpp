@@ -312,9 +312,7 @@ Context::Context()
 	modules::HDCursor::Instance();
 
 	wglMakeCurrent(NULL, NULL);
-	m_render_ready = CreateSemaphore(NULL, 0, 1, NULL);
 	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Context::renderThread, reinterpret_cast<void*>(this), 0, NULL);
-	WaitForSingleObject(m_render_ready, INFINITE);
 }
 
 Context::~Context()
@@ -343,8 +341,6 @@ void Context::renderThread(void* context)
 	Context* ctx = reinterpret_cast<Context*>(context);
 	wglMakeCurrent(App.hdc, ctx->m_context);
 	uint32_t frame_index = 0;
-
-	ReleaseSemaphore(ctx->m_render_ready, 1, NULL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->m_vertex_buffer);
 
@@ -376,17 +372,6 @@ void Context::renderThread(void* context)
 		}
 
 		Vertex::bindingDescription();
-
-		for (uint32_t i = 0; i < cmd->m_count; i++) {
-			const auto command = &cmd->m_commands[i];
-
-			switch (command->type) {
-				case CommandType::UBOUpdate: {
-					const auto data = &cmd->m_ubo_update_queue.data[command->index];
-					ctx->m_game_color_ubo->updateData(data->type == UBOType::Gamma ? "gamma" : "palette", data->value);
-				} break;
-			}
-		}
 
 		for (uint32_t i = 0; i < cmd->m_count; i++) {
 			const auto command = &cmd->m_commands[i];

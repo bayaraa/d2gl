@@ -355,7 +355,6 @@ void setWindowRect()
 
 		RECT wr_test = { 0 };
 		AdjustWindowRect(&wr_test, App.window.style, FALSE);
-		trace("%d x %d | %d x %d", wr.left, wr.right, wr.top, wr.bottom);
 
 		wr.left -= wr_test.left;
 		wr.right -= wr_test.left;

@@ -34,7 +34,7 @@ namespace d2gl {
 #define MAX_INDICES 6 * 50000
 #define MAX_VERTICES 4 * 50000
 #define MAX_VERTICES_MOD 4 * 20000
-#define PIXEL_BUFFER_SIZE 8 * 1024 * 1024
+#define PIXEL_BUFFER_SIZE 12 * 1024 * 1024
 #define FRAMETIME_SAMPLE_COUNT 120
 
 #define TEXTURE_SLOT_DEFAULT 0
@@ -109,7 +109,6 @@ class Context {
 	HANDLE m_semaphore_cpu[MAX_FRAME_LATENCY];
 	HANDLE m_semaphore_gpu[MAX_FRAME_LATENCY];
 	CommandBuffer m_command_buffer[MAX_FRAME_LATENCY];
-	HANDLE m_render_ready;
 	bool m_rendering = true;
 
 	GLuint m_pixel_buffer;
@@ -148,7 +147,7 @@ class Context {
 
 	std::unique_ptr<Pipeline> m_mod_pipeline;
 
-	// Glide
+	// Glide only
 	std::unique_ptr<Texture> m_glide_texture;
 	std::map<uint32_t, std::pair<uint32_t, BlendType>> m_blend_types;
 	uint32_t m_current_blend_index = 0;

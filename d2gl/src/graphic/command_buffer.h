@@ -34,7 +34,7 @@ struct TexData {
 struct TexUpdateQueue {
 	uint32_t count = 0;
 	uint32_t data_offset = 0;
-	std::array<TexData, 2048> tex_data = {};
+	std::array<TexData, 3072> tex_data = {};
 };
 
 enum class UBOType {
