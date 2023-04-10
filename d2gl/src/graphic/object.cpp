@@ -22,32 +22,33 @@
 namespace d2gl {
 
 Object::Object(glm::vec2 position, glm::vec2 size)
-	: m_size(size)
+	: m_position(position), m_size(size)
 {
 	for (size_t i = 0; i < 4; i++) {
 		m_vertices[i].color1 = 0xFFFFFFFF;
 		m_vertices[i].color2 = 0xFFFFFFFF;
-		m_vertices[i].texture_ids = { 0, 0 };
-		m_vertices[i].flags = { 0, 0, 0, 0 };
+		m_vertices[i].tex_num = 0;
 	}
 	setPosition(position);
 	setTexCoord({ 0.0f, 0.0f, 1.0f, 1.0f });
+	setFlags();
 }
 
 void Object::setPosition(glm::vec2 position)
 {
-	m_vertices[0].position = { position.x, position.y };
-	m_vertices[1].position = { position.x + m_size.x, position.y };
-	m_vertices[2].position = { position.x + m_size.x, position.y + m_size.y };
-	m_vertices[3].position = { position.x, position.y + m_size.y };
+	m_position = position;
+	m_vertices[0].position = { glm::detail::toFloat16(m_position.x), glm::detail::toFloat16(m_position.y) };
+	m_vertices[1].position = { glm::detail::toFloat16(m_position.x + m_size.x), glm::detail::toFloat16(m_position.y) };
+	m_vertices[2].position = { glm::detail::toFloat16(m_position.x + m_size.x), glm::detail::toFloat16(m_position.y + m_size.y) };
+	m_vertices[3].position = { glm::detail::toFloat16(m_position.x), glm::detail::toFloat16(m_position.y + m_size.y) };
 }
 
 void Object::setSize(glm::vec2 size)
 {
 	m_size = size;
-	m_vertices[1].position.x = m_vertices[0].position.x + m_size.x;
-	m_vertices[2].position = { m_vertices[0].position.x + m_size.x, m_vertices[0].position.y + m_size.y };
-	m_vertices[3].position.y = m_vertices[0].position.y + m_size.y;
+	m_vertices[1].position.x = glm::detail::toFloat16(m_position.x + m_size.x);
+	m_vertices[2].position = { glm::detail::toFloat16(m_position.x + m_size.x), glm::detail::toFloat16(m_position.y + m_size.y) };
+	m_vertices[3].position.y = glm::detail::toFloat16(m_position.y + m_size.y);
 }
 
 void Object::setTexCoord(glm::vec4 tex_coord)
@@ -58,12 +59,12 @@ void Object::setTexCoord(glm::vec4 tex_coord)
 	m_vertices[3].tex_coord = { tex_coord.x, tex_coord.y };
 }
 
-void Object::setTexIds(glm::vec<2, int16_t> tex_ids)
+void Object::setTexIds(int16_t tex_num)
 {
-	m_vertices[0].texture_ids = tex_ids;
-	m_vertices[1].texture_ids = tex_ids;
-	m_vertices[2].texture_ids = tex_ids;
-	m_vertices[3].texture_ids = tex_ids;
+	m_vertices[0].tex_num = tex_num;
+	m_vertices[1].tex_num = tex_num;
+	m_vertices[2].tex_num = tex_num;
+	m_vertices[3].tex_num = tex_num;
 }
 
 void Object::setColor(uint32_t color, int num)
@@ -81,8 +82,9 @@ void Object::setColor(uint32_t color, int num)
 	}
 }
 
-void Object::setFlags(glm::vec<4, int8_t> flags)
+void Object::setFlags(uint8_t x, uint8_t y, uint8_t z, uint8_t w)
 {
+	const glm::vec<4, uint8_t> flags = { x, y, z, w };
 	m_vertices[0].flags = flags;
 	m_vertices[1].flags = flags;
 	m_vertices[2].flags = flags;
@@ -91,10 +93,10 @@ void Object::setFlags(glm::vec<4, int8_t> flags)
 
 void Object::setExtra(glm::vec2 extra)
 {
-	m_vertices[0].extra = extra;
-	m_vertices[1].extra = extra;
-	m_vertices[2].extra = extra;
-	m_vertices[3].extra = extra;
+	m_vertices[0].extra = { glm::detail::toFloat16(extra.x), glm::detail::toFloat16(extra.y) };
+	m_vertices[1].extra = m_vertices[0].extra;
+	m_vertices[2].extra = m_vertices[0].extra;
+	m_vertices[3].extra = m_vertices[0].extra;
 }
 
 }

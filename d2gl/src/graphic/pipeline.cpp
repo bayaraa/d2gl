@@ -65,14 +65,6 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 					setUniform1i(binding.name, binding.value);
 					break;
 				}
-				case BindingType::TextureArray: {
-					for (int i = 0; i < 4; i++) {
-						char uf_name[20];
-						sprintf_s(uf_name, "u_Textures[%d]", i);
-						setUniform1i(uf_name, i);
-					}
-					break;
-				}
 			};
 		}
 	}
@@ -92,7 +84,7 @@ void Pipeline::bind(uint32_t index)
 	if (current_program == m_id && current_blend_index == index)
 		return;
 
-	App.context->flushVertices();
+	// App.context->flushVertices();//TODO
 
 	if (current_program != m_id) {
 		glUseProgram(m_id);
@@ -218,8 +210,20 @@ GLuint Pipeline::createShader(const char* source, int type)
 	return id;
 }
 
+const char* g_shader_glide = {
+#include "shaders/glide.glsl.h"
+};
+
+const char* g_shader_ddraw = {
+#include "shaders/ddraw.glsl.h"
+};
+
 const char* g_shader_movie = {
 #include "shaders/movie.glsl.h"
+};
+
+const char* g_shader_prefx = {
+#include "shaders/prefx.glsl.h"
 };
 
 const char* g_shader_postfx = {
@@ -255,5 +259,12 @@ const std::vector<UpscaleShader> g_shader_upscale = {
 	}, true },
 };
 // clang-format on
+
+const std::map<uint32_t, std::pair<uint32_t, BlendType>> g_blend_types = {
+	{ 0, { 0, BlendType::One_Zero } },
+	{ 2, { 1, BlendType::Zero_SColor } },
+	{ 4, { 2, BlendType::One_One } },
+	{ 5, { 3, BlendType::SAlpha_OneMinusSAlpha } },
+};
 
 }

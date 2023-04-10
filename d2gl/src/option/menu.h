@@ -38,6 +38,8 @@ struct Options {
 
 class Menu {
 	bool m_visible = false;
+	bool m_closing = false;
+	bool m_changed = false;
 	std::unordered_map<int, ImFont*> m_fonts;
 	std::unordered_map<Color, ImVec4> m_colors;
 	Options m_options;
@@ -72,6 +74,7 @@ public:
 	}
 
 	void toggle(bool force = false);
+	void check();
 	void draw();
 
 	inline bool isVisible() { return m_visible; }

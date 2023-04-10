@@ -72,8 +72,6 @@ void FrameBuffer::bind(bool clear)
 		return;
 	}
 
-	App.context->flushVertices();
-
 	glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 	current_binded_fbo = m_id;
 

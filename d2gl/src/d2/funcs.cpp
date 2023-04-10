@@ -19,7 +19,6 @@
 #include "pch.h"
 #include "funcs.h"
 #include "common.h"
-#include "extra/pd2_fixes.h"
 #include "helpers.h"
 #include "modules/hd_text.h"
 #include "modules/motion_prediction.h"
@@ -169,35 +168,29 @@ void gameDrawBegin()
 void automapDrawBegin()
 {
 	App.game.draw_stage = DrawStage::Map;
-	if (App.game.onStageChange)
-		App.game.onStageChange();
+	App.context->onStageChange();
 }
 
 void automapDrawEnd()
 {
 	App.game.draw_stage = DrawStage::HUD;
-	if (App.game.onStageChange)
-		App.game.onStageChange();
+	App.context->onStageChange();
 }
 
 void uiDrawBegin()
 {
 	App.game.draw_stage = DrawStage::UI;
-	if (App.game.onStageChange)
-		App.game.onStageChange();
+	App.context->onStageChange();
 }
 
 void uiDrawEnd()
 {
 	App.game.draw_stage = DrawStage::Cursor;
-	if (App.game.onStageChange)
-		App.game.onStageChange();
+	App.context->onStageChange();
 }
 
 void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette)
 {
-	fixPD2drawImage(x, y);
-
 	if (App.hd_cursor && App.game.draw_stage >= DrawStage::Cursor)
 		return;
 
@@ -215,8 +208,6 @@ void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint3
 
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift)
 {
-	fixPD2drawImage(x, y);
-
 	if (modules::HDText::Instance().drawShiftedImage(cell, x, y, gamma, draw_mode)) {
 		auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::ShiftedImage);
 		drawShiftedImage(cell, pos.x, pos.y, gamma, draw_mode, global_palette_shift);
@@ -250,8 +241,6 @@ void __stdcall drawShadowHooked(CellContext* cell, int x, int y)
 void __stdcall drawSolidRectExHooked(int left, int top, int right, int bottom, uint32_t color, int draw_mode)
 {
 	auto offset = modules::MotionPrediction::Instance().drawSolidRect();
-	fixPD2drawSolidRectEx(offset, draw_mode);
-
 	if (!modules::HDText::Instance().drawSolidRect(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode))
 		drawSolidRectEx(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode);
 }
@@ -264,8 +253,15 @@ void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, ui
 
 bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data)
 {
-	if (fixPD2drawGroundTile(tile))
-		return true;
+	// Drawing invisible tile crashes on glide mode.
+	if (App.api == Api::Glide && tile) {
+		const auto len = strlen(tile->szTileName);
+		if (len > 8) {
+			const auto name = tile->szTileName + len - 8;
+			if (strcmp(name, "Warp.dt1") == 0)
+				return true;
+		}
+	}
 
 	const auto offset = modules::MotionPrediction::Instance().getGlobalOffset();
 	return drawGroundTile(tile, light, x - offset.x, y - offset.y, world_x, world_y, alpha, screen_panels, tile_data);
@@ -291,11 +287,15 @@ bool __stdcall drawShadowTileHooked(TileContext* tile, int x, int y, int draw_mo
 
 void __fastcall takeScreenShotHooked()
 {
-	App.context->takeScreenShot();
+	App.context->getCommandBuffer()->pushCommand(CommandType::TakeScreenShot);
 }
 
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
+	// Glide mode light gray text appears black. So direct to dark gray.
+	if (App.api == Api::Glide && !App.hd_text && color == 15)
+		color = 5;
+
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalText);
 	if (!modules::HDText::Instance().drawText(str, pos.x, pos.y, color, centered))
 		drawNormalText(str, pos.x, pos.y, color, centered);

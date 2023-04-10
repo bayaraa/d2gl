@@ -71,15 +71,9 @@ TextureManager::TextureManager(const SubTextureCounts& size_counts)
 
 		tex_start += count;
 	}
-
-	TextureCreateInfo texture_create_info;
-	texture_create_info.size = { 512, 512 };
-	texture_create_info.layer_count = tex_start;
-	texture_create_info.format = GL_RED;
-	m_texture = std::make_unique<Texture>(texture_create_info);
 }
 
-const SubTextureInfo* TextureManager::getSubTextureInfo(uint32_t address, uint16_t size, uint32_t width, uint32_t height, uint32_t frame_count)
+const SubTextureInfo* TextureManager::getSubTextureInfo(uint32_t address, uint16_t size, uint16_t width, uint16_t height, uint32_t frame_count)
 {
 	if (g_glide_texture.hash.find(address) == g_glide_texture.hash.end())
 		return nullptr;
@@ -108,7 +102,9 @@ const SubTextureInfo* TextureManager::getSubTextureInfo(uint32_t address, uint16
 
 		const auto id = data.available.begin()->first;
 		const SubTextureInfo* texture_info = &data.sub_texure_info[id];
-		m_texture->fill(g_glide_texture.memory + address, width, height, texture_info->offset.x, texture_info->offset.y, texture_info->tex_num);
+		const auto command_buffer = App.context->getCommandBuffer();
+
+		command_buffer->textureUpdate(g_glide_texture.memory + address, texture_info->tex_num, { width, height }, texture_info->offset);
 
 		cache.items.insert({ hash, id });
 		data.available.erase(id);

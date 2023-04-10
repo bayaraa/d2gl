@@ -95,9 +95,14 @@ private:
 	static GLuint createShader(const char* source, int type);
 };
 
+extern const char* g_shader_glide;
+extern const char* g_shader_ddraw;
 extern const char* g_shader_movie;
+extern const char* g_shader_prefx;
 extern const char* g_shader_postfx;
 extern const char* g_shader_mod;
 extern const std::vector<UpscaleShader> g_shader_upscale;
+
+extern const std::map<uint32_t, std::pair<uint32_t, BlendType>> g_blend_types;
 
 }

@@ -20,17 +20,20 @@
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
-layout(location = 5) in ivec4 Flags;
+layout(location = 4) in uint TexNum;
+layout(location = 5) in uint Flags;
 
 uniform mat4 u_MVP;
 
 out vec2 v_TexCoord;
-flat out ivec4 v_Flags;
+flat out uint v_TexNum;
+flat out uint v_Flags;
 
 void main()
 {
 	gl_Position = u_MVP * vec4(Position, 0.0, 1.0);
 	v_TexCoord = TexCoord;
+	v_TexNum = TexNum;
 	v_Flags = Flags;
 }
 
@@ -52,7 +55,8 @@ uniform sampler2D u_BloomTexture2;
 uniform sampler2DArray u_LUTTexture;
 
 in vec2 v_TexCoord;
-flat in ivec4 v_Flags;
+flat in uint v_TexNum;
+flat in uint v_Flags;
 
 #define CoefLuma vec3(0.2126, 0.7152, 0.0722)
 
@@ -115,20 +119,20 @@ vec4 LUT(vec4 color)
 
 	float mixer = clamp(max((color.b - blue1) / (blue2 - blue1), 0.0), 0.0, 32.0);
 
-	vec4 color1 = texture(u_LUTTexture, vec3(vec2(blue1, green), v_Flags.y - 1));
-	vec4 color2 = texture(u_LUTTexture, vec3(vec2(blue2, green), v_Flags.y - 1));
+	vec4 color1 = texture(u_LUTTexture, vec3(vec2(blue1, green), v_TexNum - 1u));
+	vec4 color2 = texture(u_LUTTexture, vec3(vec2(blue2, green), v_TexNum - 1u));
 	return mixfix(color1, color2, mixer);
 }
 
 void main()
 {
-	switch(v_Flags.x) {
-		case 0: FragColor = BloomOut(); break;
-		case 1: FragColor = BlurPass13(u_BloomTexture2, 0); break;
-		case 2: FragColor = BlurPass13(u_BloomTexture2, 1); break;
-		case 3:
+	switch(v_Flags) {
+		case 0u: FragColor = BloomOut(); break;
+		case 1u: FragColor = BlurPass13(u_BloomTexture2, 0); break;
+		case 2u: FragColor = BlurPass13(u_BloomTexture2, 1); break;
+		case 3u: case 4u:
 			vec3 out_color = texture(u_Texture, v_TexCoord).rgb;
-			if (v_Flags.z == 1) {
+			if (v_Flags == 4u) {
 				vec3 bloom_color = texture(u_BloomTexture1, v_TexCoord).rgb;
 				bloom_color = vec3(1.0) - exp(-bloom_color * u_BloomExp);
 				bloom_color = pow(bloom_color, vec3(1.0 / u_BloomGamma));
@@ -136,7 +140,7 @@ void main()
 			}
 
 			FragColor = vec4(out_color, 1.0);
-			FragColor = v_Flags.y > 0 ? LUT(FragColor) : FragColor;
+			FragColor = v_TexNum > 0u ? LUT(FragColor) : FragColor;
 		break;
 	}
 

@@ -24,30 +24,33 @@ namespace d2gl::modules {
 
 MiniMap::MiniMap()
 {
-	m_bg = std::make_unique<Object>(m_pos, m_size);
-	m_bg->setColor(0x000000AA, 1);
-	m_bg->setColor(0x222222DD, 2);
-	m_bg->setFlags({ 2, 2, 0, 0 });
+	m_bg = std::make_unique<Object>();
+	m_bg->setColor(0x00000099, 1);
+	m_bg->setColor(0x222222EE, 2);
+	m_bg->setFlags(2, 3);
 
-	m_map = std::make_unique<Object>(m_pos, m_size);
-	m_map->setFlags({ 5, 0, 0, 0 });
+	m_map = std::make_unique<Object>();
+	m_map->setFlags(5);
 }
 
 void MiniMap::resize()
 {
-	m_size = { 200.0f, 140.0f };
-	m_pos = { App.game.size.x - m_size.x - 5.0f, 5.0f };
-
 	const glm::vec2 zoom = App.viewport.scale;
-	float r_x = ((float)App.game.size.x / zoom.x - m_size.x) / 2 / ((float)App.game.size.x / zoom.x);
-	float r_y = ((float)App.game.size.y / zoom.y - m_size.y) / 2 / ((float)App.game.size.y / zoom.y);
+	const glm::vec2 tex_size = { (float)App.game.size.x, (float)App.game.size.y };
 
-	m_bg->setSize(m_size);
+	glm::vec2 padding = 3.0f / zoom;
+	m_size = { (float)App.mini_map.width.value, (float)App.mini_map.height.value };
+	m_pos = { (float)App.game.size.x - m_size.x - 5.0f - padding.x * 2.0f, 18.0f };
+
+	float r_x = (tex_size.x / zoom.x - m_size.x) / 2 / (tex_size.x / zoom.x);
+	float r_y = (tex_size.y / zoom.y - m_size.y) / 2 / (tex_size.y / zoom.y);
+
+	m_bg->setSize(m_size + padding * 2.0f);
+	m_bg->setExtra(m_size + padding * 2.0f);
 	m_bg->setPosition(m_pos);
-	m_bg->setExtra(m_size);
 
 	m_map->setSize(m_size);
-	m_map->setPosition(m_pos);
+	m_map->setPosition(m_pos + padding);
 	m_map->setTexCoord({ r_x, r_y, 1.0f - r_x, 1.0f - r_y });
 }
 
@@ -63,10 +66,11 @@ void MiniMap::draw()
 		if (App.hd_text) {
 			time_t now = time(0);
 			localtime_s(&gmt_time, &now);
-			swprintf_s(time_str, L"%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);
+			swprintf_s(time_str, L"| ÿc\x34%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);
 
 			d2::setTextSizeHooked(99);
-			d2::drawNormalTextHooked(time_str, App.game.size.x - 200, 20, 4, 0);
+			uint32_t width = d2::getNormalTextWidth(time_str);
+			d2::drawNormalTextHooked(time_str, App.game.size.x - width - 5, 15, 5, 0);
 		}
 	}
 }

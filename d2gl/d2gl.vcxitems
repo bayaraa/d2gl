@@ -16,10 +16,10 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)src\app.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\funcs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\stubs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\context.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\object.cpp" />
@@ -67,10 +67,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\funcs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\vertex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\patch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\structs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\stubs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\extra\pd2_fixes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\context.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\frame_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\object.h" />
@@ -92,6 +93,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)vendor\include\stb\stb_image_write.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\ddraw.glsl" />
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\upscale\catmull-rom.glsl" />
   </ItemGroup>

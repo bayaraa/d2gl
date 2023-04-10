@@ -69,16 +69,6 @@ enum class D2DrawFn {
 	RectangledText,
 };
 
-struct Vertex {
-	glm::vec2 position;
-	glm::vec2 tex_coord;
-	uint32_t color1;
-	uint32_t color2;
-	glm::vec<2, int16_t> texture_ids;
-	glm::vec<4, int8_t> flags;
-	glm::vec2 extra;
-};
-
 struct Offset {
 	int pos = 0;
 	uint32_t og_4bytes = 0;
@@ -122,7 +112,5 @@ struct Range {
 	T min;
 	T max;
 };
-
-typedef void (*onStageChange_t)(void);
 
 }

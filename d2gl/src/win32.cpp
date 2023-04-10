@@ -69,7 +69,7 @@ int WINAPI ShowCursor(BOOL bShow)
 
 BOOL WINAPI SetCursorPos(int X, int Y)
 {
-	if (App.hwnd) {
+	if (App.hwnd && !App.cursor.no_lock) {
 		POINT pt = { (LONG)((float)X * App.cursor.scale.x), (LONG)((float)Y * App.cursor.scale.y) };
 		pt.x += App.viewport.offset.x;
 		pt.y += App.viewport.offset.y;
@@ -177,7 +177,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_ACTIVATEAPP: {
 			if (wParam) {
-				App.context->setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
+				App.context->setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
 				CallWindowProcA(App.wndproc, hWnd, WM_SYSKEYUP, VK_MENU, 0);
 			} else {
 				App.context->setFpsLimit(App.background_fps.active, App.background_fps.range.value);
@@ -271,17 +271,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (option::Menu::instance().isVisible())
 				return DefWindowProc(hWnd, uMsg, wParam, lParam);
 
-			if (!App.cursor.locked)
+			if (!App.cursor.no_lock && !App.cursor.locked)
 				return 0;
 
 			int x = GET_X_LPARAM(lParam);
 			int y = GET_Y_LPARAM(lParam);
 
-			x = (int)((float)glm::max(x - App.viewport.offset.x, 0) * App.cursor.unscale.x);
-			y = (int)((float)glm::max(y - App.viewport.offset.y, 0) * App.cursor.unscale.y);
-
-			x = glm::min(x, (int)App.game.size.x);
-			y = glm::min(y, (int)App.game.size.y);
+			if (App.cursor.no_lock) {
+				x = (int)((float)(x - App.viewport.offset.x) * App.cursor.unscale.x);
+				y = (int)((float)(y - App.viewport.offset.y) * App.cursor.unscale.y);
+			} else {
+				x = (int)((float)glm::max(x - App.viewport.offset.x, 0) * App.cursor.unscale.x);
+				y = (int)((float)glm::max(y - App.viewport.offset.y, 0) * App.cursor.unscale.y);
+				x = glm::min(x, (int)App.game.size.x);
+				y = glm::min(y, (int)App.game.size.y);
+			}
 
 			lParam = MAKELPARAM(x, y);
 
@@ -325,21 +329,26 @@ void setWindow(HWND hwnd)
 
 void setWindowRect()
 {
-	RECT wr = { 0 };
-	int cx = GetSystemMetrics(SM_CXSCREEN);
-	int cy = GetSystemMetrics(SM_CYSCREEN);
+	HMONITOR monitor = MonitorFromWindow(App.hwnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO monitor_info;
+	monitor_info.cbSize = sizeof(MONITORINFO);
+
+	GetMonitorInfo(monitor, &monitor_info);
+	RECT wr = monitor_info.rcMonitor;
+	LONG screen_w = wr.right - wr.left;
+	LONG screen_h = wr.bottom - wr.top;
 
 	if (!App.window.fullscreen) {
-		if (App.window.size.x > (DWORD)cx)
-			App.window.size.x = cx;
+		if (App.window.size.x > (DWORD)screen_w)
+			App.window.size.x = screen_w;
 
-		if (App.window.size.y > (DWORD)cy)
-			App.window.size.y = cy;
+		if (App.window.size.y > (DWORD)screen_h)
+			App.window.size.y = screen_h;
 
-		int x = App.window.centered ? (cx / 2) - (App.window.size.x / 2) : App.window.position.x;
-		int y = App.window.centered ? (cy / 2) - (App.window.size.y / 2) : App.window.position.y;
-		x = (x > cx - 50) ? cx - 50 : x;
-		y = (y > cy - 50) ? cy - 50 : y;
+		int x = App.window.centered ? wr.left + (screen_w / 2) - (App.window.size.x / 2) : App.window.position.x;
+		int y = App.window.centered ? wr.top + (screen_h / 2) - (App.window.size.y / 2) : App.window.position.y;
+		x = (x > wr.left + screen_w - 50) ? wr.left + screen_w - 50 : x;
+		y = (y > wr.top + screen_h - 50) ? wr.top + screen_h - 50 : y;
 		wr = { x, y, (LONG)App.window.size.x + x, (LONG)App.window.size.y + y };
 
 		SetWindowLong(App.hwnd, GWL_STYLE, App.window.style);
@@ -357,9 +366,7 @@ void setWindowRect()
 		trace_log("Switched to windowed mode: %d x %d", App.window.size.x, App.window.size.y);
 	} else {
 		SetWindowLong(App.hwnd, GWL_STYLE, App.window.style & ~WS_OVERLAPPEDWINDOW);
-
-		App.window.size = { cx, cy };
-		wr = { 0, 0, cx, cy };
+		App.window.size = { screen_w, screen_h };
 
 		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), 0);
 		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
@@ -397,7 +404,8 @@ void setCursorLock()
 		RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
 		MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
 
-		ClipCursor(&rc);
+		if (!App.cursor.no_lock)
+			ClipCursor(&rc);
 		ShowCursor_Og(false);
 		App.cursor.locked = true;
 	}
@@ -406,7 +414,8 @@ void setCursorLock()
 void setCursorUnlock()
 {
 	if (App.cursor.locked) {
-		ClipCursor(NULL);
+		if (!App.cursor.no_lock)
+			ClipCursor(NULL);
 		ShowCursor_Og(true);
 		App.cursor.locked = false;
 	}
@@ -419,6 +428,7 @@ void windowResize()
 
 	setWindowMetrics();
 	App.window.resized = true;
+	App.context->getCommandBuffer()->resize();
 
 	if (cursor_lock)
 		setCursorLock();

@@ -22,17 +22,20 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include <shellapi.h>
 #include <shellscalingapi.h>
 #include <stdint.h>
 #include <timeapi.h>
 
 #include <array>
+#include <chrono>
 #include <deque>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <thread>
 #include <unordered_map>
 
 #include <GL/glew.h>
@@ -41,6 +44,8 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <glm/detail/type_half.hpp>
 
 #include "app.h"
 #include "log.h"

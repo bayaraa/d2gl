@@ -84,8 +84,6 @@ void Texture::fill(const uint8_t* pixels, uint32_t width, uint32_t height, uint3
 
 void Texture::fillFromBuffer(const std::unique_ptr<FrameBuffer>& fbo, uint32_t index)
 {
-	App.context->flushVertices();
-
 	fbo->bind(false);
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
 	const auto width = fbo->getWidth();

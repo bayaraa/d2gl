@@ -19,348 +19,26 @@
 #include "pch.h"
 #include "wrapper.h"
 #include "d2/common.h"
-#include "extra/pd2_fixes.h"
 #include "helpers.h"
-#include "modules/hd_cursor.h"
-#include "modules/hd_text.h"
-#include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
-#include "option/menu.h"
 #include "win32.h"
 
 namespace d2gl {
 
 std::unique_ptr<Wrapper> GlideWrapper;
 
-const char* g_shader_game = {
-#include "shaders/game.glsl.h"
-};
-
-const char* g_shader_prefx = {
-#include "shaders/prefx.glsl.h"
-};
-
 Wrapper::Wrapper()
 	: ctx(App.context.get())
 {
 	g_glide_texture.memory = new uint8_t[GLIDE_TEX_MEMORY * GLIDE_MAX_NUM_TMU];
 
-	m_blend_types = {
-		{ 0, { 0, BlendType::One_Zero } },
-		{ 2, { 1, BlendType::Zero_SColor } },
-		{ 4, { 2, BlendType::One_One } },
-		{ 5, { 3, BlendType::SAlpha_OneMinusSAlpha } },
-	};
-
-	TextureCreateInfo movie_texture_ci;
-	movie_texture_ci.size = { 640, 480 };
-	movie_texture_ci.min_filter = GL_LINEAR;
-	movie_texture_ci.mag_filter = GL_LINEAR;
-	movie_texture_ci.format = GL_BGRA;
-	m_movie_texture = Context::createTexture(movie_texture_ci);
-
-	PipelineCreateInfo movie_pipeline_ci;
-	movie_pipeline_ci.shader = g_shader_movie;
-	movie_pipeline_ci.bindings = { { BindingType::Texture, "u_Texture", m_movie_texture->getSlot() } };
-	m_movie_pipeline = Context::createPipeline(movie_pipeline_ci);
-
-	UniformBufferCreateInfo game_ubo_ci;
-	game_ubo_ci.variables = { { "palette", 256 * sizeof(glm::vec4) }, { "gamma", 256 * sizeof(glm::vec4) } };
-	m_game_color_ubo = Context::createUniformBuffer(game_ubo_ci);
-
 	SubTextureCounts sub_texture_counts = { { 256, 256 }, { 128, 154 }, { 64, 64 }, { 32, 32 }, { 16, 5 }, { 8, 1 } };
-	m_game_texture = std::make_unique<TextureManager>(sub_texture_counts);
-
-	PipelineCreateInfo game_pipeline_ci;
-	game_pipeline_ci.shader = g_shader_game;
-	game_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Colors", m_game_color_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture", m_game_texture->getTexture()->getSlot() },
-	};
-	game_pipeline_ci.attachment_blends.clear();
-	for (auto& blend : m_blend_types)
-		game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha });
-	m_game_pipeline = Context::createPipeline(game_pipeline_ci);
-
-	TextureCreateInfo texture_create_info;
-	texture_create_info.size = { 1024, 32 };
-	texture_create_info.layer_count = 14;
-	texture_create_info.slot = TEXTURE_SLOT_LUT;
-	m_lut_texture = Context::createTexture(texture_create_info);
-
-	auto image_data = helpers::loadImage("assets\\textures\\lut.png", false);
-	m_lut_texture->fillImage(image_data, 1, 14);
-	helpers::clearImage(image_data);
-
-	if (App.gl_caps.compute_shader) {
-		PipelineCreateInfo blur_pipeline_ci;
-		blur_pipeline_ci.shader = g_shader_prefx;
-		blur_pipeline_ci.bindings = {
-			{ BindingType::Texture, "u_InTexture", TEXTURE_SLOT_BLOOM2 },
-			{ BindingType::Image, "u_OutTexture", IMAGE_UNIT_BLUR },
-		};
-		blur_pipeline_ci.compute = true;
-		m_blur_compute_pipeline = Context::createPipeline(blur_pipeline_ci);
-	}
-
-	UniformBufferCreateInfo bloom_ubo_ci;
-	bloom_ubo_ci.variables = { { "bloom", sizeof(glm::vec2) }, { "rel_size", sizeof(glm::vec2) } };
-	m_bloom_ubo = Context::createUniformBuffer(bloom_ubo_ci);
-
-	m_bloom_data = { App.bloom.exposure.value, App.bloom.gamma.value };
-	m_bloom_ubo->updateDataVec2f("bloom", m_bloom_data);
-
-	PipelineCreateInfo prefx_pipeline_ci;
-	prefx_pipeline_ci.shader = g_shader_prefx;
-	prefx_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Metrics", m_bloom_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_PREFX },
-		{ BindingType::Texture, "u_BloomTexture1", TEXTURE_SLOT_BLOOM1 },
-		{ BindingType::Texture, "u_BloomTexture2", TEXTURE_SLOT_BLOOM2 },
-		{ BindingType::Texture, "u_LUTTexture", m_lut_texture->getSlot() },
-	};
-	m_prefx_pipeline = Context::createPipeline(prefx_pipeline_ci);
-	m_prefx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
-
-	UniformBufferCreateInfo upscale_ubo_ci;
-	upscale_ubo_ci.variables = { { "out_size", sizeof(glm::vec2) }, { "tex_size", sizeof(glm::vec2) }, { "rel_size", sizeof(glm::vec2) } };
-	m_upscale_ubo = Context::createUniformBuffer(upscale_ubo_ci);
-
-	UniformBufferCreateInfo postfx_ubo_ci;
-	postfx_ubo_ci.variables = { { "sharpen", sizeof(glm::vec4) }, { "rel_size", sizeof(glm::vec2) } };
-	m_postfx_ubo = Context::createUniformBuffer(postfx_ubo_ci);
-
-	m_sharpen_data = { App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value };
-	m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(m_sharpen_data, 1.0f));
-
-	PipelineCreateInfo postfx_pipeline_ci;
-	postfx_pipeline_ci.shader = g_shader_postfx;
-	postfx_pipeline_ci.bindings = {
-		{ BindingType::UniformBuffer, "ubo_Metrics", m_postfx_ubo->getBinding() },
-		{ BindingType::Texture, "u_Texture0", TEXTURE_SLOT_POSTFX1 },
-		{ BindingType::Texture, "u_Texture1", TEXTURE_SLOT_POSTFX2 },
-	};
-	m_postfx_pipeline = Context::createPipeline(postfx_pipeline_ci);
-	m_postfx_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
-
-	if (App.gl_caps.compute_shader) {
-		PipelineCreateInfo fxaa_pipeline_ci;
-		fxaa_pipeline_ci.shader = g_shader_postfx;
-		fxaa_pipeline_ci.bindings = {
-			{ BindingType::Texture, "u_InTexture", TEXTURE_SLOT_POSTFX2 },
-			{ BindingType::Image, "u_OutTexture", IMAGE_UNIT_FXAA },
-		};
-		fxaa_pipeline_ci.compute = true;
-		m_fxaa_compute_pipeline = Context::createPipeline(fxaa_pipeline_ci);
-	}
-
-	PipelineCreateInfo mod_pipeline_ci;
-	mod_pipeline_ci.shader = g_shader_mod;
-	mod_pipeline_ci.bindings = {
-		{ BindingType::Texture, "u_MapTexture", TEXTURE_SLOT_MAP },
-		{ BindingType::Texture, "u_CursorTexture", TEXTURE_SLOT_CURSOR },
-		{ BindingType::Texture, "u_FontTexture", TEXTURE_SLOT_FONTS },
-	};
-	mod_pipeline_ci.attachment_blends = { { BlendType::SAlpha_OneMinusSAlpha } };
-	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
+	m_texture_manager = std::make_unique<TextureManager>(sub_texture_counts);
 }
 
 Wrapper::~Wrapper()
 {
 	delete[] g_glide_texture.memory;
-}
-
-void Wrapper::onResize()
-{
-	static glm::uvec2 game_size = { 0, 0 };
-	static glm::uvec2 window_size = { 0, 0 };
-
-	bool game_resized = game_size != App.game.size;
-	game_size = App.game.size;
-
-	bool window_resized = (App.window.resized || window_size != App.window.size);
-	window_size = App.window.size;
-	App.window.resized = false;
-
-	if (game_resized) {
-		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
-		m_game_pipeline->setUniformMat4f("u_MVP", mvp);
-		modules::HDText::Instance().setMVP(mvp);
-
-		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
-		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
-
-		m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
-		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
-		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
-
-		FrameBufferCreateInfo game_frambuffer_ci;
-		game_frambuffer_ci.size = game_size;
-		game_frambuffer_ci.attachments = {
-			{ TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
-			{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
-		};
-		m_game_framebuffer = Context::createFrameBuffer(game_frambuffer_ci);
-
-		m_bloom_tex_size = { game_size.x / 4, game_size.y / 4 };
-		m_bloom_work_size = { ceil((float)m_bloom_tex_size.x / 16), ceil((float)m_bloom_tex_size.y / 16) };
-
-		FrameBufferCreateInfo bloom_frambuffer_ci;
-		bloom_frambuffer_ci.size = m_bloom_tex_size;
-		bloom_frambuffer_ci.attachments = { { TEXTURE_SLOT_BLOOM1, {}, GL_LINEAR, GL_LINEAR }, { TEXTURE_SLOT_BLOOM2 } };
-		m_bloom_framebuffer = Context::createFrameBuffer(bloom_frambuffer_ci);
-		if (App.gl_caps.compute_shader)
-			m_bloom_framebuffer->getTexture()->bindImage(IMAGE_UNIT_BLUR);
-
-		TextureCreateInfo bloom_texture_ci;
-		bloom_texture_ci.size = m_bloom_tex_size;
-		bloom_texture_ci.slot = TEXTURE_SLOT_BLOOM2;
-		bloom_texture_ci.min_filter = GL_LINEAR;
-		bloom_texture_ci.mag_filter = GL_LINEAR;
-		m_bloom_texture = Context::createTexture(bloom_texture_ci);
-
-		TextureCreateInfo prefx_texture_ci;
-		prefx_texture_ci.size = game_size;
-		prefx_texture_ci.slot = TEXTURE_SLOT_PREFX;
-		m_prefx_texture = Context::createTexture(prefx_texture_ci);
-	}
-
-	if (window_resized) {
-		ctx->toggleVsync();
-
-		glm::vec2 scale = { (float)window_size.x / 640, (float)window_size.y / 360 };
-		float offset_x = ((scale.x > scale.y) ? scale.x / scale.y : 1.0f) * 1.00f;
-		float offset_y = ((scale.x < scale.y) ? scale.y / scale.x : 1.0f) * 0.75f;
-		m_movie_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f * offset_x, 1.0f * offset_x, 1.0f * offset_y, -1.0f * offset_y));
-	}
-
-	FrameBufferCreateInfo frambuffer_ci;
-	frambuffer_ci.size = App.viewport.size;
-	frambuffer_ci.attachments = { { TEXTURE_SLOT_POSTFX1, {}, GL_LINEAR, GL_LINEAR } };
-	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
-	if (App.gl_caps.compute_shader)
-		m_postfx_framebuffer->getTexture()->bindImage(IMAGE_UNIT_FXAA);
-
-	m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
-
-	TextureCreateInfo texture_ci;
-	texture_ci.size = App.viewport.size;
-	texture_ci.slot = TEXTURE_SLOT_POSTFX2;
-	texture_ci.min_filter = GL_LINEAR;
-	texture_ci.mag_filter = GL_LINEAR;
-	m_postfx_texture = Context::createTexture(texture_ci);
-
-	onShaderChange(game_resized);
-	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
-	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
-	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
-
-	modules::MiniMap::Instance().resize();
-}
-
-void Wrapper::onShaderChange(bool texture)
-{
-	const auto shader = g_shader_upscale[App.shader.selected];
-
-	if (texture || m_current_shader != App.shader.selected) {
-		TextureCreateInfo texture_ci;
-		texture_ci.size = App.game.tex_size;
-		texture_ci.slot = TEXTURE_SLOT_UPSCALE;
-		if (shader.linear) {
-			texture_ci.min_filter = GL_LINEAR;
-			texture_ci.mag_filter = GL_LINEAR;
-		}
-		m_upscale_texture = Context::createTexture(texture_ci);
-	}
-
-	if (m_current_shader != App.shader.selected) {
-		PipelineCreateInfo pipeline_ci;
-		pipeline_ci.shader = shader.source;
-		pipeline_ci.bindings = {
-			{ BindingType::UniformBuffer, "ubo_Metrics", m_upscale_ubo->getBinding() },
-			{ BindingType::Texture, "u_Texture", TEXTURE_SLOT_UPSCALE },
-		};
-		m_upscale_pipeline = Context::createPipeline(pipeline_ci);
-	}
-
-	m_upscale_pipeline->setUniformMat4f("u_MVP", glm::ortho(-App.game.tex_scale.x, App.game.tex_scale.x, -App.game.tex_scale.y, App.game.tex_scale.y));
-	m_current_shader = App.shader.selected;
-}
-
-void Wrapper::onStageChange()
-{
-	if (App.game.screen == GameScreen::Movie)
-		return;
-
-	switch (App.game.draw_stage) {
-		case DrawStage::World:
-			break;
-		case DrawStage::UI:
-			if (App.bloom.active || App.lut.selected) {
-				m_prefx_texture->fillFromBuffer(m_game_framebuffer);
-				ctx->bindPipeline(m_prefx_pipeline);
-
-				if (App.bloom.active) {
-					ctx->bindFrameBuffer(m_bloom_framebuffer, false);
-					ctx->setViewport(m_bloom_tex_size);
-					ctx->pushQuad(0);
-
-					if (App.gl_caps.compute_shader) {
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(0, m_bloom_work_size, GL_PIXEL_BUFFER_BARRIER_BIT);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						m_blur_compute_pipeline->dispatchCompute(1, m_bloom_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-					} else {
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(1);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(2);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(1);
-						m_bloom_texture->fillFromBuffer(m_bloom_framebuffer);
-						ctx->pushQuad(2);
-					}
-
-					ctx->bindFrameBuffer(m_game_framebuffer, false);
-					ctx->setViewport(App.game.size);
-					ctx->bindPipeline(m_prefx_pipeline);
-				}
-				ctx->pushQuad(3, App.lut.selected, App.bloom.active);
-
-				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
-			}
-			break;
-		case DrawStage::Map:
-			if (App.mini_map.active && App.hd_cursor) {
-				ctx->flushVertices();
-
-				m_blend_locked = true;
-				ctx->bindPipeline(m_game_pipeline, 3);
-				ctx->setVertexFlagW(1 + !*d2::automap_on);
-			}
-			break;
-		case DrawStage::HUD:
-			if (App.mini_map.active && App.hd_cursor) {
-				ctx->flushVertices();
-
-				m_blend_locked = false;
-				ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
-				ctx->setVertexFlagW(0);
-
-				modules::MiniMap::Instance().draw();
-			}
-			modules::HDText::Instance().drawFpsCounter();
-			break;
-		case DrawStage::Cursor:
-			ctx->appendDelayedObjects();
-			modules::HDText::Instance().drawEntryText();
-			modules::HDCursor::Instance().draw();
-			break;
-	}
 }
 
 void Wrapper::onBufferClear()
@@ -369,47 +47,7 @@ void Wrapper::onBufferClear()
 		return;
 	m_swapped = false;
 
-	if (App.window.resized)
-		onResize();
-
-	if (App.game.screen == GameScreen::Movie) {
-		ctx->beginFrame();
-		ctx->bindDefaultFrameBuffer();
-		ctx->setViewport(App.window.size);
-		ctx->bindPipeline(m_movie_pipeline);
-		ctx->pushQuad();
-
-		onBufferSwap();
-	} else {
-		if (m_current_shader != App.shader.selected)
-			onShaderChange();
-
-		if (App.bloom.active) {
-			const auto bloom_data = glm::vec2(App.bloom.exposure.value, App.bloom.gamma.value);
-			if (m_bloom_data != bloom_data) {
-				m_bloom_ubo->updateDataVec2f("bloom", bloom_data);
-				m_bloom_data = bloom_data;
-			}
-		}
-
-		if (App.sharpen.active) {
-			const auto sharpen_data = glm::vec3(App.sharpen.strength.value, App.sharpen.clamp.value, App.sharpen.radius.value);
-			if (m_sharpen_data != sharpen_data) {
-				m_postfx_ubo->updateDataVec4f("sharpen", glm::vec4(sharpen_data, 1.0f));
-				m_sharpen_data = sharpen_data;
-			}
-		}
-
-		modules::HDText::Instance().reset();
-		modules::MotionPrediction::Instance().update();
-
-		ctx->beginFrame();
-		ctx->bindFrameBuffer(m_game_framebuffer);
-		ctx->setViewport(App.game.size);
-
-		App.game.draw_stage = DrawStage::World;
-		onStageChange();
-	}
+	ctx->beginFrame();
 }
 
 void Wrapper::onBufferSwap()
@@ -418,57 +56,16 @@ void Wrapper::onBufferSwap()
 		return;
 	m_swapped = true;
 
-	if (App.game.screen != GameScreen::Movie) {
-		m_upscale_texture->fillFromBuffer(m_game_framebuffer);
-
-		if (App.sharpen.active || App.fxaa) {
-			ctx->bindFrameBuffer(m_postfx_framebuffer, false);
-			ctx->setViewport(App.viewport.size);
-		} else {
-			ctx->bindDefaultFrameBuffer();
-			ctx->setViewport(App.viewport.size, App.viewport.offset);
-		}
-		ctx->bindPipeline(m_upscale_pipeline);
-		ctx->pushQuad();
-
-		if (App.sharpen.active) {
-			if (App.fxaa)
-				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
-			else {
-				ctx->bindDefaultFrameBuffer();
-				ctx->setViewport(App.viewport.size, App.viewport.offset);
-			}
-			ctx->bindPipeline(m_postfx_pipeline);
-			ctx->pushQuad(0, App.fxaa);
-		}
-
-		if (App.fxaa) {
-			if (App.gl_caps.compute_shader) {
-				m_postfx_texture->fillFromBuffer(m_postfx_framebuffer);
-				m_fxaa_compute_pipeline->dispatchCompute(0, m_fxaa_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-			}
-			ctx->bindDefaultFrameBuffer();
-			ctx->setViewport(App.viewport.size, App.viewport.offset);
-			ctx->bindPipeline(m_postfx_pipeline);
-			ctx->pushQuad(1 + App.gl_caps.compute_shader);
-		}
-
-		modules::HDText::Instance().update(m_mod_pipeline);
-		ctx->bindPipeline(m_mod_pipeline);
-		ctx->flushVerticesMod();
-	}
-
-	App.var1 = m_game_texture->getUsage(256);
-	App.var2 = m_game_texture->getUsage(128);
-	App.var3 = m_game_texture->getUsage(64);
-	App.var4 = m_game_texture->getUsage(32);
-	App.var5 = m_game_texture->getUsage(16);
-	App.var6 = m_game_texture->getUsage(8);
-	option::Menu::instance().draw();
+#ifdef _DEBUG
+	App.var1 = m_texture_manager->getUsage(256);
+	App.var2 = m_texture_manager->getUsage(128);
+	App.var3 = m_texture_manager->getUsage(64);
+	App.var4 = m_texture_manager->getUsage(32);
+	App.var5 = m_texture_manager->getUsage(16);
+	App.var6 = m_texture_manager->getUsage(8);
+#endif
 
 	ctx->presentFrame();
-
-	fixPD2invItemActions();
 }
 
 void Wrapper::grDrawPoint(const void* pt)
@@ -534,24 +131,22 @@ void Wrapper::grDrawVertexArrayContiguous(FxU32 mode, FxU32 count, void* pointer
 
 void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)
 {
-	m_current_blend_index = m_blend_types.at(static_cast<uint32_t>(rgb_df)).first;
-	if (!m_blend_locked)
-		ctx->bindPipeline(m_game_pipeline, m_current_blend_index);
+	ctx->setBlendState(static_cast<uint32_t>(rgb_df));
 }
 
 void Wrapper::grAlphaCombine(GrCombineFunction_t function)
 {
-	ctx->setVertexFlagZ(function == GR_COMBINE_FUNCTION_LOCAL ? 1 : 0);
+	ctx->setVertexFlag(function == GR_COMBINE_FUNCTION_LOCAL, 0x04);
 }
 
 void Wrapper::grChromakeyMode(GrChromakeyMode_t mode)
 {
-	ctx->setVertexFlagX(mode == GR_CHROMAKEY_ENABLE ? 1 : 0);
+	ctx->setVertexFlag(mode == GR_CHROMAKEY_ENABLE, 0x01);
 }
 
 void Wrapper::grColorCombine(GrCombineFunction_t function)
 {
-	ctx->setVertexFlagY(function == GR_COMBINE_FUNCTION_LOCAL ? 1 : 0);
+	ctx->setVertexFlag(function == GR_COMBINE_FUNCTION_LOCAL, 0x02);
 }
 
 void Wrapper::grConstantColorValue(GrColor_t value)
@@ -567,7 +162,14 @@ void Wrapper::grLoadGammaTable(FxU32 nentries, FxU32* red, FxU32* green, FxU32* 
 		gamma[i].g = (float)green[i] / 255;
 		gamma[i].b = (float)blue[i] / 255;
 	}
-	m_game_color_ubo->updateData("gamma", &gamma[0]);
+
+	const uint32_t hash = helpers::hash(&gamma[0], sizeof(glm::vec4) * 256);
+	if (m_gamma_hash == hash)
+		return;
+
+	ctx->flushVertices();
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Gamma, &gamma[0]);
+	m_gamma_hash = hash;
 }
 
 void Wrapper::guGammaCorrectionRGB(FxFloat red, FxFloat green, FxFloat blue)
@@ -579,7 +181,14 @@ void Wrapper::guGammaCorrectionRGB(FxFloat red, FxFloat green, FxFloat blue)
 		gamma[i].g = powf(v, 1.0f / green);
 		gamma[i].b = powf(v, 1.0f / blue);
 	}
-	m_game_color_ubo->updateData("gamma", &gamma[0]);
+
+	const uint32_t hash = helpers::hash(&gamma[0], sizeof(glm::vec4) * 256);
+	if (m_gamma_hash == hash)
+		return;
+
+	ctx->flushVertices();
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Gamma, &gamma[0]);
+	m_gamma_hash = hash;
 }
 
 void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
@@ -588,10 +197,11 @@ void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
 	uint32_t size = Wrapper::getTexSize(info, width, height);
 	start_address += GLIDE_TEX_MEMORY * tmu;
 
+	const auto frame_index = ctx->getFrameIndex();
 	const auto frame_count = ctx->getFrameCount();
-	const auto sub_tex_info = m_game_texture->getSubTextureInfo(start_address, size, width, height, frame_count);
+	const auto sub_tex_info = m_texture_manager->getSubTextureInfo(start_address, size, width, height, frame_count);
 	if (sub_tex_info) {
-		ctx->setVertexTexIds({ 0, sub_tex_info->tex_num });
+		ctx->setVertexTexNum(sub_tex_info->tex_num);
 		ctx->setVertexOffset(sub_tex_info->offset);
 		ctx->setVertexTexShift(sub_tex_info->shift);
 	}
@@ -614,6 +224,8 @@ void Wrapper::grTexDownloadTable(void* data)
 	if (old_hash == hash)
 		return;
 
+	ctx->flushVertices();
+
 	glm::vec4 palette[256];
 	uint32_t* pal = (uint32_t*)data;
 
@@ -623,7 +235,7 @@ void Wrapper::grTexDownloadTable(void* data)
 		palette[i].g = (float)((pal[i] >> 8) & 0xFF) / 255;
 		palette[i].b = (float)((pal[i]) & 0xFF) / 255;
 	}
-	m_game_color_ubo->updateData("palette", &palette[0]);
+	ctx->getCommandBuffer()->colorUpdate(UBOType::Palette, &palette[0]);
 	old_hash = hash;
 }
 
@@ -649,8 +261,10 @@ FxBool Wrapper::grLfbLock(GrLfbWriteMode_t write_mode, GrOriginLocation_t origin
 FxBool Wrapper::grLfbUnlock()
 {
 	App.game.screen = GameScreen::Movie;
-	m_movie_texture->fill((uint8_t*)m_movie_buffer.lfbPtr, 640, 480);
+	ctx->getCommandBuffer()->gameTextureUpdate((uint8_t*)m_movie_buffer.lfbPtr, { 640, 480 }, 4);
+
 	onBufferClear();
+	onBufferSwap();
 
 	return FXTRUE;
 }
@@ -664,7 +278,7 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 	if (App.game.screen == GameScreen::InGame) {
 		App.game.screen = GameScreen::Loading;
 
-		GlideWrapper->m_game_texture->clearCache();
+		GlideWrapper->m_texture_manager->clearCache();
 	}
 
 	glm::uvec2 old_size = App.game.size;
@@ -685,7 +299,6 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 		if (old_size != App.game.size) {
 			win32::setWindowMetrics();
 			win32::windowResize();
-			GlideWrapper->onResize();
 		}
 		return 1;
 	}
@@ -696,9 +309,6 @@ GrContext_t Wrapper::grSstWinOpen(FxU32 hwnd, GrScreenResolution_t screen_resolu
 
 	App.context = std::make_unique<Context>();
 	GlideWrapper = std::make_unique<Wrapper>();
-	GlideWrapper->onResize();
-
-	App.game.onStageChange = (onStageChange_t)Wrapper::onGameStageChange;
 	App.ready = true;
 
 	helpers::loadDlls(App.dlls_late, true);
