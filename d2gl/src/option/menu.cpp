@@ -395,6 +395,11 @@ void Menu::draw()
 		ImGui::EndTabBar();
 	}
 	ImGui::PopFont();
+	ImGui::SetCursorPos({ 16.0f, 460.0f });
+	ImGui::PushFont(m_fonts[15]);
+	if (ImGui::Button(" Open Configuration Wiki Page > "))
+		ShellExecute(0, 0, L"https://github.com/bayaraa/d2gl/wiki/Configuration", 0, 0, SW_SHOW);
+	ImGui::PopFont();
 	ImGui::End();
 
 	// clang-format on

@@ -217,9 +217,9 @@ void saveIni()
 	  "hd_cursor=%s\n\n"
 	  "; HD in game text (HD cursor required).\n"
 	  "hd_text=%s\n\n"
-	  "; HD life & mana orbs (HD cursor required).\n"
-	  "hd_orbs=%s\n"
-	  "hd_orbs_centered=%s\n\n"
+	  //"; HD life & mana orbs (HD cursor required).\n"
+	  //"hd_orbs=%s\n"
+	  //"hd_orbs_centered=%s\n\n"
 	  "; Always on Minimap widget (only available in glide mode, HD cursor required).\n"
 	  "mini_map=%s\n"
 	  "mini_map_text_over=%s\n"
@@ -239,8 +239,8 @@ void saveIni()
 	sprintf_s(buf, feature_setting,
 	  boolString(App.hd_cursor),
 	  boolString(App.hd_text),
-	  boolString(App.hd_orbs.active),
-	  boolString(App.hd_orbs.centered),
+	  // boolString(App.hd_orbs.active),
+	  // boolString(App.hd_orbs.centered),
 	  boolString(App.mini_map.active),
 	  boolString(App.mini_map.text_over),
 	  App.mini_map.width.value,
@@ -333,8 +333,8 @@ void loadIni()
 		App.hd_cursor = getBool("Feature", "hd_cursor", App.hd_cursor);
 		App.hd_text = getBool("Feature", "hd_text", App.hd_text);
 
-		App.hd_orbs.active = getBool("Feature", "hd_orbs", App.hd_orbs.active);
-		App.hd_orbs.centered = getBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
+		// App.hd_orbs.active = getBool("Feature", "hd_orbs", App.hd_orbs.active);
+		// App.hd_orbs.centered = getBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
 
 		App.mini_map.active = getBool("Feature", "mini_map", App.mini_map.active) && App.api == Api::Glide;
 		App.mini_map.text_over = getBool("Feature", "mini_map_text_over", App.mini_map.text_over);

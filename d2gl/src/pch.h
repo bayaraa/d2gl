@@ -22,6 +22,7 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include <shellapi.h>
 #include <shellscalingapi.h>
 #include <stdint.h>
 #include <timeapi.h>
