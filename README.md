@@ -2,6 +2,12 @@
 
 D2GL is a Diablo 2 LoD Glide/DDraw to OpenGL wrapper that translates glide/ddraw calls to OpenGL calls. This makes D2 run better on modern hardware/OS and easier to switch between fullscreen and windowed modes, and resolves certain window and cursor-related issues. Additionally, it includes several libretro shaders for upscaling to higher resolutions, and allows for in-game text to be displayed in high-definition, D2DX's motion prediction, other QOL features.
 
+### Bug/Crash Report (***Important!***)
+
+Please don't just say it crashes. I can't do anything without additional information!  
+If want to report bug or crash please include details about your system (OS, hardware), what you doing when crash occured, are other mods included (like plugy, basemod etc), is crashing on both wrappers (glide, ddraw).  
+Also run game.exe with `-3dfx -log` it will create `d2gl.log` and attach this with  diablo2's log file like this `D2230410.txt`. It helps investigation.
+
 ## Features
 
 - In-Game Option Menu(`Ctrl+O`) to change settings on fly.
