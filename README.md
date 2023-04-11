@@ -4,7 +4,7 @@ D2GL is a Diablo 2 LoD Glide/DDraw to OpenGL wrapper that translates glide/ddraw
 
 ## Features
 
-- In-Game Option Menu(`Ctrl+O`) to change congifs on fly.
+- In-Game Option Menu(`Ctrl+O`) to change settings on fly.
 - Upscale to higher resolution using pre-included libretro's shader.
 - Switch some parts in game to high-definition (all text, cursor etc.).
 - Unlocked FPS (menu screen 45fps / ingame unlocked).
@@ -23,11 +23,13 @@ D2GL is a Diablo 2 LoD Glide/DDraw to OpenGL wrapper that translates glide/ddraw
 
 See [Installation](https://github.com/bayaraa/d2gl/wiki/Installation).
 
+## Configuration
+
+See [Configuration](https://github.com/bayaraa/d2gl/wiki/Configuration).
+
 ## Compatibility
 
-I did not really tested with other mods.
-Briefly tested on D2LoD 1.13c on single player with Basemod(1.1.3.9), BH Maphack(1.9.9), Plugy(14.0.3).
-Briefly tested on Project Diablo 2 Season 6 single player with/without plugy.
+See [Compatibility](https://github.com/bayaraa/d2gl/wiki/Compatibility).
 
 ## Credits
 
