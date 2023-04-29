@@ -28,8 +28,12 @@ struct WINDCOMPATTRDATA {
 	PVOID pvData;
 	SIZE_T cbData;
 };
+enum class PROCESS_DPI_AWARENESS {
+	PROCESS_DPI_UNAWARE = 0,
+	PROCESS_SYSTEM_DPI_AWARE = 1,
+	PROCESS_PER_MONITOR_DPI_AWARE = 2
+};
 
-typedef BOOL(WINAPI* SetWindowCompositionAttribute_t)(HWND hWnd, WINDCOMPATTRDATA*);
 typedef int(WINAPI* ShowCursor_t)(BOOL bShow);
 typedef BOOL(WINAPI* SetCursorPos_t)(int X, int Y);
 typedef BOOL(WINAPI* SetWindowPos_t)(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
@@ -37,7 +41,6 @@ typedef LRESULT(WINAPI* SendMessageA_t)(HWND hWnd, UINT Msg, WPARAM wParam, LPAR
 typedef int(WINAPI* DrawTextA_t)(HDC hdc, LPCSTR lpchText, int cchText, LPRECT lprc, UINT format);
 typedef COLORREF(WINAPI* GetPixel_t)(HDC hdc, int x, int y);
 
-extern SetWindowCompositionAttribute_t SetWindowCompositionAttribute;
 extern ShowCursor_t ShowCursor_Og;
 extern SetCursorPos_t SetCursorPos_Og;
 extern SetWindowPos_t SetWindowPos_Og;
@@ -65,5 +68,7 @@ void setCursorLock();
 void setCursorUnlock();
 void windowResize();
 void toggleDarkmode();
+void setDPIAwareness();
+RTL_OSVERSIONINFOW getOSVersion();
 
 }
