@@ -70,6 +70,21 @@ void dllAttach(HMODULE hmodule)
 
 	logInit();
 
+	auto ini_pos = command_line.find("-config ");
+	if (ini_pos != std::string::npos) {
+		std::string custom_ini = "";
+		for (size_t i = ini_pos + 8; i < command_line.length(); i++) {
+			if (command_line.at(i) == ' ')
+				break;
+			custom_ini += command_line.at(i);
+		}
+		custom_ini.erase(std::remove(custom_ini.begin(), custom_ini.end(), ' '), custom_ini.end());
+		if (custom_ini.length() > 0) {
+			App.ini_file = "d2gl_" + custom_ini + ".ini";
+			trace_log("Custom config file: %s", App.ini_file.c_str());
+		}
+	}
+
 	if (helpers::getVersion() == Version::Unknown) {
 		MessageBoxA(NULL, "Game version is not supported!", "Unsupported version!", MB_OK | MB_ICONERROR);
 		error_log("Game version is not supported!");
