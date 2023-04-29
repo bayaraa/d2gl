@@ -21,8 +21,7 @@ Also run game.exe with `-3dfx -log` it will create `d2gl.log` and attach this al
 ## Requirements
 
 - Diablo 2 LoD: ``1.09d``, ``1.10f``, ``1.11``, ``1.11b``, ``1.12a``, ``1.13c``, ``1.13d``, ``1.14d``.
-  - 1.14d dropped software rendering. So don't put ddraw.dll into game folder.
-- Windows 10/11, Linux with Wine(Proton, Lutris etc), MacOS with Wine(Crossover).
+- Windows 7/8/10/11, Linux with Wine (Proton, Lutris etc), MacOS with Wine (Crossover).
 - GPU with minimum OpenGL 3.3 support.
 
 ## Installation
