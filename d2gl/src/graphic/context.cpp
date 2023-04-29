@@ -100,12 +100,12 @@ Context::Context()
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_unit);
 	trace_log("OpenGL: GL_MAX_TEXTURE_IMAGE_UNITS = %d", max_texture_unit);
 
-	if (App.debug && glewIsSupported("GL_KHR_debug")) {
+	if ((App.debug || App.log) && glewIsSupported("GL_KHR_debug")) {
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(Context::debugMessageCallback, nullptr);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-		trace("GL_KHR_debug enabled!");
+		trace_log("OpenGL: GL_KHR_debug enabled!");
 	}
 
 	if (App.use_compute_shader && (glewIsSupported("GL_VERSION_4_3") || glewIsSupported("GL_ARB_compute_shader"))) {
@@ -294,7 +294,7 @@ Context::Context()
 	m_frame.frame_times.assign(FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
 
 	m_limiter.timer = CreateWaitableTimer(NULL, TRUE, NULL);
-	setFpsLimit(App.foreground_fps.active, App.foreground_fps.range.value);
+	setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
 
 	m_vertices_mod.count = 0;
 	m_vertices_mod.ptr = m_vertices_mod.data[m_frame_index].data();
@@ -423,7 +423,7 @@ void Context::renderThread(void* context)
 					}
 					ctx->drawQuad(3 + App.bloom.active, App.lut.selected);
 
-					ctx->bindPipeline(ctx->m_game_pipeline, ctx->m_current_blend_index);
+					ctx->bindPipeline(ctx->m_game_pipeline, command->index);
 					break;
 				case CommandType::Begin:
 					if (cmd->m_screen == GameScreen::Movie) {
@@ -465,12 +465,15 @@ void Context::renderThread(void* context)
 
 						ctx->m_upscale_texture->fillFromBuffer(ctx->m_game_framebuffer);
 
+						const glm::ivec2 viewport_size = { App.viewport.stretched.x ? App.window.size.x : App.viewport.size.x, App.viewport.stretched.y ? App.window.size.y : App.viewport.size.y };
+						const glm::ivec2 viewport_offset = { App.viewport.stretched.x ? 0 : App.viewport.offset.x, App.viewport.stretched.y ? 0 : App.viewport.offset.y };
+
 						if (App.sharpen.active || App.fxaa) {
 							ctx->bindFrameBuffer(ctx->m_postfx_framebuffer, false);
 							ctx->setViewport(App.viewport.size);
 						} else {
 							ctx->bindDefaultFrameBuffer();
-							ctx->setViewport(App.viewport.size, App.viewport.offset);
+							ctx->setViewport(viewport_size, viewport_offset);
 						}
 						ctx->bindPipeline(ctx->m_upscale_pipeline);
 						ctx->drawQuad();
@@ -480,7 +483,7 @@ void Context::renderThread(void* context)
 								ctx->m_postfx_texture->fillFromBuffer(ctx->m_postfx_framebuffer);
 							else {
 								ctx->bindDefaultFrameBuffer();
-								ctx->setViewport(App.viewport.size, App.viewport.offset);
+								ctx->setViewport(viewport_size, viewport_offset);
 							}
 							ctx->bindPipeline(ctx->m_postfx_pipeline);
 							ctx->drawQuad(App.fxaa);
@@ -492,7 +495,7 @@ void Context::renderThread(void* context)
 								ctx->m_fxaa_compute_pipeline->dispatchCompute(0, ctx->m_fxaa_work_size, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 							}
 							ctx->bindDefaultFrameBuffer();
-							ctx->setViewport(App.viewport.size, App.viewport.offset);
+							ctx->setViewport(viewport_size, viewport_offset);
 							ctx->bindPipeline(ctx->m_postfx_pipeline);
 							ctx->drawQuad(2 + App.gl_caps.compute_shader);
 						}
@@ -517,15 +520,9 @@ void Context::renderThread(void* context)
 			glDrawElements(GL_TRIANGLES, cmd->m_vertex_mod_count / 4 * 6, GL_UNSIGNED_INT, 0);
 		}
 
-		static GLsync sync;
-		sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-		glFlush();
-		glClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000);
-
-		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
-
 		option::Menu::instance().draw();
 		SwapBuffers(App.hdc);
+		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
 
 		if (ctx->m_limiter.active) {
 			WaitForSingleObject(ctx->m_limiter.timer, (DWORD)ctx->m_limiter.frame_len_ms + 1);
@@ -607,7 +604,6 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 			texture_ci.min_filter = GL_LINEAR;
 			texture_ci.mag_filter = GL_LINEAR;
 			m_game_texture = Context::createTexture(texture_ci);
-			trace("bpp: %d", color_bpp);
 		}
 	}
 
@@ -683,14 +679,14 @@ void Context::onStageChange()
 		case DrawStage::UI:
 			if (App.api == Api::Glide && (App.bloom.active || App.lut.selected)) {
 				flushVertices();
-				m_command_buffer[m_frame_index].pushCommand(CommandType::PreFx);
+				m_command_buffer[m_frame_index].pushCommand(CommandType::PreFx, m_current_blend_index);
 			}
 			break;
 		case DrawStage::Map:
 			if (modules::MiniMap::Instance().isActive()) {
 				flushVertices();
 				m_blend_locked = true;
-				m_command_buffer[m_frame_index].setBlendState(3);
+				m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, 3);
 				setVertexFlag(true, 0x08);
 				setVertexFlag(!*d2::automap_on, 0x10);
 			}
@@ -699,7 +695,7 @@ void Context::onStageChange()
 			if (modules::MiniMap::Instance().isActive()) {
 				flushVertices();
 				m_blend_locked = false;
-				m_command_buffer[m_frame_index].setBlendState(m_current_blend_index);
+				m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, m_current_blend_index);
 				setVertexFlag(false, 0x08);
 
 				modules::MiniMap::Instance().draw();
@@ -719,7 +715,7 @@ void Context::setBlendState(uint32_t index)
 	flushVertices();
 	m_current_blend_index = g_blend_types.at(index).first;
 	if (!m_blend_locked)
-		m_command_buffer[m_frame_index].setBlendState(m_current_blend_index);
+		m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, m_current_blend_index);
 }
 
 void Context::beginFrame()
@@ -777,6 +773,7 @@ void Context::presentFrame()
 
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
+	m_frame.average_frame_time = std::reduce(m_frame.frame_times.begin(), m_frame.frame_times.end()) / FRAMETIME_SAMPLE_COUNT;
 	m_frame.frame_count++;
 }
 
@@ -882,11 +879,6 @@ void Context::toggleVsync()
 	resetFileTime();
 }
 
-const double Context::getAvgFrameTime()
-{
-	return std::reduce(m_frame.frame_times.begin(), m_frame.frame_times.end()) / FRAMETIME_SAMPLE_COUNT;
-}
-
 void Context::setFpsLimit(bool active, int max_fps)
 {
 	m_limiter.active = active;
@@ -944,45 +936,46 @@ void Context::imguiRender()
 
 void APIENTRY Context::debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* data)
 {
-	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
-		return;
-
 	const char* source_str;
 	const char* severity_str;
 
 	// clang-format off
 	switch (type) {
-	case GL_DEBUG_TYPE_ERROR: logTrace(C_RED, false, "\nError: "); break;
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: logTrace(C_YELLOW, false, "\nDeprecated behavior: "); break;
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: logTrace(C_YELLOW, false, "\nUndefined behavior: "); break;
-	case GL_DEBUG_TYPE_PORTABILITY: logTrace(C_BLUE, false, "\nPortability: "); break;
-	case GL_DEBUG_TYPE_PERFORMANCE: logTrace(C_BLUE, false, "\nPerformance: "); break;
-	case GL_DEBUG_TYPE_MARKER: logTrace(C_MAGENTA, false, "\nMarker: "); break;
-	case GL_DEBUG_TYPE_OTHER: logTrace(C_GRAY, false, "\nOther: "); break;
-	default: logTrace(C_RED, false, "\nUnknown: ");
+		case GL_DEBUG_TYPE_ERROR: logTrace(C_RED, false, "\nError: "); break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: logTrace(C_YELLOW, false, "\nDeprecated behavior: "); break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: logTrace(C_YELLOW, false, "\nUndefined behavior: "); break;
+		case GL_DEBUG_TYPE_PORTABILITY: logTrace(C_BLUE, false, "\nPortability: "); break;
+		case GL_DEBUG_TYPE_PERFORMANCE: logTrace(C_BLUE, false, "\nPerformance: "); break;
+		case GL_DEBUG_TYPE_MARKER: logTrace(C_MAGENTA, false, "\nMarker: "); break;
+		case GL_DEBUG_TYPE_OTHER: logTrace(C_GRAY, false, "\nOther: "); break;
+		default: logTrace(C_RED, false, "\nUnknown: ");
 	}
 
 	switch (source) {
-	case GL_DEBUG_SOURCE_API: source_str = "Api"; break;
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM: source_str = "Window system"; break;
-	case GL_DEBUG_SOURCE_SHADER_COMPILER: source_str = "Shader compiler"; break;
-	case GL_DEBUG_SOURCE_THIRD_PARTY: source_str = "Third party"; break;
-	case GL_DEBUG_SOURCE_APPLICATION: source_str = "Application"; break;
-	case GL_DEBUG_SOURCE_OTHER: source_str = "Other"; break;
-	default: source_str = "Unknown";
+		case GL_DEBUG_SOURCE_API: source_str = "Api"; break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: source_str = "Window system"; break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: source_str = "Shader compiler"; break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY: source_str = "Third party"; break;
+		case GL_DEBUG_SOURCE_APPLICATION: source_str = "Application"; break;
+		case GL_DEBUG_SOURCE_OTHER: source_str = "Other"; break;
+		default: source_str = "Unknown";
 	}
 
 	switch (severity) {
-	case GL_DEBUG_SEVERITY_HIGH: severity_str = "High"; break;
-	case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "Medium"; break;
-	case GL_DEBUG_SEVERITY_LOW: severity_str = "Low"; break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "Notification"; break;
-	default: severity_str = "Unknown";
+		case GL_DEBUG_SEVERITY_HIGH: severity_str = "High"; break;
+		case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "Medium"; break;
+		case GL_DEBUG_SEVERITY_LOW: severity_str = "Low"; break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "Notification"; break;
+		default: severity_str = "Unknown";
 	}
 	// clang-format on
 
 	logTrace(C_WHITE, false, "[%u / %s]: ", id, severity_str);
 	logTrace(C_GRAY, true, "%s", source_str);
 	trace("%s", message);
+
+	if (App.log)
+		logFileWrite(0, "OpenGL: [%u / %s]: %s | %s", id, severity_str, source_str, message);
 }
+
 }

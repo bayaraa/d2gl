@@ -74,6 +74,7 @@ struct D2GLApp {
 		glm::ivec2 offset = { 0, 0 };
 		glm::uvec2 size = { 800, 600 };
 		glm::vec2 scale = { 1.0f, 1.0f };
+		glm::bvec2 stretched = { false, false };
 	} viewport;
 
 	struct {
@@ -90,7 +91,7 @@ struct D2GLApp {
 		bool locked = false;
 		glm::vec2 scale = { 1.0f, 1.0f };
 		glm::vec2 unscale = { 1.0f, 1.0f };
-		bool no_lock = false;
+		bool unlock = false;
 	} cursor;
 
 	Select<glm::uvec2> resolutions = {};

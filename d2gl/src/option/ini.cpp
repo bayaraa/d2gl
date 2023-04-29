@@ -194,7 +194,10 @@ void saveIni()
 	  "; Bloom effect.\n"
 	  "bloom=%s\n"
 	  "bloom_exposure=%.3f\n"
-	  "bloom_gamma=%.3f\n\n\n";
+	  "bloom_gamma=%.3f\n\n"
+	  "; Stretch viewport to window size.\n"
+	  "stretched_horizontal=%s\n"
+	  "stretched_vertical=%s\n\n\n";
 
 	sprintf_s(buf, graphic_setting,
 	  shader_str.c_str(),
@@ -208,7 +211,9 @@ void saveIni()
 	  boolString(App.fxaa),
 	  boolString(App.bloom.active),
 	  App.bloom.exposure.value,
-	  App.bloom.gamma.value);
+	  App.bloom.gamma.value,
+	  boolString(App.viewport.stretched.x),
+	  boolString(App.viewport.stretched.y));
 	out_file << buf;
 
 	static const char* feature_setting =
@@ -233,8 +238,8 @@ void saveIni()
 	  "no_pickup=%s\n\n"
 	  "; Show FPS Counter (bottom center).\n"
 	  "show_fps=%s\n\n"
-	  "; No Cursor Lock (cursor will not locked within window).\n"
-	  "no_cursor_lock=%s\n\n\n";
+	  "; Unlock Cursor (cursor will not locked within window).\n"
+	  "unlock_cursor=%s\n\n\n";
 
 	sprintf_s(buf, feature_setting,
 	  boolString(App.hd_cursor),
@@ -249,7 +254,7 @@ void saveIni()
 	  boolString(App.skip_intro),
 	  boolString(App.no_pickup),
 	  boolString(App.show_fps),
-	  boolString(App.cursor.no_lock));
+	  boolString(App.cursor.unlock));
 	out_file << buf;
 
 	static const char* other_setting =
@@ -262,9 +267,9 @@ void saveIni()
 	  "; Frame Latency (how many frames cpu generate before rendering).\n"
 	  "; Set 1-5 (increasing this value notice less frame stutter but introduces more input lag).\n"
 	  "frame_latency=%d\n\n"
-	  "; Comma delimitered DLLs to load (early: right after attached).\n"
+	  "; Comma-delimited DLLs to load (early: right after attached).\n"
 	  "load_dlls_early=%s\n\n"
-	  "; Comma delimitered DLLs to load (late: right after window created).\n"
+	  "; Comma-delimited DLLs to load (late: right after window created).\n"
 	  "load_dlls_late=%s\n";
 
 	sprintf_s(buf, other_setting,
@@ -330,6 +335,9 @@ void loadIni()
 		App.bloom.exposure.value = getFloat("Graphic", "bloom_exposure", App.bloom.exposure);
 		App.bloom.gamma.value = getFloat("Graphic", "bloom_gamma", App.bloom.gamma);
 
+		App.viewport.stretched.x = getBool("Graphic", "stretched_horizontal", App.viewport.stretched.x);
+		App.viewport.stretched.y = getBool("Graphic", "stretched_vertical", App.viewport.stretched.y);
+
 		App.hd_cursor = getBool("Feature", "hd_cursor", App.hd_cursor);
 		App.hd_text = getBool("Feature", "hd_text", App.hd_text);
 
@@ -345,7 +353,7 @@ void loadIni()
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);
 		App.no_pickup = getBool("Feature", "no_pickup", App.no_pickup);
 		App.show_fps = getBool("Feature", "show_fps", App.show_fps);
-		App.cursor.no_lock = getBool("Feature", "no_cursor_lock", App.cursor.no_lock);
+		App.cursor.unlock = getBool("Feature", "unlock_cursor", App.cursor.unlock);
 
 		App.gl_ver_major = getInt("Other", "gl_ver_major", App.gl_ver_major, 3, 4);
 		App.gl_ver_minor = getInt("Other", "gl_ver_minor", App.gl_ver_minor, 0, 6);

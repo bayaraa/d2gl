@@ -34,7 +34,7 @@ struct TexData {
 struct TexUpdateQueue {
 	uint32_t count = 0;
 	uint32_t data_offset = 0;
-	std::array<TexData, 3072> tex_data = {};
+	std::array<TexData, 4096> tex_data = {};
 };
 
 enum class UBOType {
@@ -49,7 +49,7 @@ struct UBOData {
 
 struct UBOUpdateQueue {
 	uint32_t count = 0;
-	std::array<UBOData, 8> data;
+	std::array<UBOData, 16> data;
 };
 
 struct GameTexUpdate {
@@ -66,7 +66,7 @@ struct HDTextMasking {
 class CommandBuffer {
 	uint32_t m_count = 0;
 	Command* m_command = nullptr;
-	std::array<Command, 512> m_commands;
+	std::array<Command, 2048> m_commands;
 
 	UBOUpdateQueue m_ubo_update_queue;
 	TexUpdateQueue m_tex_update_queue;
@@ -92,8 +92,7 @@ public:
 	void reset();
 	void next();
 
-	void pushCommand(CommandType type);
-	void setBlendState(uint32_t index);
+	void pushCommand(CommandType type, uint32_t index = 0);
 	void drawIndexed(uint32_t start, uint32_t count);
 	void resize();
 

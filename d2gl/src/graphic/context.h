@@ -83,6 +83,7 @@ struct FrameMetrics {
 	double frame_time = 0.0;
 	double prev_time = 0.0;
 	std::deque<double> frame_times;
+	double average_frame_time = 0.0;
 	LARGE_INTEGER time = { 0 };
 	double frequency = 0.0;
 
@@ -201,8 +202,8 @@ public:
 	inline void setVertexOffset(glm::vec<2, uint16_t> offsets) { m_vertex_params.offsets = offsets; }
 	inline void setVertexFlag(bool set, uint16_t flag) { m_vertex_params.flags = set ? (m_vertex_params.flags | flag) : (m_vertex_params.flags & ~flag); }
 
-	const double getAvgFrameTime();
 	inline const double getFrameTime() { return m_frame.frame_time; }
+	inline const double getAvgFrameTime() { return m_frame.average_frame_time; }
 	inline const uint32_t getFrameCount() { return m_frame.frame_count; }
 	inline const uint32_t getVertexCount() { return m_frame.vertex_count; }
 	inline const uint32_t getDrawCallCount() { return m_frame.drawcall_count; }

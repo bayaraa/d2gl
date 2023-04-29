@@ -38,15 +38,9 @@ inline void CommandBuffer::next()
 	m_count++;
 }
 
-void CommandBuffer::pushCommand(CommandType type)
+void CommandBuffer::pushCommand(CommandType type, uint32_t index)
 {
 	m_command->type = type;
-	next();
-}
-
-void CommandBuffer::setBlendState(uint32_t index)
-{
-	m_command->type = CommandType::SetBlendState;
 	m_command->index = index;
 	next();
 }
