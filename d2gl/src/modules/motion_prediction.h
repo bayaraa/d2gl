@@ -76,6 +76,7 @@ public:
 
 	glm::ivec2 getGlobalOffset(bool skip = false);
 	glm::ivec2 getGlobalOffsetPerspective();
+	glm::ivec2 getUnitOffset(uint32_t type_id);
 
 	glm::ivec2 drawImage(int x, int y, D2DrawFn fn, uint32_t gamma = 0, int draw_mode = 0);
 	glm::ivec2 drawLine(int start_x, int start_y);

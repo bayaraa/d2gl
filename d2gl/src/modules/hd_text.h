@@ -49,6 +49,7 @@ class HDText {
 	uint32_t m_last_text_height = 0;
 	uint32_t m_last_text_width = 0;
 	uint32_t m_map_text_line = 1;
+	bool m_map_names = false;
 
 	bool m_bordered_rect = false;
 	bool m_draw_sub_text = true;
@@ -62,6 +63,11 @@ class HDText {
 	bool m_entry_text_draw = false;
 	clock_t m_entry_timer = 0;
 	int m_cur_level_no = 0;
+
+	uint32_t m_hovered_player_id = 0;
+	uint32_t m_hovered_player_hp1 = 0;
+	uint32_t m_hovered_player_hp2 = 0;
+	glm::ivec2 m_hovered_player_pos = { 0, 0 };
 
 	const uint32_t m_bg_color = 0x000000CC;
 	const uint32_t m_border_color = 0x222222DD;
@@ -86,7 +92,7 @@ public:
 
 	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 	bool drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
-	bool drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_color, uint32_t rect_transparency, uint32_t color);
+	bool drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_transparency, uint32_t color);
 	bool drawSolidRect(int left, int top, int right, int bottom, uint32_t color, int draw_mode);
 
 	uint32_t getNormalTextWidth(const wchar_t* str, const int n_chars);
@@ -97,8 +103,8 @@ public:
 	inline void borderedRect(bool draw = true) { m_bordered_rect = draw; }
 
 	void drawSubText(uint8_t fn = 1);
-	bool drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
-	bool drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode);
+	bool drawImage(d2::CellContext* cell, int x, int y, int draw_mode);
+	bool drawShiftedImage(d2::CellContext* cell, int x, int y);
 	void drawRectFrame();
 	void loadUIImage();
 
@@ -109,6 +115,7 @@ public:
 
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);
+	void drawPlayerHealthBar(const wchar_t* name, uint32_t color);
 
 	inline wchar_t getColor(uint32_t color);
 	inline const D2FontInfo& getFont(uint32_t size);

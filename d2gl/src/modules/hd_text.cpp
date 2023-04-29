@@ -22,6 +22,7 @@
 #include "d2/stubs.h"
 #include "font.h"
 #include "modules/mini_map.h"
+#include "modules/motion_prediction.h"
 
 namespace d2gl::modules {
 
@@ -36,7 +37,7 @@ const std::map<uint32_t, D2FontInfo> g_font_sizes = {
 	{  0, { 1, 10.8f, 1.14f, 1.0f,  0.115f } }, // Char name on stats panel
 	{  4, { 1, 10.2f, 1.14f, 1.0f,  0.115f } }, // Skill tree level number 2digits
 	{  5, { 1, 14.8f, 1.14f, 1.0f,  0.115f } }, // Menu screen copyright text
-	{  6, { 1,  8.8f, 1.14f, 1.0f,  0.115f } }, // All Small texts
+	{  6, { 1,  8.0f, 1.14f, 1.0f,  0.115f } }, // All Small texts
 	{  8, { 1, 12.4f, 1.14f, 1.0f,  0.115f } }, // Talking Text
 	{ 12, { 1,  8.8f, 1.14f, 1.0f,  0.115f } }, // ?
 	{ 13, { 1, 11.6f, 1.14f, 1.0f,  0.090f } }, // Message, Shrine, Keybind config
@@ -79,7 +80,7 @@ const std::vector<D2TextInfo> g_options_texts = {
 	{ 0, { 184, 26 }, TextAlign::Right,  L"AUDIO ONLY" },
 	{ 0, { 169, 26 }, TextAlign::Right,  L"TEXT ONLY" },
 	{ 1, {  39, 36 }, TextAlign::Center, L"VIDEO OPTIONS" },
-	{ 0, { 175, 26 }, TextAlign::Left,   L"RESOUTION" },
+	{ 0, { 175, 26 }, TextAlign::Left,   L"RESOLUTION" },
 	{ 0, { 135, 26 }, TextAlign::Right,  L"800x600" },
 	{ 0, { 123, 26 }, TextAlign::Right,  L"640x480" },
 	{ 1, {   9, 26 }, TextAlign::Left,   L"LIGHTING QUALITY" },
@@ -169,7 +170,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			case 1:
 				if (x == 113 || x == 385) {
 					pos.y += isVer(V_109d) ? -5.0f : 8.0f;
-					if (color == 0 || color == 2) {
+					if (color == 0 || color == 2 || y == 155 || y == 248 || y == 341 || y == 434) {
 						font = getFont(6);
 						m_fonts[font.id]->setSize(font.size);
 						m_fonts[font.id]->setMetrics(font);
@@ -189,9 +190,10 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 
 	static bool map_text = false;
 	if (App.game.draw_stage == DrawStage::Map && modules::MiniMap::Instance().isActive()) {
-		if (m_text_size == 6 && !*d2::automap_on)
-			return true;
-		else if (m_text_size != 6) {
+		if (m_text_size == 6 && !*d2::automap_on) {
+			m_map_names = true;
+			return false;
+		} else if (m_text_size != 6) {
 			if (*d2::screen_shift != 0)
 				return true;
 
@@ -238,9 +240,16 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 		return false;
 
 	const auto unit = d2::getSelectedUnit();
-	if (isVerMin(V_111) && unit && unit->dwType == d2::UnitType::Monster && y == 32 && !centered) {
-		drawMonsterHealthBar(unit);
-		return true;
+	if (unit) {
+		if (unit->dwType == d2::UnitType::Monster && isVerMin(V_111) && y == 32 && !centered) {
+			drawMonsterHealthBar(unit);
+			return true;
+		}
+
+		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit)) {
+			m_hovered_player_id = d2::getUnitID(unit) | ((uint8_t)unit->dwType << 24);
+			return false;
+		}
 	}
 
 	auto font = getFont(1);
@@ -289,11 +298,11 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 		const auto quality = d2::getItemQuality(item);
 		uint32_t border_color = m_border_color;
 		switch (quality) {
-			case d2::ItemQuality::Unique: border_color = 0x2b2215DD; break;
-			case d2::ItemQuality::Set: border_color = 0x1c3418DD; break;
-			case d2::ItemQuality::Rare: border_color = 0x31311eDD; break;
-			case d2::ItemQuality::Craft: border_color = 0x2f2102DD; break;
-			case d2::ItemQuality::Magic: border_color = 0x1d1d31DD; break;
+			case d2::ItemQuality::Unique: border_color = 0x2B2215DD; break;
+			case d2::ItemQuality::Set: border_color = 0x1C3418DD; break;
+			case d2::ItemQuality::Rare: border_color = 0x31311EDD; break;
+			case d2::ItemQuality::Craft: border_color = 0x2F2102DD; break;
+			case d2::ItemQuality::Magic: border_color = 0x1D1D31DD; break;
 		}
 		m_object_bg->setColor(border_color, 2);
 	} else
@@ -331,7 +340,7 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	return true;
 }
 
-bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_color, uint32_t rect_transparency, uint32_t color) // TODO: remove rect_color
+bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_transparency, uint32_t color)
 {
 	if (!isActive() || !str)
 		return false;
@@ -385,7 +394,7 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 
 bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t color, int draw_mode)
 {
-	if (!isActive())
+	if (App.game.screen != GameScreen::InGame || !isActive())
 		return false;
 
 	if (isVerMax(V_110)) {
@@ -401,11 +410,23 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 		monster_hp = false;
 	}
 
-	if (color != 0)
-		return false;
-
 	const int width = right - left;
 	const int height = bottom - top;
+
+	// if (draw_mode == 1)
+	// trace("[] | %d | %d | %dx%d | %dx%d", color, draw_mode, left, top, width, height);
+
+	if (height == 16 && m_hovered_player_id && m_text_size == 1) {
+		if (m_hovered_player_hp1 == 0) {
+			m_hovered_player_hp1 = width;
+			m_hovered_player_pos = { left, top };
+		} else
+			m_hovered_player_hp2 = width;
+		return true;
+	}
+
+	if (color != 0) // skip drawing except black color
+		return false;
 
 	if (draw_mode == 5 && height == 5 && top == 14) // hireling & summon hp
 		return false;
@@ -413,7 +434,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (right - left == App.game.size.x || bottom - top == App.game.size.y) // FreeRes black bars
 		return false;
 
-	if ((*d2::screen_shift == 2 || *d2::screen_shift == 3) && width == 320 && height == 432) // Plugy stats panel bg
+	if ((*d2::screen_shift == 2 || *d2::screen_shift == 3) && width == 320 && (height == 432 || height == 236)) // Plugy stats panel bg
 		return false;
 
 	if (draw_mode == 2 && width == 24 && height <= 24) // PD2 buff timer bg
@@ -436,9 +457,6 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	// draw_mode == 5 : skill tab 1,2,3 etc & D2HD bottom panel bg(full width)/left(half width)/right(half width) & Plugy stats panel(320x432 left panel open)
 	// draw_mode == 7 : BH setting tab bg
 	// draw_mode == 8 : BH setting checkbox bg
-
-	// if (draw_mode == 1)
-	//	trace("%d | %dx%d | %dx%d", draw_mode, left, top, width, height);
 
 	m_object_bg->setPosition({ (float)left, (float)top });
 	m_object_bg->setSize({ (float)width, (float)height });
@@ -495,6 +513,11 @@ uint16_t HDText::getFontHeight()
 
 void HDText::drawSubText(uint8_t fn)
 {
+	if (m_map_names) {
+		m_map_names = false;
+		return;
+	}
+
 	if (!isActive() || !d2::sub_text_ptr)
 		return;
 
@@ -523,13 +546,19 @@ void HDText::drawSubText(uint8_t fn)
 		y = (int*)(ptr + 0x8);
 	}
 
+	if (m_hovered_player_id) {
+		drawPlayerHealthBar(str, *color);
+		*length = 0;
+		return;
+	}
+
 	if (str) {
 		drawText(str, *x, *y, *color, 1);
 		*length = 0;
 	}
 }
 
-bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode) // TODO: remove gamma
+bool HDText::drawImage(d2::CellContext* cell, int x, int y, int draw_mode)
 {
 	if (!isActive() || !cell)
 		return true;
@@ -593,7 +622,7 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int 
 	return true;
 }
 
-bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y, uint32_t gamma, int draw_mode) // TODO: remove gamma, draw_mode
+bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y)
 {
 	if (!isActive())
 		return true;
@@ -755,18 +784,20 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	if (text_size.x + 40.0f > bar_size.x)
 		bar_size.x = text_size.x + 40.0f;
 
-	m_object_bg->setFlags(2);
 	glm::vec2 bar_pos = { center - bar_size.x / 2, 18.0f };
 
+	m_object_bg->setFlags(2);
 	m_object_bg->setPosition(bar_pos);
 	m_object_bg->setSize({ bar_size.x * hp_percent, bar_size.y });
 	m_object_bg->setColor(m_monster_hp, 1);
 	App.context->pushObject(m_object_bg);
 
-	m_object_bg->setPosition({ bar_pos.x + bar_size.x * hp_percent, bar_pos.y });
-	m_object_bg->setSize({ bar_size.x * (1.0f - hp_percent), bar_size.y });
-	m_object_bg->setColor(m_bg_color, 1);
-	App.context->pushObject(m_object_bg);
+	if (hp_percent < 1.0f) {
+		m_object_bg->setPosition({ bar_pos.x + bar_size.x * hp_percent, bar_pos.y });
+		m_object_bg->setSize({ bar_size.x * (1.0f - hp_percent), bar_size.y });
+		m_object_bg->setColor(m_bg_color, 1);
+		App.context->pushObject(m_object_bg);
+	}
 
 	wchar_t text_color = L'\x30';
 	if (type == d2::MonsterType::Boss || type == d2::MonsterType::SuperUnique)
@@ -778,6 +809,49 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 
 	glm::vec2 text_pos = { center - text_size.x / 2, App.api == Api::Glide ? 33.2f : 32.5f };
 	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(text_color));
+}
+
+void HDText::drawPlayerHealthBar(const wchar_t* name, uint32_t color)
+{
+	const uint32_t hp = m_hovered_player_hp1;
+	const uint32_t max_hp = m_hovered_player_hp1 + m_hovered_player_hp2;
+
+	auto font = getFont(1);
+	m_fonts[font.id]->setSize(font.size);
+	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setBoxed(false);
+	m_fonts[font.id]->setMasking(false);
+	m_fonts[font.id]->setAlign(TextAlign::Center);
+
+	const auto text_size = m_fonts[font.id]->getTextSize(name);
+	float hp_percent = (float)hp / (float)max_hp;
+
+	glm::vec2 bar_size = { 60.0f, 16.0f };
+	if (text_size.x + 20.0f > bar_size.x)
+		bar_size.x = text_size.x + 20.0f;
+
+	auto offset = modules::MotionPrediction::Instance().getUnitOffset(m_hovered_player_id);
+	const float center = (float)(m_hovered_player_pos.x + max_hp / 2) + (float)offset.x;
+	glm::vec2 bar_pos = { center - bar_size.x / 2, (float)m_hovered_player_pos.y + (float)offset.y };
+
+	m_object_bg->setFlags(2);
+	m_object_bg->setPosition(bar_pos);
+	m_object_bg->setSize({ bar_size.x * hp_percent, bar_size.y });
+	m_object_bg->setColor(m_monster_hp, 1);
+	App.context->pushObject(m_object_bg);
+
+	if (hp_percent < 1.0f) {
+		m_object_bg->setPosition({ bar_pos.x + bar_size.x * hp_percent, bar_pos.y });
+		m_object_bg->setSize({ bar_size.x * (1.0f - hp_percent), bar_size.y });
+		m_object_bg->setColor(m_bg_color, 1);
+		App.context->pushObject(m_object_bg);
+	}
+
+	glm::vec2 text_pos = { center - text_size.x / 2, bar_pos.y + (App.api == Api::Glide ? 14.4f : 13.8f) };
+	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(getColor(color)));
+
+	m_hovered_player_id = 0;
+	m_hovered_player_hp1 = m_hovered_player_hp2 = 0;
 }
 
 inline const D2FontInfo& HDText::getFont(uint32_t size)

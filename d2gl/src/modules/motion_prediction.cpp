@@ -130,6 +130,14 @@ glm::ivec2 MotionPrediction::getGlobalOffsetPerspective()
 	return { 0, 0 };
 }
 
+glm::ivec2 MotionPrediction::getUnitOffset(uint32_t type_id)
+{
+	if (isActive())
+		return m_units[type_id].offset;
+
+	return { 0, 0 };
+}
+
 glm::ivec2 MotionPrediction::drawImage(int x, int y, D2DrawFn fn, uint32_t gamma, int draw_mode)
 {
 	glm::ivec2 pos = { x, y };
