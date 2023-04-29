@@ -38,6 +38,7 @@ void checkCompatibilityMode()
 				char msg[128] = { 0 };
 				sprintf_s(msg, "Please disable the '%s' compatibility mode for game executable and then try to start the game again.", str);
 				MessageBoxA(NULL, msg, "Compatibility mode detected!", MB_OK);
+				error_log("Compatibility mode '%s' detected!", str);
 				break;
 			}
 			str = strtok_s(NULL, " ", &context);
@@ -45,29 +46,18 @@ void checkCompatibilityMode()
 	}
 }
 
-void checkDPIAwareness()
-{
-	bool setDpiAware = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-	if (!setDpiAware) {
-		HRESULT result = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-		setDpiAware = result == S_OK || result == E_ACCESSDENIED;
-	}
-	if (!setDpiAware)
-		SetProcessDPIAware();
-}
-
 void dllAttach(HMODULE hmodule)
 {
 	std::string command_line = GetCommandLineA();
 	helpers::strToLower(command_line);
 
+	if (command_line.find("-w ") != std::string::npos || command_line.find("-w") == command_line.length() - 2)
+		return;
+
 	if (command_line.find("d2vidtst") != std::string::npos) {
 		App.video_test = true;
 		return;
 	}
-
-	if (command_line.find("-w") != std::string::npos)
-		return;
 
 	bool flag_3dfx = command_line.find("-3dfx") != std::string::npos;
 	flag_3dfx = !flag_3dfx ? *d2::video_mode == 4 : flag_3dfx;
@@ -80,16 +70,31 @@ void dllAttach(HMODULE hmodule)
 
 	logInit();
 
+	auto ini_pos = command_line.find("-config ");
+	if (ini_pos != std::string::npos) {
+		std::string custom_ini = "";
+		for (size_t i = ini_pos + 8; i < command_line.length(); i++) {
+			if (command_line.at(i) == ' ')
+				break;
+			custom_ini += command_line.at(i);
+		}
+		custom_ini.erase(std::remove(custom_ini.begin(), custom_ini.end(), ' '), custom_ini.end());
+		if (custom_ini.length() > 0) {
+			App.ini_file = "d2gl_" + custom_ini + ".ini";
+			trace_log("Custom config file: %s", App.ini_file.c_str());
+		}
+	}
+
 	if (helpers::getVersion() == Version::Unknown) {
 		MessageBoxA(NULL, "Game version is not supported!", "Unsupported version!", MB_OK | MB_ICONERROR);
 		error_log("Game version is not supported!");
 		exit(1);
 	}
-	trace_log("Game version %s detected.", helpers::getVersionString().c_str());
+	trace_log("Diablo 2 LoD version %s detected.", helpers::getVersionString().c_str());
 
 	timeBeginPeriod(1);
 	checkCompatibilityMode();
-	checkDPIAwareness();
+	win32::setDPIAwareness();
 	App.hmodule = hmodule;
 
 	option::loadIni();

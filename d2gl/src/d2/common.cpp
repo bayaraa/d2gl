@@ -139,6 +139,12 @@ void initHooks()
 	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F84), (0x27AD0), (0x1E288), (0x1E194), (0x1E2B8), (0x1E174), (0x1E36C), (0x2D4CFC)), 4, 0x00000000);
 	no_intro.toggle(App.skip_intro);
 
+	if (isVer(V_113d)) {
+		Patch multiple_instance = Patch();
+		multiple_instance.add(PatchType::Swap, getOffset((DLL_D2GFX), (), (), (), (), (), (), (0xB6B0), ()), 2, 0xEB450000);
+		multiple_instance.toggle(true);
+	}
+
 	Patch game_loop = Patch();
 	game_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x9B3D, 0xE87A5F0B), (0xA2A2, 0xE8B51B0C), (0x89A2F, 0xE84A37F8), (0x3356F, 0xE85E9CFD), (0x7D1BF, 0xE84801F9), (0x44E2F, 0xE81A85FC), (0x45E7F, 0xE8E473FC), (0x4F256, 0xE8E5550C)), 5, (uintptr_t)gameDrawBeginStub);
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5333DB3B), (0x865AC, 0x33ED894C), (0x81B7C, 0x33DB894C), (0xA35F6), (0x669F6), (0x90156), (0xC39E6), (0x1D3E6), (0x56EE1, 0x8BEC83EC)), isVerMax(V_110) ? 6 : 5, (uintptr_t)uiDrawBeginStub);

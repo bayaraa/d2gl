@@ -201,13 +201,13 @@ void Menu::draw()
 				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
 				ImGui::Dummy({ 0.0f, 4.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
-				drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, { App.desktop_resolution.z, App.desktop_resolution.w });
+					drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, { App.desktop_resolution.z, App.desktop_resolution.w });
 				ImGui::EndDisabled();
 				drawSeparator();
 				drawCheckbox_m("Centered Window", m_options.window.centered, "Make window centered to desktop screen.", centered_window);
 				ImGui::Dummy({ 0.0f, 4.0f });
 				ImGui::BeginDisabled(m_options.window.centered);
-				drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { App.desktop_resolution.x, App.desktop_resolution.y }, { App.desktop_resolution.z, App.desktop_resolution.w });
+					drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { App.desktop_resolution.x, App.desktop_resolution.y }, { App.desktop_resolution.z, App.desktop_resolution.w });
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			childSeparator("##w2", true);
@@ -302,6 +302,14 @@ void Menu::draw()
 					drawDescription("Bloom Gamma setting.", m_colors[Color::Gray], 12);
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
+			drawSeparator();
+			drawLabel("Stretched Viewport", m_colors[Color::Orange]);
+			drawCheckbox_m("Horizontal", App.viewport.stretched.x, "", stretched_horizontal)
+				saveBool("Graphic", "stretched_horizontal", App.viewport.stretched.x);
+			ImGui::SameLine(150.0f);
+			drawCheckbox_m("Vertical", App.viewport.stretched.y, "", stretched_vertical)
+				saveBool("Graphic", "stretched_vertical", App.viewport.stretched.y);
+			drawDescription("Stretch viewport to window size.", m_colors[Color::Gray], 14);
 			childEnd();
 			tabEnd();
 		}
@@ -387,8 +395,8 @@ void Menu::draw()
 			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 				saveBool("Feature", "show_fps", App.show_fps);
 			drawSeparator();
-			drawCheckbox_m("No Cursor Lock", App.cursor.no_lock, "Cursor will not locked within window.", no_cursor_lock)
-				saveBool("Feature", "no_cursor_lock", App.cursor.no_lock);
+			drawCheckbox_m("Unlock Cursor", App.cursor.unlock, "Cursor will not locked within window.", unlock_cursor)
+				saveBool("Feature", "unlock_cursor", App.cursor.unlock);
 			childEnd();
 			tabEnd();
 		}
@@ -396,10 +404,16 @@ void Menu::draw()
 	}
 	ImGui::PopFont();
 	ImGui::SetCursorPos({ 16.0f, 460.0f });
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0.0f, 0.0f });
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+	ImGui::BeginChildFrame(ImGui::GetID("#wiki"), { 300.0f, 24.0f }, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground);
+	ImGui::PopStyleVar(3);
 	ImGui::PushFont(m_fonts[15]);
 	if (ImGui::Button(" Open Configuration Wiki Page > "))
 		ShellExecute(0, 0, L"https://github.com/bayaraa/d2gl/wiki/Configuration", 0, 0, SW_SHOW);
 	ImGui::PopFont();
+	ImGui::EndChildFrame();
 	ImGui::End();
 
 	// clang-format on

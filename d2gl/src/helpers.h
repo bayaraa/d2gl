@@ -29,6 +29,8 @@
 #define DLL_D2COMMON "d2common.dll"
 #define DLL_D2LAUNCH "d2launch.dll"
 #define DLL_USER32   "user32.dll"
+#define DLL_NTDLL    "ntdll.dll"
+#define DLL_SHCORE   "shcore.dll"
 
 #define UNPACK(...) __VA_ARGS__
 #define getOffset(def, v109d, v110, v111, v111b, v112, v113c, v113d, v114d) helpers::getVersionOffset({ UNPACK def }, { UNPACK v109d }, { UNPACK v110 }, { UNPACK v111 }, { UNPACK v111b }, { UNPACK v112 }, { UNPACK v113c }, { UNPACK v113d }, { UNPACK v114d })

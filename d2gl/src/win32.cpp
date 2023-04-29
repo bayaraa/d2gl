@@ -69,7 +69,7 @@ int WINAPI ShowCursor(BOOL bShow)
 
 BOOL WINAPI SetCursorPos(int X, int Y)
 {
-	if (App.hwnd && !App.cursor.no_lock) {
+	if (App.hwnd && !App.cursor.unlock) {
 		POINT pt = { (LONG)((float)X * App.cursor.scale.x), (LONG)((float)Y * App.cursor.scale.y) };
 		pt.x += App.viewport.offset.x;
 		pt.y += App.viewport.offset.y;
@@ -252,7 +252,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (!App.cursor.locked) {
 				setCursorLock();
-				return 0;
+				if (!App.cursor.unlock)
+					return 0;
 			}
 
 			[[fallthrough]];
@@ -271,21 +272,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (option::Menu::instance().isVisible())
 				return DefWindowProc(hWnd, uMsg, wParam, lParam);
 
-			if (!App.cursor.no_lock && !App.cursor.locked)
+			if (!App.cursor.unlock && !App.cursor.locked)
 				return 0;
 
 			int x = GET_X_LPARAM(lParam);
 			int y = GET_Y_LPARAM(lParam);
 
-			if (App.cursor.no_lock) {
-				x = (int)((float)(x - App.viewport.offset.x) * App.cursor.unscale.x);
-				y = (int)((float)(y - App.viewport.offset.y) * App.cursor.unscale.y);
-			} else {
-				x = (int)((float)glm::max(x - App.viewport.offset.x, 0) * App.cursor.unscale.x);
-				y = (int)((float)glm::max(y - App.viewport.offset.y, 0) * App.cursor.unscale.y);
-				x = glm::min(x, (int)App.game.size.x);
-				y = glm::min(y, (int)App.game.size.y);
-			}
+			x = (int)((float)glm::max(x - App.viewport.offset.x, 0) * App.cursor.unscale.x);
+			y = (int)((float)glm::max(y - App.viewport.offset.y, 0) * App.cursor.unscale.y);
+			x = glm::min(x, (int)App.game.size.x);
+			y = glm::min(y, (int)App.game.size.y);
 
 			lParam = MAKELPARAM(x, y);
 
@@ -401,12 +397,13 @@ void setWindowMetrics()
 void setCursorLock()
 {
 	if (!App.cursor.locked) {
-		RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
-		MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
-
-		if (!App.cursor.no_lock)
+		if (!App.cursor.unlock) {
+			RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
+			MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
 			ClipCursor(&rc);
-		ShowCursor_Og(false);
+		}
+
+		while(ShowCursor_Og(false) >= 0);
 		App.cursor.locked = true;
 	}
 }
@@ -414,9 +411,12 @@ void setCursorLock()
 void setCursorUnlock()
 {
 	if (App.cursor.locked) {
-		if (!App.cursor.no_lock)
+		if (!App.cursor.unlock)
 			ClipCursor(NULL);
-		ShowCursor_Og(true);
+		
+		if (option::Menu::instance().isVisible())
+			while(ShowCursor_Og(true) <= 0);
+		
 		App.cursor.locked = false;
 	}
 }
@@ -436,7 +436,9 @@ void windowResize()
 
 void toggleDarkmode()
 {
-	static SetWindowCompositionAttribute_t SetWindowCompositionAttribute = (SetWindowCompositionAttribute_t)helpers::getProcOffset(DLL_USER32, "SetWindowCompositionAttribute");
+	typedef BOOL(WINAPI* SetWindowCompositionAttribute_t)(HWND hWnd, WINDCOMPATTRDATA*);
+	SetWindowCompositionAttribute_t SetWindowCompositionAttribute = (SetWindowCompositionAttribute_t)helpers::getProcOffset(DLL_USER32, "SetWindowCompositionAttribute");
+
 	if (SetWindowCompositionAttribute) {
 		BOOL dark = (BOOL)App.window.dark_mode;
 		WINDCOMPATTRDATA data = { WINDCOMPATTR::WCA_USEDARKMODECOLORS, &dark, sizeof(dark) };
@@ -446,6 +448,39 @@ void toggleDarkmode()
 		if (App.window.dark_mode)
 			trace_log("Dark mode is not available!");
 	}
+}
+
+void setDPIAwareness()
+{
+	auto info = getOSVersion();
+	trace_log("Windows version %d.%d (build: %d) detected.", info.dwMajorVersion, info.dwMinorVersion, info.dwBuildNumber);
+
+	if (info.dwMajorVersion >= HIBYTE(_WIN32_WINNT_WIN10)) { // Win10+
+		typedef BOOL(WINAPI* SetProcessDpiAwareness_t)(DPI_AWARENESS_CONTEXT);
+		SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)helpers::getProcOffset(DLL_USER32, "SetProcessDpiAwarenessContext");
+		if (SetProcessDpiAwareness)
+			SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	} else if (info.dwMajorVersion == HIBYTE(_WIN32_WINNT_WINBLUE) && info.dwMinorVersion == LOBYTE(_WIN32_WINNT_WINBLUE)) { // Win8.1
+		typedef HRESULT(WINAPI* SetProcessDpiAwareness_t)(PROCESS_DPI_AWARENESS);
+		SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)helpers::getProcOffset(DLL_SHCORE, "SetProcessDpiAwareness");
+		if (SetProcessDpiAwareness)
+			SetProcessDpiAwareness(PROCESS_DPI_AWARENESS::PROCESS_PER_MONITOR_DPI_AWARE);
+	} else
+		SetProcessDPIAware();
+}
+
+RTL_OSVERSIONINFOW getOSVersion()
+{
+	typedef LONG NTSTATUS, *PNTSTATUS;
+	typedef NTSTATUS (WINAPI* RtlGetVersion_t)(PRTL_OSVERSIONINFOW);
+	static RtlGetVersion_t RtlGetVersion = (RtlGetVersion_t)helpers::getProcOffset(DLL_NTDLL, "RtlGetVersion");
+
+	RTL_OSVERSIONINFOW info = { 0 };
+	info.dwOSVersionInfoSize = sizeof(info);
+	if (RtlGetVersion)
+		RtlGetVersion(&info);
+
+	return info;
 }
 
 }

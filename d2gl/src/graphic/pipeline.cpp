@@ -84,8 +84,6 @@ void Pipeline::bind(uint32_t index)
 	if (current_program == m_id && current_blend_index == index)
 		return;
 
-	// App.context->flushVertices();//TODO
-
 	if (current_program != m_id) {
 		glUseProgram(m_id);
 		current_program = m_id;

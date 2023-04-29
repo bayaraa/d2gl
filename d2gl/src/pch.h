@@ -23,10 +23,10 @@
 #include <windowsx.h>
 
 #include <shellapi.h>
-#include <shellscalingapi.h>
 #include <stdint.h>
 #include <timeapi.h>
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <deque>
