@@ -108,6 +108,11 @@ bool isUnitDead(UnitAny* unit)
 	return unit && (d2::getUnitFlag(unit) & 0x10000);
 }
 
+wchar_t* getPlayerName(UnitAny* unit)
+{
+	return (wchar_t*)(isVer(V_109d) ? unit->v109.pPlayerData->szName : unit->v110.pPlayerData->szName);
+}
+
 MonsterType getMonsterType(UnitAny* unit)
 {
 	if (isVer(V_109d)) {
@@ -135,6 +140,14 @@ wchar_t* getMonsterName(UnitAny* unit)
 ItemQuality getItemQuality(UnitAny* unit)
 {
 	return isVer(V_109d) ? unit->v109.pItemData->dwQuality : unit->v110.pItemData->dwQuality;
+}
+
+bool isMercUnit(UnitAny* unit)
+{
+	if (unit->dwType != d2::UnitType::Monster || isVer(V_109d))
+		return false;
+
+	return unit->v110.dwClassId == MERC_A1 || unit->v110.dwClassId == MERC_A2 || unit->v110.dwClassId == MERC_A3 || unit->v110.dwClassId == MERC_A4 || unit->v110.dwClassId == MERC_A5;
 }
 
 CellFile* getCellFile(CellContext* cell)
@@ -194,7 +207,7 @@ void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, 
 	if (App.hd_cursor && App.game.draw_stage >= DrawStage::Cursor)
 		return;
 
-	if (modules::HDText::Instance().drawImage(cell, x, y, gamma, draw_mode)) {
+	if (modules::HDText::Instance().drawImage(cell, x, y, draw_mode)) {
 		const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image, gamma, draw_mode);
 		drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
 	}
@@ -208,7 +221,7 @@ void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint3
 
 void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int global_palette_shift)
 {
-	if (modules::HDText::Instance().drawShiftedImage(cell, x, y, gamma, draw_mode)) {
+	if (modules::HDText::Instance().drawShiftedImage(cell, x, y)) {
 		auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::ShiftedImage);
 		drawShiftedImage(cell, pos.x, pos.y, gamma, draw_mode, global_palette_shift);
 	}
@@ -318,7 +331,7 @@ void __fastcall drawFramedTextHooked(const wchar_t* str, int x, int y, uint32_t 
 void __fastcall drawRectangledTextHooked(const wchar_t* str, int x, int y, uint32_t rect_color, uint32_t rect_transparency, uint32_t color)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::RectangledText);
-	if (!modules::HDText::Instance().drawRectangledText(str, pos.x, pos.y, rect_color, rect_transparency, color))
+	if (!modules::HDText::Instance().drawRectangledText(str, pos.x, pos.y, rect_transparency, color))
 		drawRectangledText(str, pos.x, pos.y, rect_color, rect_transparency, color);
 }
 

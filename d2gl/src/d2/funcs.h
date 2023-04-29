@@ -29,16 +29,21 @@ bool isEscMenuOpen();
 
 UnitAny* getPlayerUnit();
 UnitAny* findUnit(uint32_t type_id);
+
 DWORD getUnitID(UnitAny* unit);
 DWORD getUnitFlag(UnitAny* unit);
 Path* getUnitPath(UnitAny* unit);
 StaticPath* getUnitStaticPath(UnitAny* unit);
 uint32_t getUnitStat(UnitAny* unit, uint32_t stat);
 UnitAny* getSelectedItem();
+
 bool isUnitDead(UnitAny* unit);
+wchar_t* getPlayerName(UnitAny* unit);
 MonsterType getMonsterType(UnitAny* unit);
 wchar_t* getMonsterName(UnitAny* unit);
+
 ItemQuality getItemQuality(UnitAny* unit);
+bool isMercUnit(UnitAny* unit);
 
 CellFile* getCellFile(CellContext* cell);
 DWORD getCellNo(CellContext* cell);
