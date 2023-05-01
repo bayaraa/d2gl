@@ -103,7 +103,7 @@ struct D2GLApp {
 	} foreground_fps;
 
 	struct BackgroundFPS {
-		bool active = false;
+		bool active = true;
 		Range<int> range = { 25, 25, 60 };
 	} background_fps;
 

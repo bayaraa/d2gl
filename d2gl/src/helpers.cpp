@@ -109,7 +109,7 @@ Version getVersion()
 	ss << ((ver_info->dwFileVersionLS >> 16) & 0xffff) << ".";
 	ss << ((ver_info->dwFileVersionLS >>  0) & 0xffff);
 
-	if (ss.str() == "1.0.9.22" ) version = Version::V_109d;
+	     if (ss.str() == "1.0.9.22" ) version = Version::V_109d;
 	else if (ss.str() == "1.0.10.39") version = Version::V_110;
 	else if (ss.str() == "1.0.11.45") version = Version::V_111;
 	else if (ss.str() == "1.0.11.46") version = Version::V_111b;
@@ -127,15 +127,16 @@ std::string getVersionString()
 	// clang-format off
 	switch (getVersion()) {
 	case Version::V_109d: return "1.09d";
-	case Version::V_110: return "1.10";
-	case Version::V_111: return "1.11";
+	case Version::V_110:  return "1.10";
+	case Version::V_111:  return "1.11";
 	case Version::V_111b: return "1.11b";
-	case Version::V_112: return "1.12";
+	case Version::V_112:  return "1.12";
 	case Version::V_113c: return "1.13c";
 	case Version::V_113d: return "1.13d";
 	case Version::V_114d: return "1.14d";
 	}
 	// clang-format on
+
 	return "Unknown";
 }
 

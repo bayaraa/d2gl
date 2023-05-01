@@ -24,6 +24,7 @@ struct Vertex {
 		glVertexAttribIPointer(4, 1, GL_UNSIGNED_SHORT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_num));
 		glEnableVertexAttribArray(5);
 		glVertexAttribIPointer(5, 1, GL_UNSIGNED_SHORT, sizeof(Vertex), (const void*)offsetof(Vertex, flags));
+		glDisableVertexAttribArray(6);
 	}
 };
 

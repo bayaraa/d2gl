@@ -176,11 +176,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_ACTIVATEAPP: {
+			const bool fps_capped = !App.vsync && App.foreground_fps.active;
+
 			if (wParam) {
-				App.context->setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
+				App.context->setFpsLimit(fps_capped, App.foreground_fps.range.value);
 				CallWindowProcA(App.wndproc, hWnd, WM_SYSKEYUP, VK_MENU, 0);
 			} else {
-				App.context->setFpsLimit(App.background_fps.active, App.background_fps.range.value);
+				App.context->setFpsLimit(App.background_fps.active || fps_capped, App.background_fps.active ? App.background_fps.range.value : App.foreground_fps.range.value);
 				setCursorUnlock();
 			}
 			return 0;

@@ -69,6 +69,7 @@ void dllAttach(HMODULE hmodule)
 		App.log = true;
 
 	logInit();
+	trace_log("Renderer Api: %s", App.api == Api::Glide ? "Glide" : "DDraw");
 
 	auto ini_pos = command_line.find("-config ");
 	if (ini_pos != std::string::npos) {
