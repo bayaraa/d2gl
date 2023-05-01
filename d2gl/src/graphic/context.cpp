@@ -520,6 +520,12 @@ void Context::renderThread(void* context)
 			glDrawElements(GL_TRIANGLES, cmd->m_vertex_mod_count / 4 * 6, GL_UNSIGNED_INT, 0);
 		}
 
+		static GLsync sync;
+		sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		glFlush();
+		glWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
+		glDeleteSync(sync);
+
 		option::Menu::instance().draw();
 		SwapBuffers(App.hdc);
 		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
