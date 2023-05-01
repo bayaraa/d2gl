@@ -476,6 +476,9 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 
 uint32_t HDText::getNormalTextWidth(const wchar_t* str, const int n_chars)
 {
+	if (App.game.draw_stage == DrawStage::Map && modules::MiniMap::Instance().isActive() && m_text_size == 6 && !*d2::automap_on)
+		return d2::getNormalTextWidth(str);
+
 	const auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
 	m_fonts[font.id]->setMetrics(font);

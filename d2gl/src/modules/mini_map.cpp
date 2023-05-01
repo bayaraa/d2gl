@@ -69,7 +69,7 @@ void MiniMap::draw()
 			swprintf_s(time_str, L"| ÿc\x34%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);
 
 			d2::setTextSizeHooked(99);
-			uint32_t width = d2::getNormalTextWidth(time_str);
+			uint32_t width = d2::getNormalTextWidthHooked(time_str);
 			d2::drawNormalTextHooked(time_str, App.game.size.x - width - 5, 15, 5, 0);
 		}
 	}
