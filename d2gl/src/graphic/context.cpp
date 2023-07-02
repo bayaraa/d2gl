@@ -93,7 +93,8 @@ Context::Context()
 
 	char version_str[50] = { 0 };
 	sprintf_s(version_str, "%d.%d", major_version, minor_version);
-	trace_log("OpenGL: %s (%s)", version_str, glGetString(GL_RENDERER));
+	trace_log("OpenGL: %s (%s | %s)", version_str, glGetString(GL_RENDERER), glGetString(GL_VENDOR));
+	trace_log("OpenGL: Shading Language: %s", version_str, glGetString(GL_SHADING_LANGUAGE_VERSION));
 	App.version = version_str;
 
 	GLint max_texture_unit;
@@ -146,12 +147,12 @@ Context::Context()
 
 	glGenBuffers(1, &m_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices.data[0]), NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices.data[0]), NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &m_pixel_buffer);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixel_buffer);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, PIXEL_BUFFER_SIZE, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, PIXEL_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	imguiInit();
@@ -343,6 +344,7 @@ void Context::renderThread(void* context)
 	uint32_t frame_index = 0;
 
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->m_vertex_buffer);
+	Vertex::enableAttribArray();
 
 	while (ctx->m_rendering) {
 		WaitForSingleObject(ctx->m_semaphore_cpu[frame_index], INFINITE);
@@ -421,7 +423,7 @@ void Context::renderThread(void* context)
 						ctx->setViewport(cmd->m_game_size);
 						ctx->bindPipeline(ctx->m_prefx_pipeline);
 					}
-					ctx->drawQuad(3 + App.bloom.active, App.lut.selected);
+					ctx->drawQuad(3 + App.bloom.active, { App.lut.selected, 0 });
 
 					ctx->bindPipeline(ctx->m_game_pipeline, command->index);
 					break;
@@ -520,15 +522,14 @@ void Context::renderThread(void* context)
 			glDrawElements(GL_TRIANGLES, cmd->m_vertex_mod_count / 4 * 6, GL_UNSIGNED_INT, 0);
 		}
 
-		static GLsync sync;
-		sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 		glFlush();
-		glWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
+		glClientWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
 		glDeleteSync(sync);
 
+		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
 		option::Menu::instance().draw();
 		SwapBuffers(App.hdc);
-		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
 
 		if (ctx->m_limiter.active) {
 			WaitForSingleObject(ctx->m_limiter.timer, (DWORD)ctx->m_limiter.frame_len_ms + 1);
@@ -693,8 +694,7 @@ void Context::onStageChange()
 				flushVertices();
 				m_blend_locked = true;
 				m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, 3);
-				setVertexFlag(true, 0x08);
-				setVertexFlag(!*d2::automap_on, 0x10);
+				setVertexFlagW(1 + !*d2::automap_on);
 			}
 			break;
 		case DrawStage::HUD:
@@ -702,7 +702,7 @@ void Context::onStageChange()
 				flushVertices();
 				m_blend_locked = false;
 				m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, m_current_blend_index);
-				setVertexFlag(false, 0x08);
+				setVertexFlagW(0);
 
 				modules::MiniMap::Instance().draw();
 			}
@@ -809,7 +809,7 @@ void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 of
 	};
 	m_vertices.ptr->color1 = vertex->pargb;
 	m_vertices.ptr->color2 = m_vertex_params.color;
-	m_vertices.ptr->tex_num = m_vertex_params.tex_num;
+	m_vertices.ptr->tex_ids = m_vertex_params.tex_ids;
 	m_vertices.ptr->flags = m_vertex_params.flags;
 
 	m_vertices.ptr++;
@@ -829,7 +829,7 @@ void Context::flushVertices()
 	m_frame.drawcall_count++;
 }
 
-void Context::drawQuad(int16_t flags, int16_t tex_num)
+void Context::drawQuad(int8_t flag_x, glm::vec<2, int16_t> tex_ids)
 {
 	static Vertex quad[4] = {
 		{ { glm::detail::toFloat16(-1.0f), glm::detail::toFloat16(-1.0f) }, { 0.0f, 0.0f } },
@@ -838,8 +838,8 @@ void Context::drawQuad(int16_t flags, int16_t tex_num)
 		{ { glm::detail::toFloat16(-1.0f), glm::detail::toFloat16(+1.0f) }, { 0.0f, 1.0f } },
 	};
 	for (size_t i = 0; i < 4; i++) {
-		quad[i].tex_num = tex_num;
-		quad[i].flags = flags;
+		quad[i].tex_ids = tex_ids;
+		quad[i].flags = { flag_x, 0, 0, 0 };
 	}
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), &quad[0]);
@@ -891,8 +891,7 @@ void Context::setFpsLimit(bool active, int max_fps)
 	m_limiter.frame_len_ms = 1000.0f / max_fps;
 	m_limiter.frame_len_ns = (uint64_t)(m_limiter.frame_len_ms * 10000);
 
-	if (m_limiter.active)
-		resetFileTime();
+	resetFileTime();
 }
 
 void Context::resetFileTime()

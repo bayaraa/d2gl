@@ -27,7 +27,7 @@ Object::Object(glm::vec2 position, glm::vec2 size)
 	for (size_t i = 0; i < 4; i++) {
 		m_vertices[i].color1 = 0xFFFFFFFF;
 		m_vertices[i].color2 = 0xFFFFFFFF;
-		m_vertices[i].tex_num = 0;
+		m_vertices[i].tex_ids = { 0, 0 };
 	}
 	setPosition(position);
 	setTexCoord({ 0.0f, 0.0f, 1.0f, 1.0f });
@@ -59,12 +59,12 @@ void Object::setTexCoord(glm::vec4 tex_coord)
 	m_vertices[3].tex_coord = { tex_coord.x, tex_coord.y };
 }
 
-void Object::setTexIds(int16_t tex_num)
+void Object::setTexIds(glm::vec<2, int16_t> tex_ids)
 {
-	m_vertices[0].tex_num = tex_num;
-	m_vertices[1].tex_num = tex_num;
-	m_vertices[2].tex_num = tex_num;
-	m_vertices[3].tex_num = tex_num;
+	m_vertices[0].tex_ids = tex_ids;
+	m_vertices[1].tex_ids = tex_ids;
+	m_vertices[2].tex_ids = tex_ids;
+	m_vertices[3].tex_ids = tex_ids;
 }
 
 void Object::setColor(uint32_t color, int num)

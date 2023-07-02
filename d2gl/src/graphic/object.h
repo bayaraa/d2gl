@@ -35,7 +35,7 @@ public:
 	void setPosition(glm::vec2 position);
 	void setSize(glm::vec2 size);
 	void setTexCoord(glm::vec4 tex_coord);
-	void setTexIds(int16_t tex_num);
+	void setTexIds(glm::vec<2, int16_t> tex_ids);
 	void setColor(uint32_t color, int num = 1);
 	void setFlags(uint8_t x = 0, uint8_t y = 0, uint8_t z = 0, uint8_t w = 0);
 	void setExtra(glm::vec2 extra);
