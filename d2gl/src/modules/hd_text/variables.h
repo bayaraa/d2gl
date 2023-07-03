@@ -709,8 +709,8 @@ inline void initLangVariables(uint32_t lang_id)
 		case LANG_JPN: case LANG_KOR: case LANG_CHI:
 			g_font_sizes = {
 				{  1, { 0, 11.6f, 1.02f, 1.4f,  0.102f, } }, // All Normal texts
-				{  9, { 0, 14.2f, 1.06f, 1.4f,  0.082f, L'\x02' } }, // Menu Button label
-				{ 10, { 0, 10.0f, 1.08f, 1.4f,  0.082f, L'\x02' } }, // Menu Button label (smaller)
+				{  9, { 1, 14.2f, 1.12f, 1.4f,  0.102f, L'\x02' } }, // Menu Button label
+				{ 10, { 1, 10.0f, 1.12f, 1.4f,  0.102f, L'\x02' } }, // Menu Button label (smaller)
 				{ 11, { 0, 11.2f, 1.06f, 1.4f,  0.082f, } }, // ?
 				{ 99, { 0, 10.0f, 1.02f, 1.4f,  0.102f, } }, // FramedText in small size //Custom
 

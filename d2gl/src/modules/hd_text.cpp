@@ -106,8 +106,8 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			switch (m_text_size) {
 				case 1: pos.y -= font.size * 0.26f; break;
 				case 7: pos.y -= font.size * 0.32f; break;
-				case 9: pos.y -= font.size * 0.27f; break;
-				case 10: pos.y -= font.size * 0.22f; break;
+				case 9: pos.y -= font.size * 0.18f; break;
+				case 10: pos.y -= font.size * 0.16f; break;
 			}
 			if (m_lang_id == LANG_JPN || m_lang_id == LANG_KOR) {
 				if (m_text_size == 3)
