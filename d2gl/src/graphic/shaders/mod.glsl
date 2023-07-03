@@ -92,6 +92,8 @@ void main()
 			vec4 color = texture(u_FontTexture, vec3(v_TexCoord, v_TexIds.x));
 			if(v_Flags.y > 0u) {
 				FragColor = vec4(0.0);
+				if(v_TexIds.y == 1 && (v_Color1.r + v_Color1.g + v_Color1.b) < 0.1)
+					FragColor = vec4(0.8);
 				if(v_TexIds.y == 1) {
 					float mlt = v_Flags.y == 1u ? 0.5 : 0.3;
 					FragColor.a = (color.a > 0.9 ? 0.0 : smoothstep(0.0, 0.9, color.a)) * mlt;
@@ -121,6 +123,8 @@ void main()
 		case 5u:
 			FragColor = texture(u_MapTexture, v_TexCoord);
 			FragColor.rgb = greyscale(FragColor.rgb, 0.2);
+			if (v_Flags.z > 0u)
+				FragColor.a *= v_Flags.z / 100.0;
 		break;
 	}
 
@@ -151,6 +155,8 @@ void main()
 					FragColor = v_Color2;
 			break;
 		}
+		if (v_Flags.z > 0u)
+			FragColor.a *= v_Flags.z / 100.0;
 	}
 }
 

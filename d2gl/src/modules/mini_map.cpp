@@ -24,13 +24,10 @@ namespace d2gl::modules {
 
 MiniMap::MiniMap()
 {
+	m_map = std::make_unique<Object>();
 	m_bg = std::make_unique<Object>();
 	m_bg->setColor(0x00000099, 1);
 	m_bg->setColor(0x222222EE, 2);
-	m_bg->setFlags(2, 3);
-
-	m_map = std::make_unique<Object>();
-	m_map->setFlags(5);
 }
 
 void MiniMap::resize()
@@ -60,8 +57,12 @@ void MiniMap::draw()
 	static tm gmt_time;
 
 	if (*d2::screen_shift == SCREENPANEL_NONE) {
-		App.context->pushObject(m_bg);
-		App.context->pushObject(m_map);
+		if (!d2::isEscMenuOpen()) {
+			m_bg->setFlags(2, 3, *d2::automap_on ? 30 : 100);
+			m_map->setFlags(5, 0, *d2::automap_on ? 50 : 100);
+			App.context->pushObject(m_bg);
+			App.context->pushObject(m_map);
+		}
 
 		if (App.hd_text) {
 			time_t now = time(0);
