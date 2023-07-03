@@ -95,7 +95,7 @@ Context::Context()
 	sprintf_s(version_str, "%d.%d", major_version, minor_version);
 	trace_log("OpenGL: %s (%s | %s)", version_str, glGetString(GL_RENDERER), glGetString(GL_VENDOR));
 	trace_log("OpenGL: Shading Language: %s", version_str, glGetString(GL_SHADING_LANGUAGE_VERSION));
-	App.version = version_str;
+	App.gl_version = version_str;
 
 	GLint max_texture_unit;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_unit);

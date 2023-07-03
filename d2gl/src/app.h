@@ -37,13 +37,14 @@ struct D2GLApp {
 	bool ready = false;
 
 	std::string menu_title = "D2GL";
+	std::string version_str = "D2GL v1.2.0 by Bayaraa.";
 	std::string ini_file = "d2gl.ini";
 	std::string mpq_file = "d2gl.mpq";
 	std::string log_file = "d2gl.log";
 
 	Api api = Api::Glide;
 	std::unique_ptr<Context> context;
-	std::string version = "";
+	std::string gl_version = "";
 	bool vsync = true;
 	uint32_t frame_latency = 1;
 

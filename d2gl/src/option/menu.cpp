@@ -109,7 +109,7 @@ Menu::Menu()
 	m_fonts[12] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 12.0f) : io.Fonts->Fonts[0];
 
 	App.menu_title += (App.api == Api::Glide ? " (Glide / " : " (DDraw / ");
-	App.menu_title += "OpenGL: " + App.version + " / D2LoD: " + helpers::getVersionString() + ")";
+	App.menu_title += "OpenGL: " + App.gl_version + " / D2LoD: " + helpers::getVersionString() + " / " + helpers::getLangString() + ")";
 }
 
 void Menu::toggle(bool force)
@@ -167,8 +167,8 @@ void Menu::draw()
 	ImVec2 window_pos = { (float)App.window.size.x * 0.5f, (float)App.window.size.y * 0.5f };
 	ImVec2 max_size = { (float)App.window.size.x - 20.0f, (float)App.window.size.y - 20.0f };
 	static ImGuiWindowFlags window_flags =
-	  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize |
-	  ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize |
+		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 	static ImGuiCond window_pos_cond = ImGuiCond_Appearing;
 
 	ImGui::SetNextWindowSize({ 640.0f, 500.0f }, ImGuiCond_Always);
@@ -188,9 +188,14 @@ void Menu::draw()
 	if (ImGui::BeginTabBar("tabs", ImGuiTabBarFlags_None)) {
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
-
+		ImGui::SetCursorPos({ 490.0f, 74.0f });
+		ImGui::PushFont(m_fonts[14]);
+		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Gray]);
+		ImGui::Text(App.version_str.c_str());
+		ImGui::PopStyleColor();
+		ImGui::PopFont();
 		static int active_tab = 0;
-		// ImGui::SetTabItemClosed("[Screen]");
+		// ImGui::SetTabItemClosed("Screen");
 		if (tabBegin("Screen", 0, &active_tab)) {
 			childBegin("##w1", true, true);
 			drawCheckbox_m("Fullscreen", m_options.window.fullscreen, "Game will run in windowed mode if unchecked.", fullscreen);
