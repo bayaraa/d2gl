@@ -56,7 +56,7 @@ class Menu {
 	bool drawNav(const char* btn_label);
 
 	template <typename T>
-	bool drawCombo(const char* title, Select<T>* select, const char* desc, const char* btn_label, int* opt);
+	bool drawCombo(const char* title, Select<T>* select, const char* desc, const char* btn_label, int* opt, int size = 17);
 	bool drawCheckbox(const char* title, bool* option, const char* desc, bool* opt);
 	template <typename T>
 	bool drawSlider(const std::string& id, const char* title, Range<T>* range, const char* format, const char* desc, T* opt);

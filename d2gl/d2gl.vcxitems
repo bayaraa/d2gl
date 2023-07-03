@@ -34,7 +34,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\motion_prediction.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\ini.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\option\menu.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\font.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_text\font.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\patch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\win32.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)vendor\include\imgui\imgui.cpp">
@@ -69,6 +69,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\funcs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\vertex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text\variables.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\patch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\structs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\stubs.h" />
@@ -87,7 +88,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\option\ini.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\option\menu.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\pch.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\font.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text\font.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\win32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)vendor\include\stb\stb_image_write.h" />

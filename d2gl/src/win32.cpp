@@ -416,9 +416,7 @@ void setCursorUnlock()
 		if (!App.cursor.unlock)
 			ClipCursor(NULL);
 		
-		if (option::Menu::instance().isVisible())
-			while(ShowCursor_Og(true) <= 0);
-		
+		while(ShowCursor_Og(true) <= 0);
 		App.cursor.locked = false;
 	}
 }

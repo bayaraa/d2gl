@@ -59,7 +59,7 @@ void MiniMap::draw()
 	static wchar_t time_str[20] = { 0 };
 	static tm gmt_time;
 
-	if (*d2::screen_shift == 0) {
+	if (*d2::screen_shift == SCREENPANEL_NONE) {
 		App.context->pushObject(m_bg);
 		App.context->pushObject(m_map);
 

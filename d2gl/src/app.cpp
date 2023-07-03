@@ -30,18 +30,12 @@ void checkCompatibilityMode()
 {
 	char buffer[1024] = { 0 };
 	if (GetEnvironmentVariableA("__COMPAT_LAYER", buffer, sizeof(buffer))) {
-		char* context = NULL;
-		char* str = strtok_s(buffer, " ", &context);
-		while (str) {
-			std::string str_s(str);
-			if (str_s == "WIN95" || str_s == "WIN98" || str_s == "NT4SP5") {
-				char msg[128] = { 0 };
-				sprintf_s(msg, "Please disable the '%s' compatibility mode for game executable and then try to start the game again.", str);
-				MessageBoxA(NULL, msg, "Compatibility mode detected!", MB_OK);
-				error_log("Compatibility mode '%s' detected!", str);
-				break;
-			}
-			str = strtok_s(NULL, " ", &context);
+		std::string compat_str(buffer);
+		helpers::strToLower(compat_str);
+		if (compat_str.find("win95") != std::string::npos || compat_str.find("win98") != std::string::npos || compat_str.find("nt4sp5") != std::string::npos) {
+			MessageBoxA(NULL, "Please disable compatibility mode for game executable and then try to start the game again.", "Compatibility mode detected!", MB_OK | MB_ICONWARNING);
+			error_log("Compatibility mode '%s' detected!", buffer);
+			exit(1);
 		}
 	}
 }
@@ -50,9 +44,6 @@ void dllAttach(HMODULE hmodule)
 {
 	std::string command_line = GetCommandLineA();
 	helpers::strToLower(command_line);
-
-	if (command_line.find("-w ") != std::string::npos || command_line.find("-w") == command_line.length() - 2)
-		return;
 
 	if (command_line.find("d2vidtst") != std::string::npos) {
 		App.video_test = true;
@@ -64,6 +55,14 @@ void dllAttach(HMODULE hmodule)
 
 	if ((App.api == Api::Glide && !flag_3dfx) || (App.api == Api::DDraw && flag_3dfx))
 		return;
+
+	if (command_line.find("-w ") != std::string::npos || command_line.find("-w") == command_line.length() - 2) {
+		if (App.api == Api::Glide && flag_3dfx) {
+			MessageBoxA(NULL, "D2GL Glide wrapper is not compatible with \"-w\" flag.\nRemove \"-w\" flag and run game again.", "Unsupported argument detected!", MB_OK | MB_ICONWARNING);
+			exit(1);
+		}
+		return;
+	}
 
 	if (command_line.find("-log") != std::string::npos)
 		App.log = true;
@@ -91,10 +90,10 @@ void dllAttach(HMODULE hmodule)
 		error_log("Game version is not supported!");
 		exit(1);
 	}
-	trace_log("Diablo 2 LoD version %s detected.", helpers::getVersionString().c_str());
+	trace_log("Diablo 2 LoD (%s) version %s detected.", helpers::getLangString().c_str(), helpers::getVersionString().c_str());
 
-	timeBeginPeriod(1);
 	checkCompatibilityMode();
+	timeBeginPeriod(1);
 	win32::setDPIAwareness();
 	App.hmodule = hmodule;
 

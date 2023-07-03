@@ -27,9 +27,9 @@
 
 namespace d2gl::option {
 
-#define drawCombo_m(a, b, c, d, id)     \
+#define drawCombo_m(a, b, c, d, e, id)  \
 	static int opt_##id = b##.selected; \
-	if (drawCombo(a, &b, c, d, &opt_##id))
+	if (drawCombo(a, &b, c, d, &opt_##id, e))
 
 #define drawCheckbox_m(a, b, c, id) \
 	static bool opt_##id = b;       \
@@ -155,14 +155,12 @@ void Menu::draw()
 	ImGui::Begin("Glide", (bool*)true, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
 	ImGui::Separator();
-	ImGui::Text("256: 1024 / %d / %d", App.var1, App.var7);
-	ImGui::Text("128: 2464 / %d / %d", App.var2, App.var8);
-	ImGui::Text(" 64: 4096 / %d / %d", App.var3, App.var9);
-	ImGui::Text(" 32: 8192 / %d / %d", App.var4, App.var10);
-	ImGui::Text(" 16: 5120 / %d / %d", App.var5, App.var11);
-	ImGui::Text("  8: 4096 / %d / %d", App.var6, App.var12);
-	// ImGui::Checkbox("aaa", (bool*)&App.var9);
-	// ImGui::Checkbox("aaa", (bool*)&App.var10);
+	ImGui::Text("256: 1024 / %d / %d", App.var[0], App.var[6]);
+	ImGui::Text("128: 2464 / %d / %d", App.var[1], App.var[7]);
+	ImGui::Text(" 64: 4096 / %d / %d", App.var[2], App.var[8]);
+	ImGui::Text(" 32: 8192 / %d / %d", App.var[3], App.var[9]);
+	ImGui::Text(" 16: 5120 / %d / %d", App.var[4], App.var[10]);
+	ImGui::Text("  8: 4096 / %d / %d", App.var[5], App.var[11]);
 	ImGui::End();
 #endif
 
@@ -193,12 +191,12 @@ void Menu::draw()
 
 		static int active_tab = 0;
 		// ImGui::SetTabItemClosed("[Screen]");
-		if (tabBegin("[Screen]", 0, &active_tab)) {
+		if (tabBegin("Screen", 0, &active_tab)) {
 			childBegin("##w1", true, true);
 			drawCheckbox_m("Fullscreen", m_options.window.fullscreen, "Game will run in windowed mode if unchecked.", fullscreen);
 			drawSeparator();
 			ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", resolutions);
+				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", 17, resolutions);
 				ImGui::Dummy({ 0.0f, 4.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
 					drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, { App.desktop_resolution.z, App.desktop_resolution.w });
@@ -227,7 +225,7 @@ void Menu::draw()
 			drawSeparator();
 			drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
 			childEnd();
-			if (drawNav("Apply")) {
+			if (drawNav("Apply Changes")) {
 				if (App.resolutions.selected) {
 					const auto val = App.resolutions.items[App.resolutions.selected].value;
 					m_options.window.size_save = val;
@@ -265,9 +263,9 @@ void Menu::draw()
 			}
 			tabEnd();
 		}
-		if (tabBegin("[Graphics]", 1, &active_tab)) {
+		if (tabBegin("Graphics", 1, &active_tab)) {
 			childBegin("##w3", true);
-			drawCombo_m("Upscale Shader", App.shader, "Libretro upscale shaders.", "", shader)
+			drawCombo_m("Upscale Shader", App.shader, "Libretro upscale shaders.", "", 17, shader)
 				saveInt("Graphic", "shader", App.shader.selected);
 			drawSeparator();
 			drawCheckbox_m("Luma Sharpen", App.sharpen.active, "", sharpen)
@@ -288,7 +286,7 @@ void Menu::draw()
 				saveBool("Graphic", "fxaa", App.fxaa);
 			childSeparator("##w4");
 			ImGui::BeginDisabled(App.api != Api::Glide);
-				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", lut)
+				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", 17, lut)
 					saveInt("Graphic", "lut", App.lut.selected);
 				drawSeparator();
 				drawCheckbox_m("Bloom Effect", App.bloom.active, "", bloom)
@@ -313,7 +311,7 @@ void Menu::draw()
 			childEnd();
 			tabEnd();
 		}
-		if (tabBegin("[Features]", 2, &active_tab)) {
+		if (tabBegin("Features", 2, &active_tab)) {
 			childBegin("##w5", true);
 			drawCheckbox_m("HD Cursor", App.hd_cursor, "High-definition in game & menu screen cursor.", hd_cursor)
 			{
@@ -499,15 +497,15 @@ bool Menu::drawCheckbox(const char* title, bool* option, const char* desc, bool*
 }
 
 template <typename T>
-bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, const char* btn_label, int* opt)
+bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, const char* btn_label, int* opt, int size)
 {
 	bool ret = false;
 	bool have_btn = (btn_label && btn_label[0]);
 
-	drawLabel(title, m_colors[Color::Orange]);
+	drawLabel(title, m_colors[Color::Orange], 17);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8.0f, 5.0f });
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 8.0f });
-	ImGui::PushFont(m_fonts[17]);
+	ImGui::PushFont(m_fonts[size]);
 	ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() - (have_btn ? 84.0f : 0.0f));
 	auto& selected = select->items[select->selected];
 	if (ImGui::BeginCombo(("##" + std::string(title)).c_str(), selected.name.c_str(), ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest)) {
@@ -609,7 +607,7 @@ void Menu::drawSeparator(float y_padd, float alpha)
 
 void Menu::drawLabel(const char* title, const ImVec4& color, int size)
 {
-	if (!title || !title[0])
+	if (!title || !title[0] || title[0] == ' ')
 		return;
 
 	ImGui::PushFont(m_fonts[size]);

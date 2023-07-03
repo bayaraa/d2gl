@@ -144,18 +144,9 @@ struct D2GLApp {
 		Range<int> height = { 140, 100, 200 };
 	} mini_map;
 
-	int var1 = 0;
-	int var2 = 0;
-	int var3 = 0;
-	int var4 = 0;
-	int var5 = 0;
-	int var6 = 0;
-	int var7 = 0;
-	int var8 = 0;
-	int var9 = 0;
-	int var10 = 0;
-	int var11 = 0;
-	int var12 = 0;
+#ifdef _DEBUG
+	int var[12] = { 0 };
+#endif
 };
 // clang-format on
 
