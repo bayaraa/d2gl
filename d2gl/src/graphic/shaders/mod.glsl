@@ -90,12 +90,19 @@ void main()
 		case 2u: FragColor = v_Color1; break;
 		case 3u: {
 			vec4 color = texture(u_FontTexture, vec3(v_TexCoord, v_TexIds.x));
-			if(v_Flags.y == 1u) {
-				FragColor = vec4(vec3(0.0), (color.a > 0.6 ? 0.0 : smoothstep(0.0, 0.6, color.a)) * 0.3);
+			if(v_Flags.y > 0u) {
+				FragColor = vec4(0.0);
+				if(v_TexIds.y == 1) {
+					float mlt = v_Flags.y == 1u ? 0.5 : 0.3;
+					FragColor.a = (color.a > 0.9 ? 0.0 : smoothstep(0.0, 0.9, color.a)) * mlt;
+				} else {
+					float mlt = v_Flags.y == 1u ? 0.5 : 0.3;
+					FragColor.a = (color.a > 0.7 ? 0.0 : smoothstep(0.0, 0.7, color.a)) * mlt;
+				}
 			} else {
 				if (v_Flags.w == 1u) {
-					float opacity1 = msdf(color.rgb, v_Extra.x, v_Extra.y + 0.05);
-					float opacity2 = msdf(color.rgb, v_Extra.x, 0.95);
+					float opacity1 = msdf(color.rgb, v_Extra.x, v_Extra.y + (v_TexIds.y == 1 ? 0.03 : 0.05));
+					float opacity2 = msdf(color.rgb, v_Extra.x, v_TexIds.y == 1 ? 1.04 : 0.95);
 					FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
 				} else {
 					float opacity = msdf(color.rgb, v_Extra.x, v_Extra.y);
