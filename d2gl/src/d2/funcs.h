@@ -26,6 +26,7 @@ uint32_t mpqLoad(const char* mpqfile);
 glm::ivec2 getCursorPos();
 bool isPerspective();
 bool isEscMenuOpen();
+bool isLangCJK(uint32_t lang_id);
 
 UnitAny* getPlayerUnit();
 UnitAny* findUnit(uint32_t type_id);

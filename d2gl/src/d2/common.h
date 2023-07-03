@@ -36,6 +36,7 @@ typedef uint32_t(__stdcall* drawUnit_t)(UnitAny* unit, uint32_t, uint32_t, uint3
 typedef void* drawWeatherParticles_t;
 typedef UnitAny*(__stdcall* getSelectedUnit_t)(void);
 
+typedef uint32_t(__stdcall* getLangId_t)(void);
 typedef uint32_t(__stdcall* getUnitStat_t)(UnitAny* unit, uint32_t stat, uint32_t stat2);
 typedef uint32_t(__stdcall* getUnitStat109d_t)(UnitAny* unit, uint32_t stat);
 typedef uint32_t(__stdcall* getUnitState_t)(UnitAny* unit, uint32_t state_no);
@@ -144,6 +145,7 @@ extern getFramedTextSize_t getFramedTextSize;
 extern getFontHeight_t getFontHeight;
 extern setTextSize_t setTextSize;
 
+extern getLangId_t getLangId;
 extern getSelectedUnit_t getSelectedUnit;
 extern getUnitStat_t getUnitStat_Fn;
 extern getUnitState_t getUnitState_Fn;

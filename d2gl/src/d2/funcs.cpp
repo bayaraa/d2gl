@@ -56,6 +56,11 @@ bool isEscMenuOpen()
 	return *esc_menu_open || control;
 }
 
+bool isLangCJK(uint32_t lang_id)
+{
+	return lang_id == LANG_JPN || lang_id == LANG_KOR || lang_id == LANG_CHI;
+}
+
 UnitAny* getPlayerUnit()
 {
 	return (UnitAny*)*(uintptr_t*)player_unit;
@@ -271,7 +276,7 @@ bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, i
 		const auto len = strlen(tile->szTileName);
 		if (len > 8) {
 			const auto name = tile->szTileName + len - 8;
-			if (strcmp(name, "Warp.dt1") == 0)
+			if (_stricmp(name, "Warp.dt1") == 0)
 				return true;
 		}
 	}

@@ -76,7 +76,7 @@ findUnit_t findUnitClient = (findUnit_t)getProc((DLL_D2CLIENT), (0x8B560), (0x86
 findUnit_t findUnitServer = (findUnit_t)getProc((DLL_D2CLIENT), (0x8B5D0), (0x86A60), (0x262F0), (0x4C060), (0x1F1C0), (0xA5B40), (0x620D0), (0x639B0));
 drawUnit_t drawUnit = (drawUnit_t)getProc((DLL_D2CLIENT), (0xB8350), (0xBA720), (0x6C760), (0x478D0), (0x94250), (0x6C490), (0x605b0), (0x70EC0));
 drawUnit_t drawMissile = (drawUnit_t)getProc((DLL_D2CLIENT), (), (), (0x6CEB0), (0x480A0), (0x949C0), (0x6CC00), (0x60C70), (0x71EC0));
-drawWeatherParticles_t drawWeatherParticles = (drawWeatherParticles_t)getProc((DLL_D2CLIENT), (0x07BC0), (0x08690), (0x4C980), (0x12730), (0x14210), (0x7FE80), (0x4AD90), (0x73470));
+drawWeatherParticles_t drawWeatherParticles = (drawWeatherParticles_t)getProc((DLL_D2CLIENT), (0x07BC0), (0x08240), (0x4C980), (0x12730), (0x14210), (0x7FE80), (0x4AD90), (0x73470));
 
 clearScreen_t clearScreen = (clearScreen_t)getProc((DLL_D2GFX), (-10058), (-10058), (-10067), (-10037), (-10047), (-10021), (-10010), (0xF63B0));
 drawImage_t drawImage = (drawImage_t)getProc((DLL_D2GFX), (-10072), (-10072), (-10047), (-10044), (-10024), (-10041), (-10042), (0xF6480));
@@ -95,7 +95,7 @@ drawShadowTile_t drawShadowTile = (drawShadowTile_t)getProc((DLL_D2GFX), (-10082
 
 takeScreenShot_t takeScreenShot = (takeScreenShot_t)getProc((DLL_D2WIN), (-10168), (-10168), (-10205), (-10014), (-10196), (-10187), (-10107), (0xFA7A0));
 drawNormalText_t drawNormalText = (drawNormalText_t)getProc((DLL_D2WIN), (-10117), (-10117), (-10020), (-10064), (-10001), (-10150), (-10076), (0x102320));
-drawNormalTextEx_t drawNormalTextEx = (drawNormalTextEx_t)getProc((DLL_D2WIN), (), (), (-10006), (-10043), (-10157), (-10096), (-10084), (0x102360));
+drawNormalTextEx_t drawNormalTextEx = (drawNormalTextEx_t)getProc((DLL_D2WIN), (-10118), (-10118), (-10006), (-10043), (-10157), (-10096), (-10084), (0x102360));
 drawFramedText_t drawFramedText = (drawFramedText_t)getProc((DLL_D2WIN), (-10129), (-10129), (-10118), (-10039), (-10031), (-10085), (-10137), (0x102280));
 drawRectangledText_t drawRectangledText = (drawRectangledText_t)getProc((DLL_D2WIN), (-10132), (-10132), (-10009), (-10103), (-10082), (-10013), (-10078), (0x1023B0));
 getNormalTextWidth_t getNormalTextWidth = (getNormalTextWidth_t)getProc((DLL_D2WIN), (-10121), (-10121), (-10034), (-10128), (-10132), (-10028), (-10150), (0x101820));
@@ -104,6 +104,7 @@ getFramedTextSize_t getFramedTextSize = (getFramedTextSize_t)getProc((DLL_D2WIN)
 getFontHeight_t getFontHeight = (getFontHeight_t)getProc((DLL_D2WIN), (-10125), (-10125), (-10000), (-10138), (-10146), (-10083), (-10088), (0x101A40));
 setTextSize_t setTextSize = (setTextSize_t)getProc((DLL_D2WIN), (-10127), (-10127), (-10141), (-10170), (-10010), (-10184), (-10047), (0x102EF0));
 
+getLangId_t getLangId = (getLangId_t)getProc((DLL_D2LANG), (-10007), (-10007), (-10009), (-10013), (-10002), (-10009), (-10001), (0x125150));
 getSelectedUnit_t getSelectedUnit = (getSelectedUnit_t)getProc((DLL_D2CLIENT), (0x14CE0), (0x15A20), (0x37CA0), (0x2F950), (0x6ECA0), (0x51A80), (0x17280), (0x67A10));
 getUnitStat_t getUnitStat_Fn = (getUnitStat_t)getProc((DLL_D2COMMON), (-10519), (-10519), (-11092), (-10061), (-10658), (-10973), (-10550), (0x225480));
 getUnitState_t getUnitState_Fn = (getUnitState_t)getProc((DLL_D2COMMON), (-10487), (), (), (-10604), (), (-10494), (-10706), (0x239DF0));
@@ -226,8 +227,7 @@ void initHooks()
 
 	DetourAttach(&(PVOID&)takeScreenShot, takeScreenShotHooked);
 	DetourAttach(&(PVOID&)drawNormalText, drawNormalTextHooked);
-	if (isVerNot(V_109d) && isVerNot(V_110))
-		DetourAttach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
+	DetourAttach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
 	DetourAttach(&(PVOID&)drawFramedText, drawFramedTextHooked);
 	DetourAttach(&(PVOID&)drawRectangledText, drawRectangledTextHooked);
 	DetourAttach(&(PVOID&)getNormalTextWidth, getNormalTextWidthHooked);
@@ -258,8 +258,7 @@ void destroyHooks()
 
 	DetourDetach(&(PVOID&)takeScreenShot, takeScreenShotHooked);
 	DetourDetach(&(PVOID&)drawNormalText, drawNormalTextHooked);
-	if (isVerNot(V_109d) && isVerNot(V_110))
-		DetourDetach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
+	DetourDetach(&(PVOID&)drawNormalTextEx, drawNormalTextExHooked);
 	DetourDetach(&(PVOID&)drawFramedText, drawFramedTextHooked);
 	DetourDetach(&(PVOID&)drawRectangledText, drawRectangledTextHooked);
 	DetourDetach(&(PVOID&)getNormalTextWidth, getNormalTextWidthHooked);

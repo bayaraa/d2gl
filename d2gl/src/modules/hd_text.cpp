@@ -20,109 +20,35 @@
 #include "hd_text.h"
 #include "d2/common.h"
 #include "d2/stubs.h"
-#include "font.h"
 #include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 
 namespace d2gl::modules {
 
-// clang-format off
-const std::map<uint32_t, D2FontInfo> g_font_sizes = {
-	{  1, { 0, 14.3f, 1.02f, 1.1f, -0.022f, } }, // All Normal texts
-	{  9, { 0, 16.4f, 1.10f, 1.1f, -0.022f, L'\x02' } }, // Menu Button label
-	{ 10, { 0, 12.0f, 1.14f, 1.1f, -0.022f, L'\x02' } }, // Menu Button label (smaller)
-	{ 11, { 0, 12.2f, 1.06f, 1.1f, -0.022f, } }, // ?
-	{ 99, { 0, 11.2f, 1.00f, 1.1f, -0.022f, } }, // FramedText in small size
-
-	{  0, { 1, 10.8f, 1.14f, 1.0f,  0.115f } }, // Char name on stats panel
-	{  4, { 1, 10.2f, 1.14f, 1.0f,  0.115f } }, // Skill tree level number 2digits
-	{  5, { 1, 14.8f, 1.14f, 1.0f,  0.115f } }, // Menu screen copyright text
-	{  6, { 1,  8.0f, 1.14f, 1.0f,  0.115f } }, // All Small texts
-	{  8, { 1, 12.4f, 1.14f, 1.0f,  0.115f } }, // Talking Text
-	{ 12, { 1,  8.8f, 1.14f, 1.0f,  0.115f } }, // ?
-	{ 13, { 1, 11.6f, 1.14f, 1.0f,  0.090f } }, // Message, Shrine, Keybind config
-
-	{  2, { 2, 27.0f, 1.10f, 1.0f, -0.022f, L'\x01' } }, // Char create screen title, Resolution text eg:800x600
-	{  3, { 2, 36.0f, 1.10f, 1.0f, -0.022f, L'\x01' } }, // Char selection title (selected char name)
-	{  7, { 2, 20.9f, 1.10f, 1.0f, -0.022f, L'\x01' } }, // Menu screen popup title
-};
-
-const std::vector<D2PopupInfo> g_popups = {
-	{ { 256, 256 }, {  70,  85 } }, // CinematicsSelection.dc6
-	{ { 256, 256 }, {  70, 171 } }, // CinematicsSelectionEXP.dc6
-	{ { 256, 256 }, {  84,  84 } }, // GWListBox.dc6 // PopUpLarge.dc6
-	{ { 256, 224 }, {  84, 224 } }, // PopUp_340x224.dc6
-	{ { 256, 256 }, { 229,  34 } }, // PopUpLargest.dc6 // PopUpLargest2.dc6
-	{ { 256, 245 }, { 154, 245 } }, // PopupWide.dc6 // PopUpWideNoHoles.dc6
-	{ { 256, 176 }, {   8, 176 } }, // popupok.dc6 // passwordbox.dc6 // PopUpOKCancel.DC6
-	{ { 256, 200 }, {  70, 200 } }, // DifficultyLevels.dc6
-	{ { 256, 256 }, {   0,   0 } }, // TileableDialog.dc6
-};
-
-const std::vector<D2TextInfo> g_options_texts = {
-	{ 0, { 160, 36 }, TextAlign::Center, L"OPTIONS" },
-	{ 1, { 178, 36 }, TextAlign::Center, L"SAVE AND EXIT GAME" },
-	{ 1, { 100, 36 }, TextAlign::Center, L"RETURN TO GAME" },
-	{ 1, {  57, 36 }, TextAlign::Center, L"PREVIOUS MENU" },
-	{ 0, { 231, 26 }, TextAlign::Center, L"PREVIOUS MENU" },
-	{ 0, {  41, 26 }, TextAlign::Right,  L"ON" },
-	{ 0, {  52, 26 }, TextAlign::Right,  L"OFF" },
-	{ 0, {  51, 26 }, TextAlign::Right,  L"YES" },
-	{ 0, {  40, 26 }, TextAlign::Right,  L"NO" },
-	{ 1, {  53, 36 }, TextAlign::Center, L"SOUND OPTIONS" },
-	{ 0, {  95, 26 }, TextAlign::Left,   L"SOUND" },
-	{ 0, {  84, 26 }, TextAlign::Left,   L"MUSIC" },
-	{ 0, { 144, 26 }, TextAlign::Left,   L"3D SOUND" },
-	{ 1, { 106, 26 }, TextAlign::Left,   L"ENVIRONMENTAL EFFECTS" },
-	{ 0, { 109, 26 }, TextAlign::Right,  L"3D BIAS" },
-	{ 0, { 157, 26 }, TextAlign::Left,   L"NPC SPEECH" },
-	{ 1, {   4, 26 }, TextAlign::Right,  L"AUDIO AND TEXT" },
-	{ 0, { 184, 26 }, TextAlign::Right,  L"AUDIO ONLY" },
-	{ 0, { 169, 26 }, TextAlign::Right,  L"TEXT ONLY" },
-	{ 1, {  39, 36 }, TextAlign::Center, L"VIDEO OPTIONS" },
-	{ 0, { 175, 26 }, TextAlign::Left,   L"RESOLUTION" },
-	{ 0, { 135, 26 }, TextAlign::Right,  L"800x600" },
-	{ 0, { 123, 26 }, TextAlign::Right,  L"640x480" },
-	{ 1, {   9, 26 }, TextAlign::Left,   L"LIGHTING QUALITY" },
-	{ 0, {  57, 26 }, TextAlign::Right,  L"HIGH" },
-	{ 0, { 108, 26 }, TextAlign::Right,  L"MEDIUM" },
-	{ 0, {  66, 26 }, TextAlign::Right,  L"LOW" },
-	{ 1, {  10, 26 }, TextAlign::Left,   L"BLENDED SHADOWS" },
-	{ 0, { 174, 26 }, TextAlign::Left,   L"PERSPECTIVE" },
-	{ 0, { 105, 26 }, TextAlign::Left,   L"GAMMA" },
-	{ 0, { 151, 26 }, TextAlign::Left,   L"CONTRAST" },
-	{ 1, { 122, 36 }, TextAlign::Center, L"AUTOMAP OPTIONS" },
-	{ 0, { 213, 26 }, TextAlign::Left,   L"AUTOMAP SIZE" },
-	{ 0, { 180, 26 }, TextAlign::Right,  L"FULL SCREEN" },
-	{ 0, { 131, 26 }, TextAlign::Right,  L"MINI MAP" },
-	{ 0, {  70, 26 }, TextAlign::Left,   L"FADE" },
-	{ 0, { 173, 26 }, TextAlign::Right,  L"EVERYTHING" },
-	{ 0, { 104, 26 }, TextAlign::Right,  L"CENTER" },
-	{ 0, {  86, 26 }, TextAlign::Right,  L"AUTO" },
-	{ 1, {  80, 26 }, TextAlign::Left,   L"CENTER WHEN CLEARED" },
-	{ 0, { 194, 26 }, TextAlign::Left,   L"SHOW PARTY" },
-	{ 0, { 190, 26 }, TextAlign::Left,   L"SHOW NAMES" },
-	{ 1, { 167, 36 }, TextAlign::Center, L"CONFIGURE CONTROLS" },
-};
-
-const std::vector<D2TextInfo> g_death_texts = {
-	{ 1, {  20, 36 }, TextAlign::Center, L"You have died" },
-	{ 1, { 175, 36 }, TextAlign::Center, L"Press ESC to continue." },
-	{ 1, {  23, 36 }, TextAlign::Center, L"You lost gold" },
-};
-// clang-format on
-
 HDText::HDText()
 {
+	m_lang_id = d2::getLangId();
+	initLangVariables(m_lang_id);
 	m_object_bg = std::make_unique<Object>();
 
-	FontCreateInfo font_ci1 = { "ExocetBlizzardMedium", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } };
-	FontCreateInfo font_ci2 = { "Formal436BT", 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } };
-	FontCreateInfo font_ci3 = { "ExocetReaperMedium", 0.0f, { 0.0f, App.api == Api::Glide ? -0.14f : -0.10f } };
-
-	m_fonts[0] = std::make_unique<Font>(font_ci1);
-	m_fonts[1] = std::make_unique<Font>(font_ci2);
-	m_fonts[2] = std::make_unique<Font>(font_ci3);
+	if (m_lang_id == LANG_JPN) {
+		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "NotoSansJP", 5, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f }, 32.0f });
+		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "NotoSerifJP", 5, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f }, 32.0f });
+	} else if (m_lang_id == LANG_KOR) {
+		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "NotoSansKR", 3, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f }, 32.0f });
+		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "NotoSerifKR", 3, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f }, 32.0f });
+	} else if (m_lang_id == LANG_CHI) {
+		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "NotoSansSC", 9, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f }, 32.0f });
+		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "NotoSerifSC", 9, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f }, 32.0f });
+	} else {
+		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "ExocetBlizzard", 2, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
+		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "AlegreyaSans", 2, 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
+		if (m_lang_id == LANG_RUS)
+			m_fonts[2] = std::make_unique<Font>(FontCreateInfo{ "Macho", 2, 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
+		else
+			m_fonts[2] = std::make_unique<Font>(FontCreateInfo{ "Formal436BT", 1, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
+		m_fonts[3] = std::make_unique<Font>(FontCreateInfo{ "ExocetReaper", 2, 0.0f, { 0.0f, App.api == Api::Glide ? -0.14f : -0.10f } });
+	}
 }
 
 void HDText::reset()
@@ -161,27 +87,55 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 	auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
 	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setShadow(1);
 
 	glm::vec2 pos = { (float)x, (float)y };
 	uint32_t text_color = g_text_colors.at(!color && font.color ? font.color : getColor(color));
 
 	if (App.game.screen == GameScreen::Menu) {
-		switch (m_text_size) {
-			case 1:
-				if (x == 113 || x == 385) {
-					pos.y += isVer(V_109d) ? -5.0f : 8.0f;
-					if (color == 0 || color == 2 || y == 155 || y == 248 || y == 341 || y == 434) {
-						font = getFont(6);
-						m_fonts[font.id]->setSize(font.size);
-						m_fonts[font.id]->setMetrics(font);
-						pos.x += 2.0f;
-					}
-				}
-				break;
-			case 3: pos.y -= font.size * 0.18f; break;
-			case 7: pos.y -= font.size * 0.16f; break;
-			case 9: pos.y -= font.size * 0.06f; break;
-			case 10: pos.y += font.size * 0.06f; break;
+		if (m_text_size == 1 && (x == 113 || x == 385)) {
+			pos.y += isVer(V_109d) ? -5.0f : 8.0f;
+			if (color == 0 || color == 2 || y == 155 || y == 248 || y == 341 || y == 434) {
+				font = getFont(color == 0 ? 98 : 6);
+				m_fonts[font.id]->setSize(font.size);
+				m_fonts[font.id]->setMetrics(font);
+				pos.x += 2.0f;
+			}
+		}
+		if (d2::isLangCJK(m_lang_id)) {
+			switch (m_text_size) {
+				case 1: pos.y -= font.size * 0.26f; break;
+				case 7: pos.y -= font.size * 0.32f; break;
+				case 9: pos.y -= font.size * 0.27f; break;
+				case 10: pos.y -= font.size * 0.22f; break;
+			}
+			if (m_lang_id == LANG_JPN || m_lang_id == LANG_KOR) {
+				if (m_text_size == 3)
+					pos.y -= font.size * 0.08f;
+				else if (m_text_size == 9 && (y == 504 || y == 506))
+					pos.y += 7.0f;
+			}
+			if (m_text_size == 3) {
+				if (m_lang_id == LANG_JPN)
+					pos.y -= font.size * 0.20f;
+				else if (m_lang_id == LANG_CHI)
+					pos.y -= font.size * 0.29f;
+			}
+		} else if (m_lang_id == LANG_POL) {
+			switch (m_text_size) {
+				case 1: pos.y -= font.size * 0.28f; break;
+				case 3: pos.y -= font.size * 0.34f; break;
+				case 7: pos.y -= font.size * 0.42f; break;
+				case 9: pos.y -= font.size * 0.27f; break;
+				case 10: pos.y -= font.size * 0.27f; break;
+			}
+		} else {
+			switch (m_text_size) {
+				case 3: pos.y -= font.size * 0.14f; break;
+				case 7: pos.y -= font.size * 0.16f; break;
+				case 9: pos.y -= font.size * 0.06f; break;
+				case 10: pos.y += font.size * 0.06f; break;
+			}
 		}
 	} else {
 		if (App.api == Api::Glide && (m_text_size == 13 || m_text_size == 0))
@@ -194,7 +148,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			m_map_names = true;
 			return false;
 		} else if (m_text_size != 6) {
-			if (*d2::screen_shift != 0)
+			if (*d2::screen_shift != SCREENPANEL_NONE)
 				return true;
 
 			map_text = true;
@@ -224,7 +178,6 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 	m_fonts[font.id]->setMasking(m_masking);
 	m_fonts[font.id]->setAlign(TextAlign::Left);
 	m_fonts[font.id]->drawText(str, pos, text_color);
-	m_fonts[font.id]->setStroke(0);
 
 	if (map_text) {
 		App.context->toggleDelayPush(false);
@@ -248,20 +201,25 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 
 		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit)) {
 			m_hovered_player_id = d2::getUnitID(unit) | ((uint8_t)unit->dwType << 24);
+			if (isVer(V_114d))
+				wcscpy_s(m_hovered_player_str, str);
 			return false;
 		}
 	}
 
 	auto font = getFont(1);
 	m_fonts[font.id]->setSize(font.size);
+	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setShadow(0);
+
 	auto size = m_fonts[font.id]->getTextSize(str);
 	if (size.y > (float)App.game.size.y - 40.0f) {
 		font = getFont(99);
 		m_fonts[font.id]->setSize(font.size);
+		m_fonts[font.id]->setMetrics(font);
 		size = m_fonts[font.id]->getTextSize(str);
 	}
 
-	m_fonts[font.id]->setMetrics(font);
 	const uint32_t text_color = g_text_colors.at(font.color ? font.color : getColor(color));
 	const int line_count = m_fonts[font.id]->getLineCount();
 
@@ -352,6 +310,7 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 	const auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
 	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setShadow(1);
 
 	const auto size = m_fonts[font.id]->getTextSize(str);
 	const auto line_count = m_fonts[font.id]->getLineCount();
@@ -377,6 +336,8 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 			bg_color = m_alt_bg_hovered;
 
 		m_object_bg->setFlags(2);
+		if (d2::isLangCJK(m_lang_id))
+			text_pos.y += 3.0f;
 	}
 
 	m_object_bg->setPosition(back_pos - padding);
@@ -416,7 +377,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	// if (draw_mode == 1)
 	// trace("[] | %d | %d | %dx%d | %dx%d", color, draw_mode, left, top, width, height);
 
-	if (height == 16 && m_hovered_player_id && m_text_size == 1) {
+	if (height == g_text_size[m_lang_id].hp_bar && m_hovered_player_id && m_text_size == 1 && (color == 0 || color == 261)) {
 		if (m_hovered_player_hp1 == 0) {
 			m_hovered_player_hp1 = width;
 			m_hovered_player_pos = { left, top };
@@ -434,7 +395,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (right - left == App.game.size.x || bottom - top == App.game.size.y) // FreeRes black bars
 		return false;
 
-	if ((*d2::screen_shift == 2 || *d2::screen_shift == 3) && width == 320 && (height == 432 || height == 236)) // Plugy stats panel bg
+	if ((*d2::screen_shift == SCREENPANEL_LEFT || *d2::screen_shift == SCREENPANEL_BOTH) && width == 320 && (height == 432 || height == 236)) // Plugy stats panel bg
 		return false;
 
 	if (draw_mode == 2 && width == 24 && height <= 24) // PD2 buff timer bg
@@ -477,7 +438,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 uint32_t HDText::getNormalTextWidth(const wchar_t* str, const int n_chars)
 {
 	if (App.game.draw_stage == DrawStage::Map && modules::MiniMap::Instance().isActive() && m_text_size == 6 && !*d2::automap_on)
-		return d2::getNormalTextWidth(str);
+		return n_chars > 0 ? d2::getNormalTextNWidth(str, n_chars) : d2::getNormalTextWidth(str);
 
 	const auto font = getFont(m_text_size);
 	m_fonts[font.id]->setSize(font.size);
@@ -550,7 +511,7 @@ void HDText::drawSubText(uint8_t fn)
 	}
 
 	if (m_hovered_player_id) {
-		drawPlayerHealthBar(str, *color);
+		drawPlayerHealthBar(isVer(V_114d) ? m_hovered_player_str : str, *color);
 		*length = 0;
 		return;
 	}
@@ -597,7 +558,8 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, int draw_mode)
 			return true;
 
 		const auto cell_no = d2::getCellNo(cell);
-		if (cell_file->cells[0]->height != 26 && cell_file->cells[0]->height != 36)
+		if (cell_file->cells[0]->height != g_text_size[0].large_text.x && cell_file->cells[0]->height != g_text_size[0].large_text.y &&
+			cell_file->cells[0]->height != g_text_size[m_lang_id].large_text.x && cell_file->cells[0]->height != g_text_size[m_lang_id].large_text.y)
 			return true;
 
 		for (auto& p : g_options_texts) {
@@ -605,8 +567,10 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, int draw_mode)
 			if (p.cell_num == cell_file->numcells - 1 && cell->width == p.size.x && cell->height == p.size.y) {
 				if (cell_no == 0) {
 					auto image_width = cell->width + (p.cell_num > 0 ? cell_file->cells[0]->width : 0);
+					if (p.cell_num == 2)
+						image_width += cell_file->cells[1]->width;
 					glm::ivec2 pos = { x, y };
-					setTextSize(cell->height == 26 ? 2 : 3);
+					setTextSize(cell->height == g_text_size[0].large_text.x || cell->height == g_text_size[m_lang_id].large_text.x ? 3 : 2);
 
 					if (p.align == TextAlign::Center) {
 						auto text_width = getNormalTextWidth(p.str, 0);
@@ -636,7 +600,7 @@ bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y)
 			return true;
 
 		const auto cell_no = d2::getCellNo(cell);
-		if (cell_file->cells[0]->height != 36)
+		if (cell_file->cells[0]->height != g_text_size[0].large_text.x && cell_file->cells[0]->height != g_text_size[m_lang_id].large_text.x)
 			return true;
 
 		for (auto& p : g_death_texts) {
@@ -644,6 +608,8 @@ bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y)
 			if (p.cell_num == cell_file->numcells - 1 && cell->width == p.size.x && cell->height == p.size.y) {
 				if (cell_no == 0) {
 					auto image_width = cell->width + (p.cell_num > 0 ? cell_file->cells[0]->width : 0);
+					if (p.cell_num == 2)
+						image_width += cell_file->cells[1]->width;
 					glm::ivec2 pos = { x, y };
 					setTextSize(3);
 
@@ -658,7 +624,7 @@ bool HDText::drawShiftedImage(d2::CellContext* cell, int x, int y)
 
 	if (m_entry_text) {
 		const auto cell_file = d2::getCellFile(cell);
-		if (cell_file->cells[0]->height == 26 || cell_file->cells[0]->height == 41)
+		if (cell_file->cells[0]->height == g_text_size[m_lang_id].entry_text.x || cell_file->cells[0]->height == g_text_size[m_lang_id].entry_text.y)
 			return false;
 	}
 	m_entry_text = false;
@@ -696,20 +662,15 @@ void HDText::drawRectFrame()
 
 void HDText::loadUIImage()
 {
-	if (App.ready && d2::ui_image_path) {
-		size_t len = strlen(d2::ui_image_path);
-		std::string path(d2::ui_image_path);
-		helpers::strToLower(path);
+	if (App.ready && d2::ui_image_path && _strnicmp(d2::ui_image_path + 12, "ui", 2)) {
+		std::string file_name = (d2::ui_image_path + 18);
+		helpers::strToLower(file_name);
 
-		if (path.find("ui\\eng") != std::string::npos) {
-			if (path.find("3dbias") != std::string::npos ||
-			  path.find("perspective") != std::string::npos ||
-			  path.find("resolution") != std::string::npos ||
-			  path.find("smalloff") != std::string::npos ||
-			  path.find("smallon") != std::string::npos) {
-				((char*)d2::ui_image_path)[len - 2] = '_';
-				((char*)d2::ui_image_path)[len - 1] = 'n';
-			}
+		const auto vec = &g_option_overwrites[m_lang_id];
+		if (std::find(vec->begin(), vec->end(), file_name) != vec->end()) {
+			const auto len = strlen(d2::ui_image_path);
+			((char*)d2::ui_image_path)[len - 2] = '_';
+			((char*)d2::ui_image_path)[len - 1] = 'n';
 		}
 	}
 }
@@ -746,15 +707,10 @@ void HDText::drawEntryText()
 	if (App.game.screen != GameScreen::InGame)
 		return;
 
-	const auto level_name = d2::getLevelName(*d2::level_no);
-	std::wstring text = L"Entering ";
-	if (wcsncmp(level_name, L"The ", 4) != 0)
-		text += L"The ";
-	text += level_name;
-
 	setTextSize(2);
-	auto text_width = getNormalTextWidth(text.c_str(), 0);
-	drawText(text.c_str(), *d2::screen_width / 2 - text_width / 2, (uint32_t)((float)*d2::screen_height / 4.5f), 17, 0);
+	const auto level_name = d2::getLevelName(*d2::level_no);
+	const auto text_width = getNormalTextWidth(level_name, 0);
+	drawText(level_name, *d2::screen_width / 2 - text_width / 2, (uint32_t)((float)*d2::screen_height / 4.5f), 17, 0);
 }
 
 void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
@@ -770,14 +726,15 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	auto font = getFont(1);
 	m_fonts[font.id]->setSize(font.size);
 	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setShadow(2);
 	m_fonts[font.id]->setBoxed(false);
 	m_fonts[font.id]->setMasking(false);
 	m_fonts[font.id]->setAlign(TextAlign::Center);
 
 	float center = (float)(*d2::screen_width / 2);
-	if (*d2::screen_shift == 1)
+	if (*d2::screen_shift == SCREENPANEL_RIGHT)
 		center = (float)(*d2::screen_width / 4);
-	else if (*d2::screen_shift == 2)
+	else if (*d2::screen_shift == SCREENPANEL_LEFT)
 		center = (float)(*d2::screen_width / 4 * 3);
 
 	const auto text_size = m_fonts[font.id]->getTextSize(name);
@@ -811,6 +768,8 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 		text_color = L'\x31';
 
 	glm::vec2 text_pos = { center - text_size.x / 2, App.api == Api::Glide ? 33.2f : 32.5f };
+	if (d2::isLangCJK(m_lang_id))
+		text_pos.y += 1.0f;
 	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(text_color));
 }
 
@@ -822,6 +781,7 @@ void HDText::drawPlayerHealthBar(const wchar_t* name, uint32_t color)
 	auto font = getFont(1);
 	m_fonts[font.id]->setSize(font.size);
 	m_fonts[font.id]->setMetrics(font);
+	m_fonts[font.id]->setShadow(2);
 	m_fonts[font.id]->setBoxed(false);
 	m_fonts[font.id]->setMasking(false);
 	m_fonts[font.id]->setAlign(TextAlign::Center);

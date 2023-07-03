@@ -28,6 +28,7 @@
 #define DLL_D2CLIENT "d2client.dll"
 #define DLL_D2COMMON "d2common.dll"
 #define DLL_D2LAUNCH "d2launch.dll"
+#define DLL_D2LANG   "d2lang.dll"
 #define DLL_USER32   "user32.dll"
 #define DLL_NTDLL    "ntdll.dll"
 #define DLL_SHCORE   "shcore.dll"
@@ -51,6 +52,8 @@ std::vector<std::wstring> strToLines(const std::wstring& str);
 
 void replaceAll(std::string& str, const std::string& from, const std::string& to);
 void strToLower(std::string& str);
+
+std::string getLangString();
 
 Version getVersion();
 std::string getVersionString();

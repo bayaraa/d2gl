@@ -76,6 +76,27 @@ void strToLower(std::string& str)
 	std::transform(str.begin(), str.end(), str.begin(), [](uint8_t c) { return std::tolower(c); });
 }
 
+std::string getLangString()
+{
+	// clang-format off
+	switch (d2::getLangId()) {
+		case LANG_ESP: return "Spanish";
+		case LANG_DEU: return "German";
+		case LANG_FRA: return "French";
+		case LANG_POR: return "Portuguese";
+		case LANG_ITA: return "Italian";
+		case LANG_JPN: return "Japanese";
+		case LANG_KOR: return "Korean";
+		case LANG_SIN: return "Singaporean";
+		case LANG_CHI: return "Chinese";
+		case LANG_POL: return "Polish";
+		case LANG_RUS: return "Russian";
+	}
+	// clang-format on
+
+	return "English";
+}
+
 Version getVersion()
 {
 	static Version version = Version::Null;
@@ -126,14 +147,14 @@ std::string getVersionString()
 {
 	// clang-format off
 	switch (getVersion()) {
-	case Version::V_109d: return "1.09d";
-	case Version::V_110:  return "1.10";
-	case Version::V_111:  return "1.11";
-	case Version::V_111b: return "1.11b";
-	case Version::V_112:  return "1.12";
-	case Version::V_113c: return "1.13c";
-	case Version::V_113d: return "1.13d";
-	case Version::V_114d: return "1.14d";
+		case Version::V_109d: return "1.09d";
+		case Version::V_110:  return "1.10";
+		case Version::V_111:  return "1.11";
+		case Version::V_111b: return "1.11b";
+		case Version::V_112:  return "1.12";
+		case Version::V_113c: return "1.13c";
+		case Version::V_113d: return "1.13d";
+		case Version::V_114d: return "1.14d";
 	}
 	// clang-format on
 
@@ -145,16 +166,16 @@ Offset getVersionOffset(OffsetDefault def_offset, Offset v109d, Offset v110, Off
 	Offset offset;
 	// clang-format off
 	switch (getVersion()) {
-	case Version::V_109d: offset = v109d; break;
-	case Version::V_110: offset = v110; break;
-	case Version::V_111: offset = v111; break;
-	case Version::V_111b: offset = v111b; break;
-	case Version::V_112: offset = v112; break;
-	case Version::V_113c: offset = v113c; break;
-	case Version::V_113d: offset = v113d; break;
-	case Version::V_114d: offset = v114d;
-		if (!offset.module)
-			offset.module = EXE_GAME;
+		case Version::V_109d: offset = v109d; break;
+		case Version::V_110:  offset = v110;  break;
+		case Version::V_111:  offset = v111;  break;
+		case Version::V_111b: offset = v111b; break;
+		case Version::V_112:  offset = v112;  break;
+		case Version::V_113c: offset = v113c; break;
+		case Version::V_113d: offset = v113d; break;
+		case Version::V_114d: offset = v114d;
+			if (!offset.module)
+				offset.module = EXE_GAME;
 		break;
 	}
 	// clang-format on
