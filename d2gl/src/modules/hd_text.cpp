@@ -527,36 +527,30 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, int draw_mode)
 	if (!isActive() || !cell)
 		return true;
 
-	if (App.game.screen == GameScreen::Menu) {
-		const auto cell_file = d2::getCellFile(cell);
-		if (!cell_file)
+	const auto cell_file = d2::getCellFile(cell);
+	if (!cell_file)
+		return true;
+
+	if (App.game.screen == GameScreen::Menu && (cell_file->numcells == 1 || cell_file->numcells == 2 || cell_file->numcells == 4) && d2::getCellNo(cell) == 0) {
+		const auto cell0 = cell_file->cells[0];
+		if (cell0->width != 256)
 			return true;
 
-		if ((cell_file->numcells == 1 || cell_file->numcells == 2 || cell_file->numcells == 4) && d2::getCellNo(cell) == 0) {
-			const auto cell0 = cell_file->cells[0];
-			if (cell0->width != 256)
+		const auto cell1 = cell_file->cells[cell_file->numcells - 1];
+		for (auto& p : g_popups) {
+			if (p.size0.y == cell0->height && (cell_file->numcells == 1 || (p.size1.x == cell1->width && p.size1.y == cell1->height))) {
+				const glm::vec2 pos = { (float)(x - 1), (float)(y - p.size0.y - 1) };
+				const glm::vec2 size = { (float)(p.size0.x + p.size1.x + 2), (float)(p.size0.y + (cell_file->numcells > 2 ? p.size1.y : 0) + 2) };
+
+				const auto m1 = m_mvp * glm::vec4(pos, 0.0f, 1.0f);
+				const auto m2 = m_mvp * glm::vec4((pos + size), 0.0f, 1.0f);
+				m_text_mask = glm::vec4(m1.x, m1.y, m2.x, m2.y);
+				m_masking = true;
+
 				return true;
-
-			const auto cell1 = cell_file->cells[cell_file->numcells - 1];
-			for (auto& p : g_popups) {
-				if (p.size0.y == cell0->height && (cell_file->numcells == 1 || (p.size1.x == cell1->width && p.size1.y == cell1->height))) {
-					const glm::vec2 pos = { (float)(x - 1), (float)(y - p.size0.y - 1) };
-					const glm::vec2 size = { (float)(p.size0.x + p.size1.x + 2), (float)(p.size0.y + (cell_file->numcells > 2 ? p.size1.y : 0) + 2) };
-
-					const auto m1 = m_mvp * glm::vec4(pos, 0.0f, 1.0f);
-					const auto m2 = m_mvp * glm::vec4((pos + size), 0.0f, 1.0f);
-					m_text_mask = glm::vec4(m1.x, m1.y, m2.x, m2.y);
-					m_masking = true;
-
-					return true;
-				}
 			}
 		}
-	} else if (App.game.draw_stage == DrawStage::UI && d2::isEscMenuOpen()) {
-		const auto cell_file = d2::getCellFile(cell);
-		if (!cell_file)
-			return true;
-
+	} else if (App.game.draw_stage == DrawStage::UI && *d2::esc_menu_open) {
 		const auto cell_no = d2::getCellNo(cell);
 		if (cell_file->cells[0]->height != g_text_size[0].large_text.x && cell_file->cells[0]->height != g_text_size[0].large_text.y &&
 			cell_file->cells[0]->height != g_text_size[m_lang_id].large_text.x && cell_file->cells[0]->height != g_text_size[m_lang_id].large_text.y)
@@ -585,6 +579,9 @@ bool HDText::drawImage(d2::CellContext* cell, int x, int y, int draw_mode)
 			}
 		}
 	}
+
+	if (cell_file->numcells == 22 && cell_file->cells[0]->width == 14 && cell_file->cells[0]->height == 15) // Box Frames
+		return false;
 
 	return true;
 }
@@ -656,8 +653,6 @@ void HDText::drawRectFrame()
 	m_object_bg->setFlags(4, 3);
 	m_object_bg->setExtra(size);
 	App.context->pushObject(m_object_bg);
-
-	rect->left = rect->top = rect->right = rect->bottom = -10;
 }
 
 void HDText::loadUIImage()
