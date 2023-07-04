@@ -107,8 +107,9 @@ void main()
 					float opacity2 = msdf(color.rgb, v_Extra.x, v_TexIds.y == 1 ? 1.04 : 0.95);
 					FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
 				} else {
-					float opacity = msdf(color.rgb, v_Extra.x, v_Extra.y);
-					FragColor = vec4(v_Color1.rgb, v_Color1.a * opacity);
+					float scale = smoothstep(1.5, 1.0, u_Scale.x);
+					float opacity = msdf(color.rgb, v_Extra.x / (1.0 + scale), v_Extra.y);
+					FragColor = vec4(v_Color1.rgb, v_Color1.a * opacity * (1.0 + 0.20 * scale));
 				}
 			}
 			if (u_IsMasking && v_Flags.z == 0u) {
