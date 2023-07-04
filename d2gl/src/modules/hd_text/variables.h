@@ -102,8 +102,8 @@ inline std::map<uint32_t, D2FontInfo> g_font_sizes = {
 	{ 11, { 0, 12.2f, 1.06f, 1.1f, -0.022f, } }, // ?
 	{ 99, { 0, 11.2f, 1.00f, 1.1f, -0.022f, } }, // FramedText in small size //Custom
 
-	{  6, { 1,  9.0f, 1.14f, 1.0f,  0.115f } }, // All Small texts
-	{ 98, { 1, 10.0f, 1.14f, 1.0f,  0.115f } }, // Custom
+	{  6, { 1,  9.8f, 1.14f, 1.0f,  0.115f } }, // All Small texts
+	{ 98, { 1, 10.4f, 1.14f, 1.0f,  0.115f } }, // Custom
 
 	{  0, { 2, 10.8f, 1.14f, 1.0f,  0.115f } }, // Char name on stats panel
 	{  4, { 2, 10.2f, 1.14f, 1.0f,  0.115f } }, // Skill tree level number 2digits
@@ -443,38 +443,38 @@ inline const std::map<uint32_t, std::vector<D2TextInfo>> g_options_text_others =
 		{ 0, {  82, 34 }, TextAlign::Right,  L"아니오" }, // NO
 		{ 0, { 155, 38 }, TextAlign::Center, L"사운드 옵션" }, // SOUND OPTIONS
 		{ 0, {  83, 34 }, TextAlign::Left,   L"사운드" }, // SOUND
-		{ 0, {  84, 34 }, TextAlign::Left,   L"음악" }, // MUSIC
+		{ 0, {  84, 34 }, TextAlign::Left,   L"배경음" }, // MUSIC
 		{ 0, { 119, 34 }, TextAlign::Left,   L"3D 사운드" }, // 3D SOUND
-		{ 0, {  85, 34 }, TextAlign::Left,   L"환경 효과" }, // ENVIRONMENTAL EFFECTS
-		{ 0, { 153, 34 }, TextAlign::Left,   L"3D 바이어스" }, // 3D BIAS
+		{ 0, {  85, 34 }, TextAlign::Left,   L"효과음" }, // ENVIRONMENTAL EFFECTS
+		{ 0, { 153, 34 }, TextAlign::Left,   L"3D 음향효과" }, // 3D BIAS
 		{ 0, { 118, 34 }, TextAlign::Left,   L"NPC 음성" }, // NPC SPEECH
-		{ 0, { 144, 34 }, TextAlign::Right,  L"오디오 및 텍스트" }, // AUDIO AND TEXT
-		{ 0, {  86, 34 }, TextAlign::Right,  L"오디오 전용" }, // AUDIO ONLY
+		{ 0, { 144, 34 }, TextAlign::Right,  L"음성과 글자" }, // AUDIO AND TEXT
+		{ 0, {  86, 34 }, TextAlign::Right,  L"음성만" }, // AUDIO ONLY
 		{ 0, {  87, 34 }, TextAlign::Right,  L"텍스트만" }, // TEXT ONLY
 		{ 0, { 156, 38 }, TextAlign::Center, L"비디오 옵션" }, // VIDEO OPTIONS
 		{ 0, {  88, 34 }, TextAlign::Left,   L"해상도" }, // RESOLUTION
 		{ 0, { 109, 34 }, TextAlign::Right,  L"800x600" },
 		{ 0, { 110, 34 }, TextAlign::Right,  L"640x480" },
-		{ 0, { 171, 34 }, TextAlign::Left,   L"조명 품질" }, // LIGHTING QUALITY
+		{ 0, { 171, 34 }, TextAlign::Left,   L"광원효과 화질" }, // LIGHTING QUALITY
 		{ 0, {  54, 34 }, TextAlign::Right,  L"높음" }, // HIGH
 		{ 0, {  55, 34 }, TextAlign::Right,  L"중간" }, // MEDIUM
 		{ 0, {  56, 34 }, TextAlign::Right,  L"낮음" }, // LOW
-		{ 0, { 145, 34 }, TextAlign::Left,   L"블렌디드 섀도우" }, // BLENDED SHADOWS
-		{ 0, { 108, 34 }, TextAlign::Left,   L"시점(원근)" }, // PERSPECTIVE
+		{ 0, { 145, 34 }, TextAlign::Left,   L"그림자 효과" }, // BLENDED SHADOWS
+		{ 0, { 108, 34 }, TextAlign::Left,   L"시점(원근모드)" }, // PERSPECTIVE
 		{ 0, {  57, 34 }, TextAlign::Left,   L"감마" }, // GAMMA
-		{ 0, {  58, 34 }, TextAlign::Left,   L"대비" }, // CONTRAST
+		{ 0, {  58, 34 }, TextAlign::Left,   L"명암(대비)" }, // CONTRAST
 		{ 0, { 157, 38 }, TextAlign::Center, L"오토 맵 옵션" }, // AUTOMAP OPTIONS
 		{ 0, { 146, 34 }, TextAlign::Left,   L"오토 맵 크기" }, // AUTOMAP SIZE
 		{ 0, { 120, 34 }, TextAlign::Right,  L"전체 화면" }, // FULL SCREEN
 		{ 0, {  90, 34 }, TextAlign::Right,  L"미니 맵" }, // MINI MAP
-		{ 0, {  59, 34 }, TextAlign::Left,   L"오토맵 희미하게" }, // FADE
+		{ 0, {  59, 34 }, TextAlign::Left,   L"밝기" }, // FADE
 		{ 0, {  60, 34 }, TextAlign::Right,  L"모두" }, // EVERYTHING
-		{ 0, {  61, 34 }, TextAlign::Right,  L"중심" }, // CENTER
+		{ 0, {  61, 34 }, TextAlign::Right,  L"중앙" }, // CENTER
 		{ 0, {  62, 34 }, TextAlign::Right,  L"자동" }, // AUTO
 		{ 0, { 147, 34 }, TextAlign::Left,   L"중심 맞추기" }, // CENTER WHEN CLEARED
 		{ 0, { 172, 34 }, TextAlign::Left,   L"파티 보여주기" }, // SHOW PARTY
 		{ 0, { 173, 34 }, TextAlign::Left,   L"이름 보여주기" }, // SHOW NAMES
-		{ 0, { 158, 38 }, TextAlign::Center, L"컨트롤 구성" }, // CONFIGURE CONTROLS
+		{ 0, { 158, 38 }, TextAlign::Center, L"단축키 설정" }, // CONFIGURE CONTROLS
 	} },
 	{ LANG_SIN, {} },
 	{ LANG_CHI, {
@@ -714,8 +714,8 @@ inline void initLangVariables(uint32_t lang_id)
 				{ 11, { 0, 11.2f, 1.06f, 1.4f,  0.082f, } }, // ?
 				{ 99, { 0, 10.0f, 1.02f, 1.4f,  0.102f, } }, // FramedText in small size //Custom
 
-				{  6, { 0,  8.2f, 1.02f, 1.0f,  0.082f } }, // All Small texts
-				{ 98, { 0,  8.2f, 1.02f, 1.0f,  0.082f } }, // Custom
+				{  6, { 0,  9.0f, 1.02f, 1.0f,  0.082f } }, // All Small texts
+				{ 98, { 0,  9.4f, 1.02f, 1.0f,  0.082f } }, // Custom
 
 				{  0, { 0, 10.8f, 1.02f, 1.0f,  0.115f } }, // Char name on stats panel
 				{  4, { 0, 10.2f, 1.04f, 1.0f,  0.115f } }, // Skill tree level number 2digits
