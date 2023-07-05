@@ -198,6 +198,19 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 		}
 	}
 
+	if (m_text_size == 13 && (x == 15 || (*d2::screen_shift == SCREENPANEL_LEFT && x == App.game.size.x / 2 + 15))) {
+		auto size = m_fonts[font.id]->getTextSize(str);
+		const glm::vec2 padding = { 4.0f, 2.0f };
+		glm::vec2 back_pos = { pos.x, pos.y - size.y * (d2::isLangCJK(m_lang_id) ? 1.02f : 1.14f) };
+
+		m_object_bg->setFlags(2);
+		m_object_bg->setPosition(back_pos - padding);
+		m_object_bg->setSize(size + padding * 2.0f);
+		m_object_bg->setColor(m_alt_bg_color, 1);
+		App.context->pushObject(m_object_bg);
+		m_fonts[font.id]->setShadow(2);
+	}
+
 	m_fonts[font.id]->setBoxed(false);
 	m_fonts[font.id]->setMasking(m_masking);
 	m_fonts[font.id]->setAlign(TextAlign::Left);
@@ -398,8 +411,9 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	const int width = right - left;
 	const int height = bottom - top;
 
-	// if (draw_mode == 1)
-	// trace("[] | %d | %d | %dx%d | %dx%d", color, draw_mode, left, top, width, height);
+	// if (draw_mode == 1 && top < 200) {
+	//	trace("[] | %d | %d | %dx%d | %dx%d", color, draw_mode, left, top, width, height);
+	// }
 
 	if (height == g_text_size[m_lang_id].hp_bar && m_hovered_player_id && m_text_size == 1 && (color == 0 || color == 261)) {
 		if (m_hovered_player_hp1 == 0) {
@@ -416,7 +430,7 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (draw_mode == 5 && height == 5 && top == 14) // hireling & summon hp
 		return false;
 
-	if (right - left == App.game.size.x || bottom - top == App.game.size.y) // FreeRes black bars
+	if (width == App.game.size.x || height == App.game.size.y) // FreeRes black bars
 		return false;
 
 	if ((*d2::screen_shift == SCREENPANEL_LEFT || *d2::screen_shift == SCREENPANEL_BOTH) && width == 320 && (height == 432 || height == 236)) // Plugy stats panel bg
@@ -427,6 +441,9 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 
 	if (*d2::esc_menu_open && height == 30) // In-game option sliders
 		return false;
+
+	if (draw_mode == 1 && height == 16 && (left == 11 || left == 10 || (*d2::screen_shift == SCREENPANEL_LEFT && left == App.game.size.x / 2 + 10))) // message bg
+		return true;
 
 	uint32_t bg_color = 0x000000FF;
 	switch (draw_mode) {

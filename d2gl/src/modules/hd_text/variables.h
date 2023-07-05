@@ -722,7 +722,7 @@ inline void initLangVariables(uint32_t lang_id)
 				{  5, { 1, 11.0f, 1.12f, 1.0f,  0.115f } }, // Menu screen copyright text
 				{  8, { 1, 11.6f, 1.14f, 1.0f,  0.220f } }, // Talking Text
 				{ 12, { 0,  9.0f, 1.02f, 1.0f,  0.115f } }, // ?
-				{ 13, { 0, 11.0f, 1.02f, 1.1f,  0.112f } }, // Message, Shrine, Keybind config
+				{ 13, { 0, 11.0f, 1.02f, 1.1f,  0.062f } }, // Message, Shrine, Keybind config
 
 				{  2, { 1, 24.0f, 1.12f, 1.0f,  0.102f, L'\x01' } }, // Char create screen title, Resolution text eg:800x600
 				{  3, { 1, 30.0f, 1.12f, 1.0f,  0.102f, L'\x01' } }, // Char selection title (selected char name)
@@ -740,7 +740,7 @@ inline void initLangVariables(uint32_t lang_id)
 			g_font_sizes[ 4] = { 2, 11.2f, 1.16f, 1.0f, 0.115f }; // Skill tree level number 2digits
 			g_font_sizes[ 5] = { 2, 12.8f, 1.16f, 1.0f, 0.115f }; // Menu screen copyright text
 			g_font_sizes[ 8] = { 2, 12.8f, 1.16f, 1.0f, 0.145f }; // Talking Text
-			g_font_sizes[13] = { 2, 12.2f, 1.16f, 1.0f, 0.115f }; // Message, Shrine, Keybind config
+			g_font_sizes[13] = { 2, 11.6f, 1.16f, 1.0f, 0.138f }; // Message, Shrine, Keybind config
 		break;
 	}
 	if (lang_id != LANG_ENG) {
