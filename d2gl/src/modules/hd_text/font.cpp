@@ -97,6 +97,9 @@ glm::vec2 Font::getTextSize(const wchar_t* str, const int max_chars)
 			m_text_size.x = m_text_size.x < m_line_width[line_num] ? m_line_width[line_num] : m_text_size.x;
 			m_text_size.y += line_height;
 			advance = 0.0f;
+
+			if (str[char_num + 1] == L'\0')
+				break;
 			line_num++;
 		} else if (m_glyphes.find(str[char_num]) != m_glyphes.end()) {
 			const Glyph* glyph = &m_glyphes[str[char_num]];
@@ -153,6 +156,9 @@ void Font::drawText(const wchar_t* str, glm::vec2 pos, uint32_t color)
 		if (str[char_num] == L'\n') {
 			offset.x = paddind_x;
 			offset.y -= line_height;
+
+			if (str[char_num + 1] == L'\0')
+				break;
 			line_num++;
 
 			if (m_align == TextAlign::Right)
