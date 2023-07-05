@@ -204,7 +204,7 @@ Context::Context()
 	};
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 
-	if (App.api == Api::Glide) {
+	if (ISGLIDE3X()) {
 		TextureCreateInfo glide_texture_ci;
 		glide_texture_ci.size = { 512, 512 };
 		glide_texture_ci.layer_count = 512;
@@ -432,7 +432,7 @@ void Context::renderThread(void* context)
 						ctx->bindDefaultFrameBuffer();
 						ctx->setViewport(App.window.size);
 					} else {
-						ctx->bindFrameBuffer(ctx->m_game_framebuffer, App.api == Api::Glide);
+						ctx->bindFrameBuffer(ctx->m_game_framebuffer, ISGLIDE3X());
 						ctx->setViewport(cmd->m_game_size);
 					}
 					break;
@@ -452,7 +452,7 @@ void Context::renderThread(void* context)
 							}
 						}
 
-						if (App.api == Api::Glide) {
+						if (ISGLIDE3X()) {
 							if (App.bloom.active) {
 								const auto bloom_data = glm::vec2(App.bloom.exposure.value, App.bloom.gamma.value);
 								if (ctx->m_bloom_data != bloom_data) {
@@ -570,7 +570,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 
 		FrameBufferCreateInfo frambuffer_ci;
 		frambuffer_ci.size = game_size;
-		if (App.api == Api::Glide)
+		if (ISGLIDE3X())
 			frambuffer_ci.attachments = {
 				{ TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
 				{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
@@ -579,7 +579,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 			frambuffer_ci.attachments = { { TEXTURE_SLOT_GAME } };
 		m_game_framebuffer = Context::createFrameBuffer(frambuffer_ci);
 
-		if (App.api == Api::Glide) {
+		if (ISGLIDE3X()) {
 			m_game_pipeline->setUniformMat4f("u_MVP", mvp);
 
 			m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
@@ -684,7 +684,7 @@ void Context::onStageChange()
 		case DrawStage::World:
 			break;
 		case DrawStage::UI:
-			if (App.api == Api::Glide && (App.bloom.active || App.lut.selected)) {
+			if (ISGLIDE3X() && (App.bloom.active || App.lut.selected)) {
 				flushVertices();
 				m_command_buffer[m_frame_index].pushCommand(CommandType::PreFx, m_current_blend_index);
 			}

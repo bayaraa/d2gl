@@ -36,22 +36,22 @@ HDText::HDText()
 	texture_ci.layer_count = 0;
 
 	if (m_lang_id == LANG_JPN) {
-		font_ci.push_back({ "NotoSansJP", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
-		font_ci.push_back({ "NotoSerifJP", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
+		font_ci.push_back({ "NotoSansJP", 0.022f, { 0.00f, FLOATVAL(-0.20f, -0.12f) } });
+		font_ci.push_back({ "NotoSerifJP", 0.012f, { 0.01f, FLOATVAL(-0.31f, -0.18f) } });
 	} else if (m_lang_id == LANG_KOR) {
-		font_ci.push_back({ "NotoSansKR", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
-		font_ci.push_back({ "NotoSerifKR", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
+		font_ci.push_back({ "NotoSansKR", 0.022f, { 0.00f, FLOATVAL(-0.20f, -0.12f) } });
+		font_ci.push_back({ "NotoSerifKR", 0.012f, { 0.01f, FLOATVAL(-0.31f, -0.18f) } });
 	} else if (m_lang_id == LANG_CHI) {
-		font_ci.push_back({ "NotoSansSC", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
-		font_ci.push_back({ "NotoSerifSC", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
+		font_ci.push_back({ "NotoSansSC", 0.022f, { 0.00f, FLOATVAL(-0.20f, -0.12f) } });
+		font_ci.push_back({ "NotoSerifSC", 0.012f, { 0.01f, FLOATVAL(-0.31f, -0.18f) } });
 	} else {
-		font_ci.push_back({ "ExocetBlizzard", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
-		font_ci.push_back({ "AlegreyaSans", 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
+		font_ci.push_back({ "ExocetBlizzard", 0.022f, { 0.00f, FLOATVAL(-0.20f, -0.12f) } });
+		font_ci.push_back({ "AlegreyaSans", 0.012f, { 0.01f, FLOATVAL(-0.28f, -0.15f) } });
 		if (m_lang_id == LANG_RUS)
-			font_ci.push_back({ "Philosopher", 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
+			font_ci.push_back({ "Philosopher", 0.012f, { 0.01f, FLOATVAL(-0.28f, -0.15f) } });
 		else
-			font_ci.push_back({ "Formal436BT", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
-		font_ci.push_back({ "ExocetReaper", 0.0f, { 0.0f, App.api == Api::Glide ? -0.14f : -0.10f } });
+			font_ci.push_back({ "Formal436BT", 0.012f, { 0.01f, FLOATVAL(-0.31f, -0.18f) } });
+		font_ci.push_back({ "ExocetReaper", 0.0f, { 0.0f, FLOATVAL(-0.14f, -0.10f) } });
 	}
 
 	for (auto& ci : font_ci) {
@@ -162,7 +162,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 			}
 		}
 	} else {
-		if (App.api == Api::Glide && (m_text_size == 13 || m_text_size == 0))
+		if (ISGLIDE3X() && (m_text_size == 13 || m_text_size == 0))
 			pos.y += font.size * 0.08f;
 	}
 
@@ -201,7 +201,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 	if (m_text_size == 13 && (x == 15 || (*d2::screen_shift == SCREENPANEL_LEFT && x == App.game.size.x / 2 + 15))) {
 		auto size = m_fonts[font.id]->getTextSize(str);
 		const glm::vec2 padding = { 4.0f, 2.0f };
-		glm::vec2 back_pos = { pos.x, pos.y - size.y * (d2::isLangCJK(m_lang_id) ? 1.02f : 1.14f) };
+		glm::vec2 back_pos = { pos.x, pos.y - size.y * (d2::isLangCJK(m_lang_id) ? 1.02f : 1.14f) + FLOATVAL(0.0f, 1.8f) };
 
 		m_object_bg->setFlags(2);
 		m_object_bg->setPosition(back_pos - padding);
@@ -319,9 +319,8 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	m_object_bg->setExtra(box_size);
 	App.context->pushObject(m_object_bg);
 
-	static float lh_diff = App.api == Api::Glide ? 0.06f : 0.12f;
 	const auto line_height = m_fonts[font.id]->getLineHeight();
-	pos.y += line_height - line_height * lh_diff;
+	pos.y += line_height - line_height * FLOATVAL(0.06f, 0.12f);
 
 	m_fonts[font.id]->setBoxed(true);
 	m_fonts[font.id]->setMasking(false);
@@ -356,10 +355,8 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 
 	uint32_t bg_color = m_bg_color;
 	glm::vec2 padding = { 3.4f, font.size * 0.05f * line_count };
-
-	static float lh_diff = App.api == Api::Glide ? 0.0f : 0.08f;
 	glm::vec2 back_pos = { (float)x + 3.2f, (float)y - size.y + 1.6f / line_count };
-	glm::vec2 text_pos = { back_pos.x, back_pos.y + font.size - font.size * lh_diff };
+	glm::vec2 text_pos = { back_pos.x, back_pos.y + font.size - font.size * FLOATVAL(0.0f, 0.08f) };
 
 	if (rect_transparency == 2) {
 		padding = { 10.0f, 6.0f };
@@ -803,7 +800,7 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	if (hp == 0)
 		text_color = L'\x31';
 
-	glm::vec2 text_pos = { center - text_size.x / 2, App.api == Api::Glide ? 33.2f : 32.5f };
+	glm::vec2 text_pos = { center - text_size.x / 2, FLOATVAL(33.2f, 32.5f) };
 	if (d2::isLangCJK(m_lang_id))
 		text_pos.y += 1.0f;
 	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(text_color));
@@ -846,7 +843,7 @@ void HDText::drawPlayerHealthBar(const wchar_t* name, uint32_t color)
 		App.context->pushObject(m_object_bg);
 	}
 
-	glm::vec2 text_pos = { center - text_size.x / 2, bar_pos.y + (App.api == Api::Glide ? 14.4f : 13.8f) };
+	glm::vec2 text_pos = { center - text_size.x / 2, bar_pos.y + FLOATVAL(14.4f, 13.8f) };
 	m_fonts[font.id]->drawText(name, text_pos, g_text_colors.at(getColor(color)));
 
 	m_hovered_player_id = 0;
@@ -877,5 +874,4 @@ void HDText::drawFpsCounter()
 	d2::drawNormalTextHooked(str, App.game.size.x / 2 - width / 2, App.game.size.y - 54, 4, 0);
 	d2::setTextSizeHooked(1);
 }
-
 }

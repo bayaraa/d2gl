@@ -172,7 +172,7 @@ void initHooks()
 	automap_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x867A0, 0xE87B7400), (0x81D6E, 0xE8FD7500), (0xA36B1, 0xE8DAB2FF), (0x66AB1, 0xE8BABBFF), (0x90211, 0xE88ABBFF), (0xC3AA1, 0xE82AB6FF), (0x1D4A1, 0xE87AB9FF), (0x56FAA, 0xE861E5FF)), 5, (uintptr_t)automapDrawEndStub);
 	automap_loop.toggle(true);
 
-	if (App.api == Api::Glide) {
+	if (ISGLIDE3X()) {
 		patch_minimap = std::make_unique<Patch>();
 		patch_minimap->add(PatchType::Nop, getOffset((DLL_D2CLIENT, 0x740E833D), (0x8678F, 0x740FE87A), (0x81D5D, 0x740FE8EC), (0xA36A1), (0x66AA1), (0x90201), (0xC3A91), (0x1D491), (0x56F99, 0x740FE8F0)), 2);
 		App.mini_map.available = automap_loop.isActive() && patch_minimap->prepare();

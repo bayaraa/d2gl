@@ -108,7 +108,7 @@ Menu::Menu()
 	m_fonts[14] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 14.0f) : io.Fonts->Fonts[0];
 	m_fonts[12] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 12.0f) : io.Fonts->Fonts[0];
 
-	App.menu_title += (App.api == Api::Glide ? " (Glide / " : " (DDraw / ");
+	App.menu_title += (ISGLIDE3X() ? " (Glide / " : " (DDraw / ");
 	App.menu_title += "OpenGL: " + App.gl_version + " / D2LoD: " + helpers::getVersionString() + " / " + helpers::getLangString() + ")";
 }
 
@@ -290,7 +290,7 @@ void Menu::draw()
 			drawCheckbox_m("FXAA", App.fxaa, "Fast approximate anti-aliasing.", fxaa)
 				saveBool("Graphic", "fxaa", App.fxaa);
 			childSeparator("##w4");
-			ImGui::BeginDisabled(App.api != Api::Glide);
+			ImGui::BeginDisabled(!ISGLIDE3X());
 				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", 17, lut)
 					saveInt("Graphic", "lut", App.lut.selected);
 				drawSeparator();
@@ -329,7 +329,7 @@ void Menu::draw()
 					App.hd_orbs.active = false;
 					saveBool("Feature", "hd_orbs", App.hd_orbs.active);
 
-					if (App.api == Api::Glide) {
+					if (ISGLIDE3X()) {
 						App.mini_map.active = false;
 						d2::patch_minimap->toggle(App.mini_map.active);
 						saveBool("Feature", "mini_map", App.mini_map.active);
@@ -345,7 +345,7 @@ void Menu::draw()
 				}
 			ImGui::EndDisabled();
 			drawSeparator();
-			ImGui::BeginDisabled(App.api != Api::Glide || !App.hd_cursor || !App.mini_map.available);
+			ImGui::BeginDisabled(!ISGLIDE3X() || !App.hd_cursor || !App.mini_map.available);
 				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on minimap widget.", mini_map)
 				{
 					d2::patch_minimap->toggle(App.mini_map.active);

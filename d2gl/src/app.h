@@ -156,4 +156,22 @@ extern D2GLApp App;
 void dllAttach(HMODULE hmodule);
 void dllDetach();
 
+constexpr inline bool ISGLIDE3X()
+{
+#ifdef GLIDE3X_EXPORTS
+	return true;
+#else
+	return false;
+#endif
+}
+
+constexpr inline float FLOATVAL(float glide3x, float ddraw)
+{
+#ifdef GLIDE3X_EXPORTS
+	return glide3x;
+#else
+	return ddraw;
+#endif
+}
+
 }
