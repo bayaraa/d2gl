@@ -714,8 +714,8 @@ inline void initLangVariables(uint32_t lang_id)
 				{ 11, { 0, 11.2f, 1.06f, 1.4f,  0.082f, } }, // ?
 				{ 99, { 0, 10.0f, 1.02f, 1.4f,  0.102f, } }, // FramedText in small size //Custom
 
-				{  6, { 0,  9.0f, 1.02f, 1.0f,  0.082f } }, // All Small texts
-				{ 98, { 0,  9.4f, 1.02f, 1.0f,  0.082f } }, // Custom
+				{  6, { 0,  9.4f, 1.02f, 1.0f,  0.082f } }, // All Small texts
+				{ 98, { 0,  9.6f, 1.02f, 1.0f,  0.082f } }, // Custom
 
 				{  0, { 0, 10.8f, 1.02f, 1.0f,  0.115f } }, // Char name on stats panel
 				{  4, { 0, 10.2f, 1.04f, 1.0f,  0.115f } }, // Skill tree level number 2digits
