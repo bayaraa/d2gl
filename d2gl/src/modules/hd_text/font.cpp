@@ -22,26 +22,18 @@
 
 namespace d2gl {
 
-Font::Font(const FontCreateInfo& info)
+Font::Font(Texture* texture, const FontCreateInfo& info)
 	: m_glyph_size(info.glyph_size), m_rtrim_size(info.rtrim_size), m_offset(info.offset)
 {
-	TextureCreateInfo texture_ci;
-	texture_ci.layer_count = 20;
-	texture_ci.size = { 1024, 1024 };
-	texture_ci.slot = TEXTURE_SLOT_FONTS;
-	texture_ci.min_filter = GL_LINEAR;
-	texture_ci.mag_filter = GL_LINEAR;
-	static std::unique_ptr<Texture> texture = Context::createTexture(texture_ci);
-
 	for (uint32_t index = 0; index < info.atlas_count; index++) {
 		char atlas_index[2] = { 0 };
 		sprintf_s(atlas_index, "%d", index);
 
-		auto data_buffer = helpers::loadFile("assets\\fonts\\" + info.path + "\\data_" + atlas_index + ".csv");
+		auto data_buffer = helpers::loadFile("assets\\fonts\\" + info.path + "\\" + atlas_index + ".csv");
 		if (!data_buffer.size)
 			continue;
 
-		auto image_data = helpers::loadImage("assets\\fonts\\" + info.path + "\\atlas_" + atlas_index + ".png");
+		auto image_data = helpers::loadImage("assets\\fonts\\" + info.path + "\\" + atlas_index + ".png");
 		auto tex_data = texture->fillImage(image_data);
 		helpers::clearImage(image_data);
 

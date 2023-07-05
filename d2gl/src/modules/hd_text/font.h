@@ -32,9 +32,9 @@ struct Glyph {
 
 struct FontCreateInfo {
 	std::string path;
-	uint32_t atlas_count = 1;
 	float rtrim_size = 0.0f;
 	glm::vec2 offset = { 0.0f, 0.0f };
+	uint32_t atlas_count = 1;
 	float glyph_size = 64.0f;
 };
 
@@ -63,7 +63,7 @@ class Font {
 	glm::vec2 m_text_size = { 0.0f, 0.0f };
 
 public:
-	Font(const FontCreateInfo& info);
+	Font(Texture* texture, const FontCreateInfo& info);
 	~Font() = default;
 
 	inline void setSize(float size) { m_size = size, m_scale = size / m_glyph_size, m_smoothness = size / 2.0f; }

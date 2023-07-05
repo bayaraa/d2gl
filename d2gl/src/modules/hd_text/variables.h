@@ -29,11 +29,11 @@ enum class TextAlign {
 };
 
 struct D2FontInfo {
-	uint8_t id;
-	float size;
-	float weight;
-	float line_height;
-	float letter_spacing;
+	uint8_t id = 0;
+	float size = 1.0f;
+	float weight = 1.0f;
+	float line_height = 1.0f;
+	float letter_spacing = 1.0f;
 	wchar_t color = 0;
 };
 
@@ -737,10 +737,10 @@ inline void initLangVariables(uint32_t lang_id)
 			g_font_sizes[8] = { 2, 11.0f, 1.14f, 1.0f, 0.03f }; // Talking Text
 		break;
 		case LANG_RUS:
-			g_font_sizes[ 4] = { 2, 11.2f, 1.14f, 1.0f, 0.115f }; // Skill tree level number 2digits
-			g_font_sizes[ 5] = { 2, 12.8f, 1.14f, 1.0f, 0.115f }; // Menu screen copyright text
-			g_font_sizes[ 8] = { 2, 12.8f, 1.14f, 1.0f, 0.185f }; // Talking Text
-			g_font_sizes[13] = { 2, 12.2f, 1.14f, 1.0f, 0.120f }; // Message, Shrine, Keybind config
+			g_font_sizes[ 4] = { 2, 11.2f, 1.16f, 1.0f, 0.115f }; // Skill tree level number 2digits
+			g_font_sizes[ 5] = { 2, 12.8f, 1.16f, 1.0f, 0.115f }; // Menu screen copyright text
+			g_font_sizes[ 8] = { 2, 12.8f, 1.16f, 1.0f, 0.145f }; // Talking Text
+			g_font_sizes[13] = { 2, 12.2f, 1.16f, 1.0f, 0.115f }; // Message, Shrine, Keybind config
 		break;
 	}
 	if (lang_id != LANG_ENG) {

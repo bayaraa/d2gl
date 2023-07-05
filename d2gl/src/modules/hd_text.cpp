@@ -31,24 +31,48 @@ HDText::HDText()
 	initLangVariables(m_lang_id);
 	m_object_bg = std::make_unique<Object>();
 
+	std::vector<FontCreateInfo> font_ci = {};
+	TextureCreateInfo texture_ci;
+	texture_ci.layer_count = 0;
+
 	if (m_lang_id == LANG_JPN) {
-		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "NotoSansJP", 5, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f }, 32.0f });
-		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "NotoSerifJP", 5, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f }, 32.0f });
+		font_ci.push_back({ "NotoSansJP", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
+		font_ci.push_back({ "NotoSerifJP", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
 	} else if (m_lang_id == LANG_KOR) {
-		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "NotoSansKR", 3, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f }, 32.0f });
-		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "NotoSerifKR", 3, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f }, 32.0f });
+		font_ci.push_back({ "NotoSansKR", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
+		font_ci.push_back({ "NotoSerifKR", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
 	} else if (m_lang_id == LANG_CHI) {
-		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "NotoSansSC", 9, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f }, 32.0f });
-		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "NotoSerifSC", 9, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f }, 32.0f });
+		font_ci.push_back({ "NotoSansSC", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
+		font_ci.push_back({ "NotoSerifSC", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
 	} else {
-		m_fonts[0] = std::make_unique<Font>(FontCreateInfo{ "ExocetBlizzard", 2, 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
-		m_fonts[1] = std::make_unique<Font>(FontCreateInfo{ "AlegreyaSans", 2, 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
+		font_ci.push_back({ "ExocetBlizzard", 0.022f, { 0.00f, App.api == Api::Glide ? -0.20f : -0.12f } });
+		font_ci.push_back({ "AlegreyaSans", 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
 		if (m_lang_id == LANG_RUS)
-			m_fonts[2] = std::make_unique<Font>(FontCreateInfo{ "Macho", 2, 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
+			font_ci.push_back({ "Philosopher", 0.012f, { 0.01f, App.api == Api::Glide ? -0.28f : -0.15f } });
 		else
-			m_fonts[2] = std::make_unique<Font>(FontCreateInfo{ "Formal436BT", 1, 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
-		m_fonts[3] = std::make_unique<Font>(FontCreateInfo{ "ExocetReaper", 2, 0.0f, { 0.0f, App.api == Api::Glide ? -0.14f : -0.10f } });
+			font_ci.push_back({ "Formal436BT", 0.012f, { 0.01f, App.api == Api::Glide ? -0.31f : -0.18f } });
+		font_ci.push_back({ "ExocetReaper", 0.0f, { 0.0f, App.api == Api::Glide ? -0.14f : -0.10f } });
 	}
+
+	for (auto& ci : font_ci) {
+		auto data_buffer = helpers::loadFile("assets\\fonts\\" + ci.path + "\\data.txt");
+		if (data_buffer.size) {
+			std::string buf((const char*)data_buffer.data, data_buffer.size);
+			const auto delimeter = buf.find("/");
+			ci.atlas_count = std::atoi(buf.substr(0, delimeter).c_str());
+			ci.glyph_size = (float)std::atof(buf.substr(delimeter + 1, data_buffer.size - delimeter).c_str());
+			texture_ci.layer_count += ci.atlas_count;
+		}
+	}
+
+	texture_ci.size = { 1024, 1024 };
+	texture_ci.slot = TEXTURE_SLOT_FONTS;
+	texture_ci.min_filter = GL_LINEAR;
+	texture_ci.mag_filter = GL_LINEAR;
+	static std::unique_ptr<Texture> texture = Context::createTexture(texture_ci);
+
+	for (uint8_t i = 0; i < font_ci.size(); i++)
+		m_fonts[i] = std::make_unique<Font>(texture.get(), font_ci[i]);
 }
 
 void HDText::reset()
