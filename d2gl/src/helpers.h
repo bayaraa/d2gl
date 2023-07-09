@@ -49,11 +49,12 @@ bool fileExists(std::string file_path);
 
 std::vector<std::string> strToLines(const std::string& str);
 std::vector<std::wstring> strToLines(const std::wstring& str);
+std::vector<std::string> splitToVector(const std::string& str, char delimeter = ',');
 
 void replaceAll(std::string& str, const std::string& from, const std::string& to);
 void strToLower(std::string& str);
 
-std::string getLangString();
+std::string getLangString(bool path = false);
 
 Version getVersion();
 std::string getVersionString();

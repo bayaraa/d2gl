@@ -62,6 +62,22 @@ std::vector<std::wstring> strToLines(const std::wstring& str)
 	return result;
 }
 
+std::vector<std::string> splitToVector(const std::string& str, char delimeter)
+{
+	uint32_t index = 0;
+	std::vector<std::string> segments = { "" };
+
+	for (auto& c : str) {
+		if (c == delimeter) {
+			segments.push_back("");
+			index++;
+		} else
+			segments[index].push_back(c);
+	}
+
+	return segments;
+}
+
 void replaceAll(std::string& str, const std::string& from, const std::string& to)
 {
 	size_t start_pos = 0;
@@ -76,9 +92,25 @@ void strToLower(std::string& str)
 	std::transform(str.begin(), str.end(), str.begin(), [](uint8_t c) { return std::tolower(c); });
 }
 
-std::string getLangString()
+std::string getLangString(bool path)
 {
-	// clang-format off
+	if (path) {
+		switch (d2::getLangId()) {
+			case LANG_ESP: return "esp";
+			case LANG_DEU: return "deu";
+			case LANG_FRA: return "fra";
+			case LANG_POR: return "por";
+			case LANG_ITA: return "ita";
+			case LANG_JPN: return "jpn";
+			case LANG_KOR: return "kor";
+			case LANG_SIN: return "sin";
+			case LANG_CHI: return "chi";
+			case LANG_POL: return "pol";
+			case LANG_RUS: return "rus";
+		}
+		return "eng";
+	}
+
 	switch (d2::getLangId()) {
 		case LANG_ESP: return "Spanish";
 		case LANG_DEU: return "German";
@@ -92,8 +124,6 @@ std::string getLangString()
 		case LANG_POL: return "Polish";
 		case LANG_RUS: return "Russian";
 	}
-	// clang-format on
-
 	return "English";
 }
 
