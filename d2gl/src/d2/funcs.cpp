@@ -234,8 +234,10 @@ void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t 
 
 void __stdcall drawVerticalCropImageHooked(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode)
 {
-	if (y < 150 && modules::HDText::Instance().isActive() && App.game.draw_stage >= DrawStage::UI)
-		return;
+	if (modules::HDText::Instance().isActive() && App.game.draw_stage >= DrawStage::UI) {
+		if (y < 150 || (*d2::screen_shift >= SCREENPANEL_LEFT && y < *d2::screen_height - 100 && x < *d2::screen_width / 2))
+			return;
+	}
 
 	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::VerticalCropImage);
 	drawVerticalCropImage(cell, pos.x, pos.y, skip_lines, draw_lines, draw_mode);
