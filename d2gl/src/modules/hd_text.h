@@ -92,6 +92,7 @@ public:
 	inline void setTextSize(uint32_t size) { m_text_size = size; }
 	inline uint32_t getTextSize() { return m_text_size; }
 	inline void borderedRect(bool draw = true) { m_bordered_rect = draw; }
+	inline Font* const getFont(uint32_t size) { return m_fonts[size].get(); }
 
 	void drawSubText(uint8_t fn = 1);
 	bool drawImage(d2::CellContext* cell, int x, int y, int draw_mode);
@@ -109,7 +110,12 @@ private:
 	void drawPlayerHealthBar(const wchar_t* name, uint32_t color);
 
 	inline wchar_t getColor(uint32_t color);
-	inline const D2FontInfo& getFont(uint32_t size);
+
+#ifdef _HDTEXT
+public:
+	static void showSampleText();
+	const std::string& getAllFontMetricString();
+#endif
 };
 
 }

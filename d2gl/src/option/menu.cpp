@@ -21,6 +21,7 @@
 #include "d2/common.h"
 #include "helpers.h"
 #include "ini.h"
+#include "modules/hd_text.h"
 #include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 #include "win32.h"
@@ -78,12 +79,10 @@ Menu::Menu()
 	style.ScrollbarSize = 10.0f;
 	style.ScrollbarRounding = 0.0f;
 	style.WindowTitleAlign.x = 0.5f;
-	style.WindowPadding.x = 16.0f;
-	style.WindowPadding.y = 16.0f;
+	style.WindowPadding = { 16.0f, 16.0f };
 	style.WindowBorderSize = 1.0f;
 	style.WindowRounding = 0.0f;
-	style.ItemInnerSpacing.x = 10.0f;
-	style.ItemInnerSpacing.y = 0.0f;
+	style.ItemInnerSpacing = { 10.0f, 0.0f };
 	style.FrameRounding = 2.0f;
 	style.FramePadding = { 4.0f, 4.0f };
 	style.FrameBorderSize = 1.0f;
@@ -149,21 +148,6 @@ void Menu::draw()
 
 	App.context->imguiStartFrame();
 
-#ifdef _DEBUG
-	ImGui::SetNextWindowPos({ 10.f, 220.f });
-	ImGui::SetNextWindowBgAlpha(0.85f);
-	ImGui::Begin("Glide", (bool*)true, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
-	ImGui::Text("%.5f | %d | %d", 1000.0 / App.context->getAvgFrameTime(), App.context->getVertexCount(), App.context->getDrawCallCount());
-	ImGui::Separator();
-	ImGui::Text("256: 1024 / %d / %d", App.var[0], App.var[6]);
-	ImGui::Text("128: 2464 / %d / %d", App.var[1], App.var[7]);
-	ImGui::Text(" 64: 4096 / %d / %d", App.var[2], App.var[8]);
-	ImGui::Text(" 32: 8192 / %d / %d", App.var[3], App.var[9]);
-	ImGui::Text(" 16: 5120 / %d / %d", App.var[4], App.var[10]);
-	ImGui::Text("  8: 4096 / %d / %d", App.var[5], App.var[11]);
-	ImGui::End();
-#endif
-
 	ImVec2 window_pos = { (float)App.window.size.x * 0.5f, (float)App.window.size.y * 0.5f };
 	ImVec2 max_size = { (float)App.window.size.x - 20.0f, (float)App.window.size.y - 20.0f };
 	static ImGuiWindowFlags window_flags =
@@ -171,7 +155,7 @@ void Menu::draw()
 		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 	static ImGuiCond window_pos_cond = ImGuiCond_Appearing;
 
-	ImGui::SetNextWindowSize({ 640.0f, 500.0f }, ImGuiCond_Always);
+	ImGui::SetNextWindowSize({ 660.0f, 500.0f }, ImGuiCond_Always);
 	ImGui::SetNextWindowSizeConstraints({ 10.0f, 10.0f }, max_size);
 	ImGui::SetNextWindowPos(window_pos, window_pos_cond, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowBgAlpha(0.90f);
@@ -188,7 +172,7 @@ void Menu::draw()
 	if (ImGui::BeginTabBar("tabs", ImGuiTabBarFlags_None)) {
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
-		ImGui::SetCursorPos({ 490.0f, 74.0f });
+		ImGui::SetCursorPos({ 510.0f, 74.0f });
 		ImGui::PushFont(m_fonts[14]);
 		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Gray]);
 		ImGui::Text(App.version_str.c_str());
@@ -403,6 +387,48 @@ void Menu::draw()
 			childEnd();
 			tabEnd();
 		}
+#ifdef _HDTEXT
+		if (tabBegin("HD Text", 3, &active_tab)) {
+			ImGuiIO& io = ImGui::GetIO();
+			ImGui::PushFont(io.Fonts->Fonts[0]);
+			m_ignore_font = true;
+			drawCombo_m("", App.hdt.fonts, "", "", 17, hdt_fonts)
+			{
+				const auto font_id = (uint32_t)App.hdt.fonts.items[App.hdt.fonts.selected].value;
+				modules::HDText::Instance().getFont(font_id)->getMetrics();
+			}
+			drawSeparator();
+			childBegin("##hdt0", true);
+			drawSlider_m(float, "Font Size", App.hdt.size, "%.3f", "", hdt_size);
+			drawSlider_m(float, "Font Weight", App.hdt.weight, "%.3f", "", hdt_weight);
+			drawSlider_m(float, "Letter Spacing", App.hdt.letter_spacing, "%.3f", "", hdt_letter_spacing);
+			drawSlider_m(float, "Line Height", App.hdt.line_height, "%.3f", "", hdt_line_height);
+			drawSlider_m(float, "Shadow Intensity", App.hdt.shadow_intensity, "%.3f", "", hdt_shadow_intensity);
+			drawSlider_m(float, "Text Offset (X Coordinate)", App.hdt.offset_x, "%.3f", "", hdt_offset_x);
+			drawSlider_m(float, "Text Offset (Y Coordinate)", App.hdt.offset_y, "%.3f", "", hdt_offset_y);
+			childSeparator("##hdt1");
+			ImGui::BeginDisabled(App.game.screen != GameScreen::InGame);
+			drawCheckbox_m("Show sample text", App.hdt.show_sample, "", hdt_show_sample);
+			ImGui::EndDisabled();
+			drawSeparator();
+			const auto font_id = (uint32_t)App.hdt.fonts.items[App.hdt.fonts.selected].value;
+			const auto font = modules::HDText::Instance().getFont(font_id);
+			font->updateMetrics();
+			char result[2000] = { "" };
+			const auto& str = modules::HDText::Instance().getAllFontMetricString();
+			strcpy_s(result, str.c_str());
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8.0f, 7.0f });
+			ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
+			ImGui::InputTextMultiline("##result", result, IM_ARRAYSIZE(result), { 0, 222 }, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_NoHorizontalScroll);
+			ImGui::PopStyleVar();
+			if (ImGui::Button("Copy Text"))
+				ImGui::SetClipboardText(result);
+			childEnd();
+			m_ignore_font = false;
+			ImGui::PopFont();
+			tabEnd();
+		}
+#endif
 		ImGui::EndTabBar();
 	}
 	ImGui::PopFont();
@@ -488,9 +514,11 @@ bool Menu::drawNav(const char* btn_label)
 bool Menu::drawCheckbox(const char* title, bool* option, const char* desc, bool* opt)
 {
 	ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Orange]);
-	ImGui::PushFont(m_fonts[17]);
+	if (!m_ignore_font)
+		ImGui::PushFont(m_fonts[17]);
 	ImGui::Checkbox(title, option);
-	ImGui::PopFont();
+	if (!m_ignore_font)
+		ImGui::PopFont();
 	ImGui::PopStyleColor();
 	drawDescription(desc, m_colors[Color::Gray]);
 
@@ -510,7 +538,8 @@ bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, con
 	drawLabel(title, m_colors[Color::Orange], 17);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8.0f, 5.0f });
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 8.0f });
-	ImGui::PushFont(m_fonts[size]);
+	if (!m_ignore_font)
+		ImGui::PushFont(m_fonts[size]);
 	ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() - (have_btn ? 84.0f : 0.0f));
 	auto& selected = select->items[select->selected];
 	if (ImGui::BeginCombo(("##" + std::string(title)).c_str(), selected.name.c_str(), ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest)) {
@@ -541,7 +570,8 @@ bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, con
 		ret = ImGui::Button(btn_label, { 80.0f, 0.0f });
 		ImGui::PopStyleColor();
 	}
-	ImGui::PopFont();
+	if (!m_ignore_font)
+		ImGui::PopFont();
 	ImGui::PopStyleVar(2);
 	drawDescription(desc, m_colors[Color::Gray]);
 	return ret;
@@ -579,12 +609,14 @@ bool Menu::drawSlider(const std::string& id, const char* title, Range<T>* range,
 	ImGuiDataType type = strcmp(typeid(T).name(), "int") == 0 ? ImGuiDataType_S32 : ImGuiDataType_Float;
 	ImGui::SetNextItemWidth(80.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.0f, 3.0f });
-	ImGui::PushFont(m_fonts[15]);
+	if (!m_ignore_font)
+		ImGui::PushFont(m_fonts[15]);
 	ImGui::InputScalar(("##" + id).c_str(), type, &range->value, 0, 0, format);
 	ImGui::SameLine(0.0f, 4.0f);
 	ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() - 84.0f);
 	ImGui::SliderScalar(id.c_str(), type, &range->value, &range->min, &range->max, "", ImGuiSliderFlags_NoInput);
-	ImGui::PopFont();
+	if (!m_ignore_font)
+		ImGui::PopFont();
 	ImGui::PopStyleVar();
 	drawDescription(desc, m_colors[Color::Gray]);
 
@@ -615,11 +647,13 @@ void Menu::drawLabel(const char* title, const ImVec4& color, int size)
 	if (!title || !title[0] || title[0] == ' ')
 		return;
 
-	ImGui::PushFont(m_fonts[size]);
+	if (!m_ignore_font)
+		ImGui::PushFont(m_fonts[size]);
 	ImGui::PushStyleColor(ImGuiCol_Text, color);
 	ImGui::Text(title);
 	ImGui::PopStyleColor();
-	ImGui::PopFont();
+	if (!m_ignore_font)
+		ImGui::PopFont();
 }
 
 void Menu::drawDescription(const char* desc, const ImVec4& color, int size)
@@ -627,11 +661,13 @@ void Menu::drawDescription(const char* desc, const ImVec4& color, int size)
 	if (!desc || !desc[0])
 		return;
 
-	ImGui::PushFont(m_fonts[size]);
+	if (!m_ignore_font)
+		ImGui::PushFont(m_fonts[size]);
 	ImGui::PushStyleColor(ImGuiCol_Text, color);
 	ImGui::Text(desc);
 	ImGui::PopStyleColor();
-	ImGui::PopFont();
+	if (!m_ignore_font)
+		ImGui::PopFont();
 }
 
 }

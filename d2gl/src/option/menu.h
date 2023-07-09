@@ -43,6 +43,7 @@ class Menu {
 	std::unordered_map<int, ImFont*> m_fonts;
 	std::unordered_map<Color, ImVec4> m_colors;
 	Options m_options;
+	bool m_ignore_font = false;
 
 	Menu();
 	~Menu() = default;

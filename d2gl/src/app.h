@@ -22,6 +22,7 @@
 #include "types.h"
 
 // #define _DEBUG 1
+// #define _HDTEXT 1
 
 namespace d2gl {
 
@@ -96,7 +97,7 @@ struct D2GLApp {
 	} cursor;
 
 	Select<glm::uvec2> resolutions = {};
-	glm::ivec4 desktop_resolution  = { 0, 0, 0, 0 };
+	glm::ivec4 desktop_resolution = { 0, 0, 0, 0 };
 
 	struct ForegroundFPS {
 		bool active = false;
@@ -146,7 +147,20 @@ struct D2GLApp {
 	} mini_map;
 
 #ifdef _DEBUG
-	int var[12] = { 0 };
+	int var[10] = { 0 };
+#endif
+#ifdef _HDTEXT
+	struct {
+		Select<int> fonts = {};
+		Range<float> size = { 10.0f, 5.0f, 40.0f };
+		Range<float> weight = { 1.0f, 0.5f, 1.5f };
+		Range<float> letter_spacing = { 0.0f, -1.0f, 1.0f };
+		Range<float> line_height = { 1.0f, 0.0f, 3.0f };
+		Range<float> shadow_intensity = { 0.35f, 0.0f, 1.0f };
+		Range<float> offset_x = { 0.0f, -10.0f, 10.0f };
+		Range<float> offset_y = { 0.0f, -10.0f, 10.0f };
+		bool show_sample = false;
+	} hdt;
 #endif
 };
 // clang-format on
