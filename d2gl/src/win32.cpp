@@ -245,6 +245,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
+		case WM_KEYUP: {
+			if (option::Menu::instance().isVisible() && wParam >= 0x30 && wParam <= 0x39)
+				return 0;
+		}
 
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
@@ -317,8 +321,6 @@ void setWindow(HWND hwnd)
 	App.hwnd = hwnd;
 	App.hdc = GetDC(App.hwnd);
 	win32::toggleDarkmode();
-
-	App.wndproc = (WNDPROC)SetWindowLongA(App.hwnd, GWL_WNDPROC, (LONG)WndProc);
 
 	App.window.style = GetWindowLong(App.hwnd, GWL_STYLE);
 	App.window.style &= ~(WS_POPUP | WS_GROUP | WS_DLGFRAME | WS_CLIPSIBLINGS | WS_TABSTOP);
