@@ -76,6 +76,17 @@ __declspec(naked) void uiDrawBeginStub()
 	}
 }
 
+__declspec(naked) void uiDrawCursorItemStub()
+{
+	__asm
+	{
+		pushad
+		call uiDrawCursorItem
+		popad
+		ret
+	}
+}
+
 __declspec(naked) void uiDrawEndStub()
 {
 	__asm

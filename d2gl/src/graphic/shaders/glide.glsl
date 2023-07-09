@@ -48,6 +48,7 @@ void main()
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 FragColorMap;
+layout(location = 2) out vec4 FragColorMask;
 
 layout(std140) uniform ubo_Colors {
 	vec4 u_Palette[256];
@@ -82,12 +83,17 @@ void main()
 	FragColor.a = v_Flags.z == 1u ? v_Color2.a : 1.0;
 	
 	FragColorMap = vec4(0.0);
-	if (v_Flags.w > 0u)
+	if (v_Flags.w > 0u && v_Flags.w < 10u)
 	{
 		FragColorMap = vec4(FragColor.rgb, 0.9);
 		if (v_Flags.w > 1u)
 			FragColor = vec4(0.0);
 	}
+
+	FragColorMask = vec4(0.0);
+	if(v_Flags.w == 10u)
+		FragColorMask = FragColor;
+
 }
 
 #endif

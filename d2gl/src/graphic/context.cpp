@@ -202,6 +202,7 @@ Context::Context()
 		{ BindingType::Texture, "u_MapTexture", TEXTURE_SLOT_MAP },
 		{ BindingType::Texture, "u_CursorTexture", TEXTURE_SLOT_CURSOR },
 		{ BindingType::Texture, "u_FontTexture", TEXTURE_SLOT_FONTS },
+		{ BindingType::Texture, "u_MaskTexture", TEXTURE_SLOT_MASK },
 	};
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 
@@ -231,7 +232,7 @@ Context::Context()
 		};
 		game_pipeline_ci.attachment_blends.clear();
 		for (auto& blend : g_blend_types)
-			game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha });
+			game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha, BlendType::SAlpha_OneMinusSAlpha });
 		m_game_pipeline = Context::createPipeline(game_pipeline_ci);
 
 		TextureCreateInfo lut_texture_ci;
@@ -561,10 +562,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 	if (game_resized) {
 		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
 		modules::HDText::Instance().setMVP(mvp);
-
 		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
-		m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
-		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
 
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
 		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
@@ -574,7 +572,8 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 		if (ISGLIDE3X())
 			frambuffer_ci.attachments = {
 				{ TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
-				{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
+				{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } },
+				{ TEXTURE_SLOT_MASK, { 0.0f, 0.0f, 0.0f, 0.0f }, GL_LINEAR, GL_LINEAR, GL_RED },
 			};
 		else
 			frambuffer_ci.attachments = { { TEXTURE_SLOT_GAME } };
@@ -642,6 +641,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+	m_mod_pipeline->setUniformVec2f("u_ViewportSize", { (float)App.viewport.size.x, (float)App.viewport.size.y });
 
 	modules::MiniMap::Instance().resize();
 	toggleVsync();
@@ -709,6 +709,10 @@ void Context::onStageChange()
 			}
 			modules::HDText::drawFpsCounter();
 			break;
+		case DrawStage::CursorItem:
+			flushVertices();
+			setVertexFlagW(10);
+			break;
 		case DrawStage::Cursor:
 			appendDelayedObjects();
 			modules::HDText::Instance().drawEntryText();
@@ -763,6 +767,7 @@ void Context::bindDefaultFrameBuffer()
 void Context::presentFrame()
 {
 	flushVertices();
+	setVertexFlagW(0);
 	m_command_buffer[m_frame_index].pushCommand(CommandType::Submit);
 
 	modules::HDText::Instance().update();

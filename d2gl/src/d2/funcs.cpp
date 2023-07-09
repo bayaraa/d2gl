@@ -201,6 +201,12 @@ void uiDrawBegin()
 	App.context->onStageChange();
 }
 
+void uiDrawCursorItem()
+{
+	App.game.draw_stage = DrawStage::CursorItem;
+	App.context->onStageChange();
+}
+
 void uiDrawEnd()
 {
 	App.game.draw_stage = DrawStage::Cursor;
@@ -235,7 +241,7 @@ void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t 
 void __stdcall drawVerticalCropImageHooked(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode)
 {
 	if (modules::HDText::Instance().isActive() && App.game.draw_stage >= DrawStage::UI) {
-		if (y < 150 || (*d2::screen_shift >= SCREENPANEL_LEFT && y < *d2::screen_height - 100 && x < *d2::screen_width / 2))
+		if (y < 150 || (*d2::screen_shift >= SCREENPANEL_LEFT && y < (int)*d2::screen_height - 100 && x < (int)*d2::screen_width / 2))
 			return;
 	}
 

@@ -28,6 +28,7 @@ void automapDrawBeginStub();
 void automapDrawEndStub();
 
 void uiDrawBeginStub();
+void uiDrawCursorItemStub();
 void uiDrawEndStub();
 
 void drawUnitStubStack();

@@ -150,6 +150,7 @@ void initHooks()
 	Patch game_loop = Patch();
 	game_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x9B3D, 0xE87A5F0B), (0xA2A2, 0xE8B51B0C), (0x89A2F, 0xE84A37F8), (0x3356F, 0xE85E9CFD), (0x7D1BF, 0xE84801F9), (0x44E2F, 0xE81A85FC), (0x45E7F, 0xE8E473FC), (0x4F256, 0xE8E5550C)), 5, (uintptr_t)gameDrawBeginStub);
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5333DB3B), (0x865AC, 0x33ED894C), (0x81B7C, 0x33DB894C), (0xA35F6), (0x669F6), (0x90156), (0xC39E6), (0x1D3E6), (0x56EE1, 0x8BEC83EC)), isVerMax(V_110) ? 6 : 5, (uintptr_t)uiDrawBeginStub);
+	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x2BC803CA), (0xB59A5, 0x8B442404), (0xB7B71, 0x8B442404), (0x38FD2), (0x28A82), (0x9F692), (0x16B72), (0x14FF2), (0x68578, 0xD1E82BC8)), 5, (uintptr_t)uiDrawCursorItemStub); // Cursor item
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x508D5424), (0xB58CC, 0x6AFF5203), (0xB7A9C, 0x6AFF5203), (0x38461), (0x27F11), (0x9EB21), (0x16001), (0x14481), (0x684A5, 0x518D45B8)), 5, (uintptr_t)uiDrawEndStub); // Cursor changed
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x52894424), (0xB5606), (0xB7776), (0x38D46), (0x287F6), (0x9F406), (0x168E6), (0x14D66), (0x68435, 0x57568D55)), 5, (uintptr_t)uiDrawEndStub); // Default cursor
 	game_loop.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xB9120000), (0xF4C2, 0x51895C24), (0xD922, 0x51895C24), (0xBA47), (0x133D7), (0xCDC7), (0x17F87), (0xE107), (0xF983F, 0x83EA0123)), 5, (uintptr_t)uiDrawEndStub); // InMenu

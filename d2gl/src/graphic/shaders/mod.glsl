@@ -56,6 +56,7 @@ layout(location = 0) out vec4 FragColor;
 uniform sampler2D u_MapTexture;
 uniform sampler2DArray u_CursorTexture;
 uniform sampler2DArray u_FontTexture;
+uniform sampler2D u_MaskTexture;
 
 in vec4 v_Position;
 in vec2 v_TexCoord;
@@ -65,10 +66,10 @@ flat in ivec2 v_TexIds;
 flat in uvec4 v_Flags;
 in vec2 v_Extra;
 
-uniform vec2 u_Size;
 uniform vec2 u_Scale;
 uniform vec4 u_TextMask;
 uniform bool u_IsMasking = false;
+uniform vec2 u_ViewportSize;
 
 float msdf(vec3 rgb, float smoothess, float weight)
 {
@@ -161,6 +162,10 @@ void main()
 		if (v_Flags.z > 0u)
 			FragColor.a *= v_Flags.z / 100.0;
 	}
+
+	float mask = texture(u_MaskTexture, gl_FragCoord.xy / u_ViewportSize).r;
+	if(mask > 0.1)
+		FragColor.a = 0.0;
 }
 
 #endif
