@@ -25,6 +25,7 @@
 #include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 #include "option/menu.h"
+#include "win32.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -684,7 +685,7 @@ void Context::onStageChange()
 		case DrawStage::World:
 			break;
 		case DrawStage::UI:
-			if (ISGLIDE3X() && (App.bloom.active || App.lut.selected)) {
+			if (ISGLIDE3X() && (App.bloom.active || App.lut.selected) && *d2::screen_shift != SCREENPANEL_BOTH) {
 				flushVertices();
 				m_command_buffer[m_frame_index].pushCommand(CommandType::PreFx, m_current_blend_index);
 			}
@@ -706,11 +707,14 @@ void Context::onStageChange()
 
 				modules::MiniMap::Instance().draw();
 			}
-			modules::HDText::Instance().drawFpsCounter();
+			modules::HDText::drawFpsCounter();
 			break;
 		case DrawStage::Cursor:
 			appendDelayedObjects();
 			modules::HDText::Instance().drawEntryText();
+#ifdef _HDTEXT
+			modules::HDText::showSampleText();
+#endif
 			modules::HDCursor::Instance().draw();
 			break;
 	}
@@ -726,6 +730,9 @@ void Context::setBlendState(uint32_t index)
 
 void Context::beginFrame()
 {
+	if (!App.wndproc && App.game.screen == GameScreen::Menu)
+		App.wndproc = (WNDPROC)SetWindowLongA(App.hwnd, GWL_WNDPROC, (LONG)win32::WndProc);
+
 	m_vertices.count = m_vertices.start = 0;
 	m_vertices.ptr = m_vertices.data[m_frame_index].data();
 
