@@ -780,7 +780,7 @@ void HDText::startEntryText()
 
 void HDText::drawEntryText()
 {
-	if (!m_entry_text_draw)
+	if (App.game.screen != GameScreen::InGame || !m_entry_text_draw)
 		return;
 
 	if (m_entry_timer < std::clock())

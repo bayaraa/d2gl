@@ -641,7 +641,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
-	m_mod_pipeline->setUniformVec2f("u_ViewportSize", { (float)App.viewport.size.x, (float)App.viewport.size.y });
+	m_mod_pipeline->setUniformVec4f("u_Viewport", { (float)App.viewport.offset.x, (float)App.viewport.offset.y, (float)App.viewport.size.x, (float)App.viewport.size.y });
 
 	modules::MiniMap::Instance().resize();
 	toggleVsync();

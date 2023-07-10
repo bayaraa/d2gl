@@ -69,7 +69,7 @@ in vec2 v_Extra;
 uniform vec2 u_Scale;
 uniform vec4 u_TextMask;
 uniform bool u_IsMasking = false;
-uniform vec2 u_ViewportSize;
+uniform vec4 u_Viewport;
 
 float msdf(vec3 rgb, float smoothess, float weight)
 {
@@ -163,7 +163,7 @@ void main()
 			FragColor.a *= v_Flags.z / 100.0;
 	}
 
-	if (texture(u_MaskTexture, gl_FragCoord.xy / u_ViewportSize).r > 0.1)
+	if (texture(u_MaskTexture, (gl_FragCoord.xy - u_Viewport.xy) / u_Viewport.zw).r > 0.1)
 		FragColor.a = 0.0;
 }
 
