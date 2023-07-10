@@ -191,6 +191,8 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 				pos.y -= font->getFontSize() * 0.45f;
 			else if (m_lang_id == LANG_POL)
 				pos.y -= font->getFontSize() * 0.32f;
+			else if (m_lang_id == LANG_RUS)
+				pos.y -= font->getFontSize() * 0.14f;
 		} else if (m_text_size == 7) {
 			if (m_lang_id == LANG_POL)
 				pos.y -= font->getFontSize() * 0.42f;
