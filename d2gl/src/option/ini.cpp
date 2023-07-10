@@ -123,49 +123,49 @@ void saveIni()
 	out_file.open(App.ini_file);
 
 	static const char* screen_setting =
-	  "; ==== D2GL Configs ====\n\n"
-	  "; Recommended: (ctrl+O) opens in-game option menu.\n"
-	  "; All settings except \"Other\" section can be changed there.\n\n\n"
-	  "[Screen]\n\n"
-	  "; Game will run in fullscreen window.\n"
-	  "; Window size (window_width/window_height) will be ignored.\n"
-	  "fullscreen=%s\n\n"
-	  "; Window size.\n"
-	  "window_width=%d\n"
-	  "window_height=%d\n\n"
-	  "; Always centered window on launch.\n"
-	  "; Window position (window_posx/window_posy) will be ignored.\n"
-	  "centered_window=%s\n\n"
-	  "; Window position.\n"
-	  "window_posx=%d\n"
-	  "window_posy=%d\n\n"
-	  "; Dark style window title bar.\n"
-	  "dark_mode=%s\n\n"
-	  "; Vertical synchronization.\n"
-	  "; Game fps adapt screen refresh rate (might have input lag).\n"
-	  "vsync=%s\n\n"
-	  "; Max Foreground FPS.\n"
-	  "; Limit maximum fps when game window is focused(active) (vsync must be disabled).\n"
-	  "foreground_fps=%s\n"
-	  "foreground_fps_value=%d\n\n"
-	  "; Max Background FPS.\n"
-	  "; Limit maximum fps when game window is in background(inactive).\n"
-	  "background_fps=%s\n"
-	  "background_fps_value=%d\n\n\n";
+		"; ==== D2GL Configs ====\n\n"
+		"; Recommended: (ctrl+O) opens in-game option menu.\n"
+		"; All settings except \"Other\" section can be changed there.\n\n\n"
+		"[Screen]\n\n"
+		"; Game will run in fullscreen window.\n"
+		"; Window size (window_width/window_height) will be ignored.\n"
+		"fullscreen=%s\n\n"
+		"; Window size.\n"
+		"window_width=%d\n"
+		"window_height=%d\n\n"
+		"; Always centered window on launch.\n"
+		"; Window position (window_posx/window_posy) will be ignored.\n"
+		"centered_window=%s\n\n"
+		"; Window position.\n"
+		"window_posx=%d\n"
+		"window_posy=%d\n\n"
+		"; Dark style window title bar.\n"
+		"dark_mode=%s\n\n"
+		"; Vertical synchronization.\n"
+		"; Game fps adapt screen refresh rate (might have input lag).\n"
+		"vsync=%s\n\n"
+		"; Max Foreground FPS.\n"
+		"; Limit maximum fps when game window is focused(active) (vsync must be disabled).\n"
+		"foreground_fps=%s\n"
+		"foreground_fps_value=%d\n\n"
+		"; Max Background FPS.\n"
+		"; Limit maximum fps when game window is in background(inactive).\n"
+		"background_fps=%s\n"
+		"background_fps_value=%d\n\n\n";
 
 	sprintf_s(buf, screen_setting,
-	  boolString(App.window.fullscreen),
-	  App.window.size.x,
-	  App.window.size.y,
-	  boolString(App.window.centered),
-	  App.window.position.x,
-	  App.window.position.y,
-	  boolString(App.window.dark_mode),
-	  boolString(App.vsync),
-	  boolString(App.foreground_fps.active),
-	  App.foreground_fps.range.value,
-	  boolString(App.background_fps.active),
-	  App.background_fps.range.value);
+		boolString(App.window.fullscreen),
+		App.window.size.x,
+		App.window.size.y,
+		boolString(App.window.centered),
+		App.window.position.x,
+		App.window.position.y,
+		boolString(App.window.dark_mode),
+		boolString(App.vsync),
+		boolString(App.foreground_fps.active),
+		App.foreground_fps.range.value,
+		boolString(App.background_fps.active),
+		App.background_fps.range.value);
 	out_file << buf;
 
 	std::string shader_str = "";
@@ -176,109 +176,109 @@ void saveIni()
 	}
 
 	static const char* graphic_setting =
-	  "[Graphic]\n\n"
-	  "; Upscale shader.\n"
-	  "; Set one of following shaders.\n"
-	  "%s"
-	  "shader=%d\n\n"
-	  "; Color grading (LUT) (only available in glide mode).\n"
-	  "; Set one of 1-%d predefined luts. 0 = game default.\n"
-	  "lut=%d\n\n"
-	  "; Luma sharpen.\n"
-	  "sharpen=%s\n"
-	  "sharpen_strength=%.3f\n"
-	  "sharpen_clamp=%.3f\n"
-	  "sharpen_radius=%.3f\n\n"
-	  "; Fast approximate anti-aliasing.\n"
-	  "fxaa=%s\n\n"
-	  "; Bloom effect.\n"
-	  "bloom=%s\n"
-	  "bloom_exposure=%.3f\n"
-	  "bloom_gamma=%.3f\n\n"
-	  "; Stretch viewport to window size.\n"
-	  "stretched_horizontal=%s\n"
-	  "stretched_vertical=%s\n\n\n";
+		"[Graphic]\n\n"
+		"; Upscale shader.\n"
+		"; Set one of following shaders.\n"
+		"%s"
+		"shader=%d\n\n"
+		"; Color grading (LUT) (only available in glide mode).\n"
+		"; Set one of 1-%d predefined luts. 0 = game default.\n"
+		"lut=%d\n\n"
+		"; Luma sharpen.\n"
+		"sharpen=%s\n"
+		"sharpen_strength=%.3f\n"
+		"sharpen_clamp=%.3f\n"
+		"sharpen_radius=%.3f\n\n"
+		"; Fast approximate anti-aliasing.\n"
+		"fxaa=%s\n\n"
+		"; Bloom effect.\n"
+		"bloom=%s\n"
+		"bloom_exposure=%.3f\n"
+		"bloom_gamma=%.3f\n\n"
+		"; Stretch viewport to window size.\n"
+		"stretched_horizontal=%s\n"
+		"stretched_vertical=%s\n\n\n";
 
 	sprintf_s(buf, graphic_setting,
-	  shader_str.c_str(),
-	  App.shader.selected,
-	  App.lut.items.size() - 1,
-	  App.lut.selected,
-	  boolString(App.sharpen.active),
-	  App.sharpen.strength.value,
-	  App.sharpen.clamp.value,
-	  App.sharpen.radius.value,
-	  boolString(App.fxaa),
-	  boolString(App.bloom.active),
-	  App.bloom.exposure.value,
-	  App.bloom.gamma.value,
-	  boolString(App.viewport.stretched.x),
-	  boolString(App.viewport.stretched.y));
+		shader_str.c_str(),
+		App.shader.selected,
+		App.lut.items.size() - 1,
+		App.lut.selected,
+		boolString(App.sharpen.active),
+		App.sharpen.strength.value,
+		App.sharpen.clamp.value,
+		App.sharpen.radius.value,
+		boolString(App.fxaa),
+		boolString(App.bloom.active),
+		App.bloom.exposure.value,
+		App.bloom.gamma.value,
+		boolString(App.viewport.stretched.x),
+		boolString(App.viewport.stretched.y));
 	out_file << buf;
 
 	static const char* feature_setting =
-	  "[Feature]\n\n"
-	  "; HD cursor in game & menu screen.\n"
-	  "hd_cursor=%s\n\n"
-	  "; HD in game text (HD cursor required).\n"
-	  "hd_text=%s\n\n"
-	  //"; HD life & mana orbs (HD cursor required).\n"
-	  //"hd_orbs=%s\n"
-	  //"hd_orbs_centered=%s\n\n"
-	  "; Always on Minimap widget (only available in glide mode, HD cursor required).\n"
-	  "mini_map=%s\n"
-	  "mini_map_text_over=%s\n"
-	  "mini_map_width=%d\n"
-	  "mini_map_height=%d\n\n"
-	  "; D2DX's Motion Prediction.\n"
-	  "motion_prediction=%s\n\n"
-	  "; Skip the Intro videos.\n"
-	  "skip_intro=%s\n\n"
-	  "; Auto /nopickup option on launch (exclude 1.09d).\n"
-	  "no_pickup=%s\n\n"
-	  "; Show FPS Counter (bottom center).\n"
-	  "show_fps=%s\n\n"
-	  "; Unlock Cursor (cursor will not locked within window).\n"
-	  "unlock_cursor=%s\n\n\n";
+		"[Feature]\n\n"
+		"; HD cursor in game & menu screen.\n"
+		"hd_cursor=%s\n\n"
+		"; HD in game text (HD cursor required).\n"
+		"hd_text=%s\n\n"
+		//"; HD life & mana orbs (HD cursor required).\n"
+		//"hd_orbs=%s\n"
+		//"hd_orbs_centered=%s\n\n"
+		"; Always on Minimap widget (only available in glide mode, HD cursor required).\n"
+		"mini_map=%s\n"
+		"mini_map_text_over=%s\n"
+		"mini_map_width=%d\n"
+		"mini_map_height=%d\n\n"
+		"; D2DX's Motion Prediction.\n"
+		"motion_prediction=%s\n\n"
+		"; Skip the Intro videos.\n"
+		"skip_intro=%s\n\n"
+		"; Auto /nopickup option on launch (exclude 1.09d).\n"
+		"no_pickup=%s\n\n"
+		"; Show FPS Counter (bottom center).\n"
+		"show_fps=%s\n\n"
+		"; Unlock Cursor (cursor will not locked within window).\n"
+		"unlock_cursor=%s\n\n\n";
 
 	sprintf_s(buf, feature_setting,
-	  boolString(App.hd_cursor),
-	  boolString(App.hd_text),
-	  // boolString(App.hd_orbs.active),
-	  // boolString(App.hd_orbs.centered),
-	  boolString(App.mini_map.active),
-	  boolString(App.mini_map.text_over),
-	  App.mini_map.width.value,
-	  App.mini_map.height.value,
-	  boolString(App.motion_prediction),
-	  boolString(App.skip_intro),
-	  boolString(App.no_pickup),
-	  boolString(App.show_fps),
-	  boolString(App.cursor.unlock));
+		boolString(App.hd_cursor),
+		boolString(App.hd_text),
+		// boolString(App.hd_orbs.active),
+		// boolString(App.hd_orbs.centered),
+		boolString(App.mini_map.active),
+		boolString(App.mini_map.text_over),
+		App.mini_map.width.value,
+		App.mini_map.height.value,
+		boolString(App.motion_prediction),
+		boolString(App.skip_intro),
+		boolString(App.no_pickup),
+		boolString(App.show_fps),
+		boolString(App.cursor.unlock));
 	out_file << buf;
 
 	static const char* other_setting =
-	  "[Other]\n\n"
-	  "; Preferred OpenGL Version (must be 3.3 or between 4.0 to 4.6).\n"
-	  "gl_ver_major=%d\n"
-	  "gl_ver_minor=%d\n\n"
-	  "; Use compute shader (enabling this might be better on some gpu).\n"
-	  "use_compute_shader=%s\n\n"
-	  "; Frame Latency (how many frames cpu generate before rendering).\n"
-	  "; Set 1-5 (increasing this value notice less frame stutter but introduces more input lag).\n"
-	  "frame_latency=%d\n\n"
-	  "; Comma-delimited DLLs to load (early: right after attached).\n"
-	  "load_dlls_early=%s\n\n"
-	  "; Comma-delimited DLLs to load (late: right after window created).\n"
-	  "load_dlls_late=%s\n";
+		"[Other]\n\n"
+		"; Preferred OpenGL Version (must be 3.3 or between 4.0 to 4.6).\n"
+		"gl_ver_major=%d\n"
+		"gl_ver_minor=%d\n\n"
+		"; Use compute shader (enabling this might be better on some gpu).\n"
+		"use_compute_shader=%s\n\n"
+		"; Frame Latency (how many frames cpu generate before rendering).\n"
+		"; Set 1-5 (increasing this value notice less frame stutter but introduces more input lag).\n"
+		"frame_latency=%d\n\n"
+		"; Comma-delimited DLLs to load (early: right after attached).\n"
+		"load_dlls_early=%s\n\n"
+		"; Comma-delimited DLLs to load (late: right after window created).\n"
+		"load_dlls_late=%s\n";
 
 	sprintf_s(buf, other_setting,
-	  App.gl_ver_major,
-	  App.gl_ver_minor,
-	  boolString(App.use_compute_shader),
-	  App.frame_latency,
-	  App.dlls_early.c_str(),
-	  App.dlls_late.c_str());
+		App.gl_ver_major,
+		App.gl_ver_minor,
+		boolString(App.use_compute_shader),
+		App.frame_latency,
+		App.dlls_early.c_str(),
+		App.dlls_late.c_str());
 	out_file << buf;
 
 	out_file.close();
@@ -344,7 +344,7 @@ void loadIni()
 		// App.hd_orbs.active = getBool("Feature", "hd_orbs", App.hd_orbs.active);
 		// App.hd_orbs.centered = getBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
 
-		App.mini_map.active = getBool("Feature", "mini_map", App.mini_map.active) && App.api == Api::Glide;
+		App.mini_map.active = getBool("Feature", "mini_map", App.mini_map.active) && ISGLIDE3X();
 		App.mini_map.text_over = getBool("Feature", "mini_map_text_over", App.mini_map.text_over);
 		App.mini_map.width.value = getInt("Feature", "mini_map_width", App.mini_map.width.value, App.mini_map.width.min, App.mini_map.width.max);
 		App.mini_map.height.value = getInt("Feature", "mini_map_height", App.mini_map.height.value, App.mini_map.height.min, App.mini_map.height.max);
@@ -378,7 +378,7 @@ void loadIni()
 	App.resolutions.items.push_back({ "Custom Size", glm::uvec2(0, 0) });
 	for (size_t i = 0; i < window_sizes.size(); i++) {
 		const auto& p = window_sizes[i];
-		if (App.desktop_resolution.z <= p.first || App.desktop_resolution.w <= p.second)
+		if (App.desktop_resolution.z <= (int)p.first || App.desktop_resolution.w <= (int)p.second)
 			continue;
 
 		char label[50] = { 0 };

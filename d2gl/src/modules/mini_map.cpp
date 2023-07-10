@@ -19,18 +19,16 @@
 #include "pch.h"
 #include "mini_map.h"
 #include "d2/common.h"
+#include "hd_text.h"
 
 namespace d2gl::modules {
 
 MiniMap::MiniMap()
 {
+	m_map = std::make_unique<Object>();
 	m_bg = std::make_unique<Object>();
 	m_bg->setColor(0x00000099, 1);
 	m_bg->setColor(0x222222EE, 2);
-	m_bg->setFlags(2, 3);
-
-	m_map = std::make_unique<Object>();
-	m_map->setFlags(5);
 }
 
 void MiniMap::resize()
@@ -59,18 +57,24 @@ void MiniMap::draw()
 	static wchar_t time_str[20] = { 0 };
 	static tm gmt_time;
 
-	if (*d2::screen_shift == 0) {
-		App.context->pushObject(m_bg);
-		App.context->pushObject(m_map);
+	if (*d2::screen_shift == SCREENPANEL_NONE) {
+		if (!d2::isEscMenuOpen() && !*d2::automap_on) {
+			m_bg->setFlags(2, 3, 100);
+			m_map->setFlags(5, 0, 100);
+			App.context->pushObject(m_bg);
+			App.context->pushObject(m_map);
+		}
 
 		if (App.hd_text) {
 			time_t now = time(0);
 			localtime_s(&gmt_time, &now);
-			swprintf_s(time_str, L"| ÿc\x34%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);
+			swprintf_s(time_str, L" | ÿc\x34%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);
 
-			d2::setTextSizeHooked(99);
-			uint32_t width = d2::getNormalTextWidth(time_str);
-			d2::drawNormalTextHooked(time_str, App.game.size.x - width - 5, 15, 5, 0);
+			const auto old_size = modules::HDText::Instance().getTextSize();
+			d2::setTextSizeHooked(19);
+			m_time_width = d2::getNormalTextWidthHooked(time_str);
+			d2::drawNormalTextHooked(time_str, App.game.size.x - m_time_width - 5, 13, 5, 0);
+			d2::setTextSizeHooked(old_size);
 		}
 	}
 }

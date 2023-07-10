@@ -19,7 +19,7 @@
 #pragma once
 
 #include "d2/structs.h"
-#include "font.h"
+#include "hd_text/font.h"
 
 namespace d2gl::modules {
 
@@ -30,21 +30,10 @@ enum class FramedTextType {
 	Monster,
 };
 
-struct D2PopupInfo {
-	glm::vec<2, uint16_t> size0;
-	glm::vec<2, uint16_t> size1;
-};
-
-struct D2TextInfo {
-	uint8_t cell_num;
-	glm::vec<2, uint16_t> size;
-	TextAlign align;
-	const wchar_t* str;
-};
-
 class HDText {
 	std::map<uint8_t, std::unique_ptr<Font>> m_fonts;
 	std::unique_ptr<Object> m_object_bg;
+	uint32_t m_lang_id = 0;
 	uint32_t m_text_size = 1;
 	uint32_t m_last_text_height = 0;
 	uint32_t m_last_text_width = 0;
@@ -68,6 +57,7 @@ class HDText {
 	uint32_t m_hovered_player_hp1 = 0;
 	uint32_t m_hovered_player_hp2 = 0;
 	glm::ivec2 m_hovered_player_pos = { 0, 0 };
+	wchar_t m_hovered_player_str[30] = { 0 };
 
 	const uint32_t m_bg_color = 0x000000CC;
 	const uint32_t m_border_color = 0x222222DD;
@@ -100,7 +90,9 @@ public:
 	uint16_t getFontHeight();
 
 	inline void setTextSize(uint32_t size) { m_text_size = size; }
+	inline uint32_t getTextSize() { return m_text_size; }
 	inline void borderedRect(bool draw = true) { m_bordered_rect = draw; }
+	inline Font* const getFont(uint32_t size) { return m_fonts[size].get(); }
 
 	void drawSubText(uint8_t fn = 1);
 	bool drawImage(d2::CellContext* cell, int x, int y, int draw_mode);
@@ -118,7 +110,12 @@ private:
 	void drawPlayerHealthBar(const wchar_t* name, uint32_t color);
 
 	inline wchar_t getColor(uint32_t color);
-	inline const D2FontInfo& getFont(uint32_t size);
+
+#ifdef _HDTEXT
+public:
+	static void showSampleText();
+	const std::string& getAllFontMetricString();
+#endif
 };
 
 }

@@ -28,6 +28,7 @@ void automapDrawBeginStub();
 void automapDrawEndStub();
 
 void uiDrawBeginStub();
+void uiDrawCursorItemStub();
 void uiDrawEndStub();
 
 void drawUnitStubStack();
@@ -37,6 +38,8 @@ void drawWeatherParticlesStub();
 void drawWeatherParticlesStub114d();
 
 void rectangledTextBeginStub();
+void rectangledTextBeginStub110f();
+void rectangledTextBeginStub109d();
 void rectangledTextEndStub();
 void drawRectFrameStub();
 void drawRectFrameStubECX();

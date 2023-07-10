@@ -56,6 +56,11 @@ bool isEscMenuOpen()
 	return *esc_menu_open || control;
 }
 
+bool isLangCJK(uint32_t lang_id)
+{
+	return lang_id == LANG_JPN || lang_id == LANG_KOR || lang_id == LANG_CHI;
+}
+
 UnitAny* getPlayerUnit()
 {
 	return (UnitAny*)*(uintptr_t*)player_unit;
@@ -196,6 +201,12 @@ void uiDrawBegin()
 	App.context->onStageChange();
 }
 
+void uiDrawCursorItem()
+{
+	App.game.draw_stage = DrawStage::CursorItem;
+	App.context->onStageChange();
+}
+
 void uiDrawEnd()
 {
 	App.game.draw_stage = DrawStage::Cursor;
@@ -229,6 +240,11 @@ void __stdcall drawShiftedImageHooked(CellContext* cell, int x, int y, uint32_t 
 
 void __stdcall drawVerticalCropImageHooked(CellContext* cell, int x, int y, int skip_lines, int draw_lines, int draw_mode)
 {
+	if (modules::HDText::Instance().isActive() && App.game.draw_stage >= DrawStage::UI) {
+		if (y < 150 || (*d2::screen_shift >= SCREENPANEL_LEFT && y < (int)*d2::screen_height - 100 && x < (int)*d2::screen_width / 2))
+			return;
+	}
+
 	const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::VerticalCropImage);
 	drawVerticalCropImage(cell, pos.x, pos.y, skip_lines, draw_lines, draw_mode);
 }
@@ -267,11 +283,11 @@ void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, ui
 bool __stdcall drawGroundTileHooked(TileContext* tile, GFXLight* light, int x, int y, int world_x, int world_y, uint8_t alpha, int screen_panels, bool tile_data)
 {
 	// Drawing invisible tile crashes on glide mode.
-	if (App.api == Api::Glide && tile) {
+	if (ISGLIDE3X() && tile) {
 		const auto len = strlen(tile->szTileName);
 		if (len > 8) {
 			const auto name = tile->szTileName + len - 8;
-			if (strcmp(name, "Warp.dt1") == 0)
+			if (_stricmp(name, "Warp.dt1") == 0)
 				return true;
 		}
 	}
@@ -306,7 +322,7 @@ void __fastcall takeScreenShotHooked()
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
 	// Glide mode light gray text appears black. So direct to dark gray.
-	if (App.api == Api::Glide && !App.hd_text && color == 15)
+	if (ISGLIDE3X() && !App.hd_text && color == 15)
 		color = 5;
 
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalText);

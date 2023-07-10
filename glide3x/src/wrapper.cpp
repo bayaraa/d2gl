@@ -57,12 +57,12 @@ void Wrapper::onBufferSwap()
 	m_swapped = true;
 
 #ifdef _DEBUG
-	App.var1 = m_texture_manager->getUsage(256);
-	App.var2 = m_texture_manager->getUsage(128);
-	App.var3 = m_texture_manager->getUsage(64);
-	App.var4 = m_texture_manager->getUsage(32);
-	App.var5 = m_texture_manager->getUsage(16);
-	App.var6 = m_texture_manager->getUsage(8);
+	App.var[0] = m_texture_manager->getUsage(256);
+	App.var[1] = m_texture_manager->getUsage(128);
+	App.var[2] = m_texture_manager->getUsage(64);
+	App.var[3] = m_texture_manager->getUsage(32);
+	App.var[4] = m_texture_manager->getUsage(16);
+	App.var[5] = m_texture_manager->getUsage(8);
 #endif
 
 	ctx->presentFrame();
@@ -136,17 +136,17 @@ void Wrapper::grAlphaBlendFunction(GrAlphaBlendFnc_t rgb_df)
 
 void Wrapper::grAlphaCombine(GrCombineFunction_t function)
 {
-	ctx->setVertexFlag(function == GR_COMBINE_FUNCTION_LOCAL, 0x04);
+	ctx->setVertexFlagZ(function == GR_COMBINE_FUNCTION_LOCAL);
 }
 
 void Wrapper::grChromakeyMode(GrChromakeyMode_t mode)
 {
-	ctx->setVertexFlag(mode == GR_CHROMAKEY_ENABLE, 0x01);
+	ctx->setVertexFlagX(mode == GR_CHROMAKEY_ENABLE);
 }
 
 void Wrapper::grColorCombine(GrCombineFunction_t function)
 {
-	ctx->setVertexFlag(function == GR_COMBINE_FUNCTION_LOCAL, 0x02);
+	ctx->setVertexFlagY(function == GR_COMBINE_FUNCTION_LOCAL);
 }
 
 void Wrapper::grConstantColorValue(GrColor_t value)
@@ -201,7 +201,7 @@ void Wrapper::grTexSource(GrChipID_t tmu, FxU32 start_address, GrTexInfo* info)
 	const auto frame_count = ctx->getFrameCount();
 	const auto sub_tex_info = m_texture_manager->getSubTextureInfo(start_address, size, width, height, frame_count);
 	if (sub_tex_info) {
-		ctx->setVertexTexNum(sub_tex_info->tex_num);
+		ctx->setVertexTexNum({ sub_tex_info->tex_num, 0 });
 		ctx->setVertexOffset(sub_tex_info->offset);
 		ctx->setVertexTexShift(sub_tex_info->shift);
 	}

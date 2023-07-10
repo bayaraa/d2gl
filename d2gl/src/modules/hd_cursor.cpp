@@ -40,7 +40,7 @@ void CursorObject::draw(uint8_t frame)
 {
 	glm::ivec2 pos = d2::getCursorPos();
 	m_object->setPosition({ (float)pos.x - m_offset.x, (float)pos.y - m_offset.y });
-	m_object->setTexIds(m_start_layer + frame - 1);
+	m_object->setTexIds({ m_start_layer + frame - 1, 0 });
 
 	App.context->pushObject(m_object);
 }

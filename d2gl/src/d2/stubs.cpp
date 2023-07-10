@@ -76,6 +76,17 @@ __declspec(naked) void uiDrawBeginStub()
 	}
 }
 
+__declspec(naked) void uiDrawCursorItemStub()
+{
+	__asm
+	{
+		pushad
+		call uiDrawCursorItem
+		popad
+		ret
+	}
+}
+
 __declspec(naked) void uiDrawEndStub()
 {
 	__asm
@@ -297,6 +308,31 @@ __declspec(naked) void rectangledTextBeginStub()
 {
 	__asm
 	{
+		mov headsup_text_unit, edx
+		pushad
+		call rectangledTextBegin
+		popad
+		ret
+	}
+}
+
+__declspec(naked) void rectangledTextBeginStub110f()
+{
+	__asm
+	{
+		mov headsup_text_unit, ecx
+		pushad
+		call rectangledTextBegin
+		popad
+		ret
+	}
+}
+
+__declspec(naked) void rectangledTextBeginStub109d()
+{
+	__asm
+	{
+		mov headsup_text_unit, ebp
 		pushad
 		call rectangledTextBegin
 		popad

@@ -176,11 +176,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_ACTIVATEAPP: {
+			const bool fps_capped = !App.vsync && App.foreground_fps.active;
+
 			if (wParam) {
-				App.context->setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
+				App.context->setFpsLimit(fps_capped, App.foreground_fps.range.value);
 				CallWindowProcA(App.wndproc, hWnd, WM_SYSKEYUP, VK_MENU, 0);
 			} else {
-				App.context->setFpsLimit(App.background_fps.active, App.background_fps.range.value);
+				App.context->setFpsLimit(App.background_fps.active || fps_capped, App.background_fps.active ? App.background_fps.range.value : App.foreground_fps.range.value);
 				setCursorUnlock();
 			}
 			return 0;
@@ -242,6 +244,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			break;
+		}
+		case WM_KEYUP: {
+			if (option::Menu::instance().isVisible() && wParam >= 0x30 && wParam <= 0x39)
+				return 0;
 		}
 
 		case WM_LBUTTONUP:
@@ -315,8 +321,6 @@ void setWindow(HWND hwnd)
 	App.hwnd = hwnd;
 	App.hdc = GetDC(App.hwnd);
 	win32::toggleDarkmode();
-
-	App.wndproc = (WNDPROC)SetWindowLongA(App.hwnd, GWL_WNDPROC, (LONG)WndProc);
 
 	App.window.style = GetWindowLong(App.hwnd, GWL_STYLE);
 	App.window.style &= ~(WS_POPUP | WS_GROUP | WS_DLGFRAME | WS_CLIPSIBLINGS | WS_TABSTOP);
@@ -414,9 +418,7 @@ void setCursorUnlock()
 		if (!App.cursor.unlock)
 			ClipCursor(NULL);
 		
-		if (option::Menu::instance().isVisible())
-			while(ShowCursor_Og(true) <= 0);
-		
+		while(ShowCursor_Og(true) <= 0);
 		App.cursor.locked = false;
 	}
 }

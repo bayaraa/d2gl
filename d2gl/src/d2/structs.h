@@ -20,6 +20,31 @@
 
 namespace d2gl::d2 {
 
+#define MERC_A1 0x010f
+#define MERC_A2 0x0152
+#define MERC_A3 0x0167
+#define MERC_A4 0x0420 // PD2
+#define MERC_A5 0x0231
+
+#define LANG_ENG 0x00
+#define LANG_ESP 0x01
+#define LANG_DEU 0x02
+#define LANG_FRA 0x03
+#define LANG_POR 0x04
+#define LANG_ITA 0x05
+#define LANG_JPN 0x06
+#define LANG_KOR 0x07
+#define LANG_SIN 0x08
+#define LANG_CHI 0x09
+#define LANG_POL 0x0A
+#define LANG_RUS 0x0B
+#define LANG_DEF 0x0C
+
+#define SCREENPANEL_NONE 0
+#define SCREENPANEL_RIGHT 1
+#define SCREENPANEL_LEFT 2
+#define SCREENPANEL_BOTH 3
+
 enum class UnitType {
 	Player,
 	Monster,
@@ -29,12 +54,6 @@ enum class UnitType {
 	VisTile,
 	Count,
 };
-
-#define MERC_A1 0x010f
-#define MERC_A2 0x0152
-#define MERC_A3 0x0167
-#define MERC_A4 0x0420 // PD2
-#define MERC_A5 0x0231
 
 enum class ItemQuality {
 	None,
@@ -62,44 +81,41 @@ struct Room1;
 
 #pragma pack(push, 1)
 struct DT1SubBlock {
-	WORD xPos; // 0x00
-	WORD yPos; // 0x02
-	WORD _1; // 0x04
-	BYTE gridX; // 0x06
-	BYTE gridY; // 0x07
-	WORD wTileFormat; // 0x08
-	DWORD dwSubLength; // 0x0A
-	WORD _2; // 0x0E
-	DWORD* pDataOffset; // 0x10
+	WORD xPos;
+	WORD yPos;
+	WORD _1;
+	BYTE gridX;
+	BYTE gridY;
+	WORD wTileFormat;
+	DWORD dwSubLength;
+	WORD _2;
+	DWORD* pDataOffset;
 };
 #pragma pack(pop)
 
 struct TileContext {
-	DWORD dwDirection; // 0x00
-	WORD wRoofIndex; // 0x04
-	BYTE bSound; // 0x06
-	BYTE bAnimated; // 0x07
-	DWORD dwSizeY; // 0x08
-	DWORD dwSizeX; // 0x0C
-	DWORD dwZeros1; // 0x10
-	DWORD dwOrientation; // 0x14
-	DWORD dwMainIndex; // 0x18
-	DWORD dwSubIndex; // 0x1C
-	DWORD dwFrame; // 0x20
-	BYTE _1a; // 0x24 DT1's unknown_a ...
-	BYTE _1c; // 0x25
-	BYTE _1b; // 0x26
-	BYTE _1d; // 0x27
-	BYTE bFlags[25]; // 0x28 For each tile <not sure>
-	BYTE _2; // 0x39
-	WORD sCacheIndex; // 0x40
-	DWORD _18; // 0x44
-	DWORD dwDataPtr; // 0x48 pointer to sub-block headers
-	DWORD dwSize; // 0x4C length of the sub-blocks
-	DWORD dwSubBlocks; // 0x50
-	DT1SubBlock* pBlocks; // 0x54
-	char* szTileName; // 0x58
-	DWORD** ptBlock; // 0x5C <not sure - maybe its a struct>
+	DWORD dwDirection;
+	WORD wRoofIndex;
+	BYTE bSound;
+	BYTE bAnimated;
+	DWORD dwSizeY;
+	DWORD dwSizeX;
+	DWORD dwZeros1;
+	DWORD dwOrientation;
+	DWORD dwMainIndex;
+	DWORD dwSubIndex;
+	DWORD dwFrame;
+	BYTE _1[4];
+	BYTE bFlags[25];
+	BYTE _2;
+	WORD sCacheIndex;
+	DWORD _3;
+	DWORD dwDataPtr;
+	DWORD dwSize;
+	DWORD dwSubBlocks;
+	DT1SubBlock* pBlocks;
+	char* szTileName;
+	DWORD** ptBlock;
 };
 
 struct GFXLight {
@@ -123,7 +139,7 @@ struct GfxCell {
 	DWORD height;
 	DWORD xoffs;
 	DWORD yoffs;
-	DWORD _2;
+	DWORD _1;
 	DWORD lpParent;
 	DWORD length;
 	BYTE cols;

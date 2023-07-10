@@ -28,6 +28,7 @@
 #define DLL_D2CLIENT "d2client.dll"
 #define DLL_D2COMMON "d2common.dll"
 #define DLL_D2LAUNCH "d2launch.dll"
+#define DLL_D2LANG   "d2lang.dll"
 #define DLL_USER32   "user32.dll"
 #define DLL_NTDLL    "ntdll.dll"
 #define DLL_SHCORE   "shcore.dll"
@@ -48,9 +49,12 @@ bool fileExists(std::string file_path);
 
 std::vector<std::string> strToLines(const std::string& str);
 std::vector<std::wstring> strToLines(const std::wstring& str);
+std::vector<std::string> splitToVector(const std::string& str, char delimeter = ',');
 
 void replaceAll(std::string& str, const std::string& from, const std::string& to);
 void strToLower(std::string& str);
+
+std::string getLangString(bool path = false);
 
 Version getVersion();
 std::string getVersionString();

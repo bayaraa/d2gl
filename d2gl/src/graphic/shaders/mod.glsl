@@ -22,7 +22,7 @@ layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 2) in vec4 Color1;
 layout(location = 3) in vec4 Color2;
-layout(location = 4) in uint TexNum;
+layout(location = 4) in ivec2 TexIds;
 layout(location = 5) in uvec4 Flags;
 layout(location = 6) in vec2 Extra;
 
@@ -32,7 +32,7 @@ out vec4 v_Position;
 out vec2 v_TexCoord;
 out vec4 v_Color1;
 out vec4 v_Color2;
-flat out uint v_TexNum;
+flat out ivec2 v_TexIds;
 flat out uvec4 v_Flags;
 out vec2 v_Extra;
 
@@ -43,7 +43,7 @@ void main()
 	v_TexCoord = TexCoord;
 	v_Color1 = Color1.abgr;
 	v_Color2 = Color2.abgr;
-	v_TexNum = TexNum;
+	v_TexIds = TexIds;
 	v_Flags = Flags;
 	v_Extra = Extra;
 }
@@ -56,19 +56,20 @@ layout(location = 0) out vec4 FragColor;
 uniform sampler2D u_MapTexture;
 uniform sampler2DArray u_CursorTexture;
 uniform sampler2DArray u_FontTexture;
+uniform sampler2D u_MaskTexture;
 
 in vec4 v_Position;
 in vec2 v_TexCoord;
 in vec4 v_Color1;
 in vec4 v_Color2;
-flat in uint v_TexNum;
+flat in ivec2 v_TexIds;
 flat in uvec4 v_Flags;
 in vec2 v_Extra;
 
-uniform vec2 u_Size;
 uniform vec2 u_Scale;
 uniform vec4 u_TextMask;
 uniform bool u_IsMasking = false;
+uniform vec2 u_ViewportSize;
 
 float msdf(vec3 rgb, float smoothess, float weight)
 {
@@ -86,21 +87,24 @@ vec3 greyscale(vec3 color, float str)
 void main()
 {
 	switch(v_Flags.x) {
-		case 1u: FragColor = texture(u_CursorTexture, vec3(v_TexCoord, v_TexNum)) * v_Color1; break;
+		case 1u: FragColor = texture(u_CursorTexture, vec3(v_TexCoord, v_TexIds.x)) * v_Color1; break;
 		case 2u: FragColor = v_Color1; break;
 		case 3u: {
-			vec3 color = texture(u_FontTexture, vec3(v_TexCoord, v_TexNum)).rgb;
-			if (v_Flags.w == 1u) {
-				float opacity1 = msdf(color, v_Extra.x, v_Extra.y + 0.05);
-				float opacity2 = msdf(color, v_Extra.x, 0.95);
-				FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
-			} else if(v_Flags.w == 2u) {
-				float opacity1 = msdf(color, v_Extra.x, v_Extra.y + 0.1);
-				float opacity2 = msdf(color, v_Extra.x, 1.1);
-				FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
+			vec4 color = texture(u_FontTexture, vec3(v_TexCoord, v_TexIds.x));
+			if(v_Flags.y > 0u) {
+				float mlt = v_Flags.y == 1u ? 1.0 : 0.5;
+				FragColor = vec4((v_Color1.r + v_Color1.g + v_Color1.b) < 0.1 ? 0.8 : 0.0);
+				FragColor.a = (color.a < 0.26 ? 0.0 : smoothstep(0.0, 1.0, color.a)) * mlt * v_Extra.x;
 			} else {
-				float opacity = msdf(color, v_Extra.x, v_Extra.y);
-				FragColor = vec4(v_Color1.rgb, v_Color1.a * opacity);
+				if (v_Flags.w == 1u) {
+					float opacity1 = msdf(color.rgb, v_Extra.x, v_Extra.y + 0.02);
+					float opacity2 = msdf(color.rgb, v_Extra.x, 1.01);
+					FragColor = vec4(mix(v_Color2.rgb, v_Color1.rgb, opacity2), v_Color1.a * opacity1);
+				} else {
+					float scale = smoothstep(1.5, 1.0, u_Scale.x);
+					float opacity = msdf(color.rgb, v_Extra.x / (1.0 + scale), v_Extra.y);
+					FragColor = vec4(v_Color1.rgb, v_Color1.a * opacity * (1.0 + 0.20 * scale));
+				}
 			}
 			if (u_IsMasking && v_Flags.z == 0u) {
 				if (u_TextMask.x < v_Position.x && u_TextMask.z > v_Position.x && u_TextMask.y > v_Position.y && u_TextMask.w < v_Position.y)
@@ -114,35 +118,53 @@ void main()
 		case 5u:
 			FragColor = texture(u_MapTexture, v_TexCoord);
 			FragColor.rgb = greyscale(FragColor.rgb, 0.2);
+			if (v_Flags.z > 0u)
+				FragColor.a *= v_Flags.z / 100.0;
+		break;
+		case 6u:
+			FragColor = v_Color1;
+			float alpha = (v_TexCoord.x < 0.5) ? smoothstep(0.0, v_Extra.x, v_TexCoord.x) : smoothstep(1.0, v_Extra.y, v_TexCoord.x);
+			FragColor.a *= alpha;
+		break;
+		case 7u:
+			FragColor.rgb = v_Color2.rgb * (smoothstep(0.0, 2.0, v_TexCoord.y) / 1.4);
+			FragColor.a = v_Color1.a;
 		break;
 	}
 
-	float border = 1.00001;
-	vec2 size = vec2(border / u_Scale.x / v_Extra.x, border / u_Scale.y / v_Extra.y);
-	vec2 size2 = size * 2.0, size3 = size * 3.0;
-	switch (v_Flags.y) {
-		case 1u:
-			if(v_TexCoord.x < size.x || v_TexCoord.x > 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y > 1.0 - size.y)
-				FragColor = v_Color2;
-		case 2u:
-			if ((v_TexCoord.x > size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x > 1.0 - size3.x) ||
-				(v_TexCoord.y > size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y > 1.0 - size3.y))
-				FragColor = v_Color2;
-		break;
-		case 3u:
-			if(v_TexCoord.x < size3.x || v_TexCoord.x >= 1.0 - size3.x || v_TexCoord.y < size3.y || v_TexCoord.y >= 1.0 - size3.y)
-				FragColor = v_Color1;
-			if(v_TexCoord.x < size.x || v_TexCoord.x >= 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y >= 1.0 - size.y)
-				FragColor = v_Color2;
-			if ((v_TexCoord.x >= size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x >= 1.0 - size3.x) ||
-				(v_TexCoord.y >= size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y >= 1.0 - size3.y))
-				FragColor = v_Color2;
-		break;
-		case 4u:
-			if(v_TexCoord.x < size.x || v_TexCoord.x > 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y > 1.0 - size.y)
-				FragColor = v_Color2;
-		break;
+	if (v_Flags.x != 3u) {
+		float border = 1.00001;
+		vec2 size = vec2(border / u_Scale.x / v_Extra.x, border / u_Scale.y / v_Extra.y);
+		vec2 size2 = size * 2.0, size3 = size * 3.0;
+		switch (v_Flags.y) {
+			case 1u:
+				if(v_TexCoord.x < size.x || v_TexCoord.x > 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y > 1.0 - size.y)
+					FragColor = v_Color2;
+			case 2u:
+				if ((v_TexCoord.x > size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x > 1.0 - size3.x) ||
+					(v_TexCoord.y > size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y > 1.0 - size3.y))
+					FragColor = v_Color2;
+			break;
+			case 3u:
+				if(v_TexCoord.x < size3.x || v_TexCoord.x >= 1.0 - size3.x || v_TexCoord.y < size3.y || v_TexCoord.y >= 1.0 - size3.y)
+					FragColor = v_Color1;
+				if(v_TexCoord.x < size.x || v_TexCoord.x >= 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y >= 1.0 - size.y)
+					FragColor = v_Color2;
+				if ((v_TexCoord.x >= size2.x && v_TexCoord.x < size3.x) || (v_TexCoord.x < 1.0 - size2.x && v_TexCoord.x >= 1.0 - size3.x) ||
+					(v_TexCoord.y >= size2.y && v_TexCoord.y < size3.y) || (v_TexCoord.y < 1.0 - size2.y && v_TexCoord.y >= 1.0 - size3.y))
+					FragColor = v_Color2;
+			break;
+			case 4u:
+				if(v_TexCoord.x < size.x || v_TexCoord.x > 1.0 - size.x || v_TexCoord.y < size.y || v_TexCoord.y > 1.0 - size.y)
+					FragColor = v_Color2;
+			break;
+		}
+		if (v_Flags.z > 0u)
+			FragColor.a *= v_Flags.z / 100.0;
 	}
+
+	if (texture(u_MaskTexture, gl_FragCoord.xy / u_ViewportSize).r > 0.1)
+		FragColor.a = 0.0;
 }
 
 #endif

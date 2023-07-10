@@ -25,6 +25,7 @@
 #include "modules/mini_map.h"
 #include "modules/motion_prediction.h"
 #include "option/menu.h"
+#include "win32.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -93,8 +94,9 @@ Context::Context()
 
 	char version_str[50] = { 0 };
 	sprintf_s(version_str, "%d.%d", major_version, minor_version);
-	trace_log("OpenGL: %s (%s)", version_str, glGetString(GL_RENDERER));
-	App.version = version_str;
+	trace_log("OpenGL: %s (%s | %s)", version_str, glGetString(GL_RENDERER), glGetString(GL_VENDOR));
+	trace_log("OpenGL: Shading Language: %s", version_str, glGetString(GL_SHADING_LANGUAGE_VERSION));
+	App.gl_version = version_str;
 
 	GLint max_texture_unit;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_unit);
@@ -146,12 +148,12 @@ Context::Context()
 
 	glGenBuffers(1, &m_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices.data[0]), NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices.data[0]), NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &m_pixel_buffer);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixel_buffer);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, PIXEL_BUFFER_SIZE, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, PIXEL_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	imguiInit();
@@ -200,10 +202,11 @@ Context::Context()
 		{ BindingType::Texture, "u_MapTexture", TEXTURE_SLOT_MAP },
 		{ BindingType::Texture, "u_CursorTexture", TEXTURE_SLOT_CURSOR },
 		{ BindingType::Texture, "u_FontTexture", TEXTURE_SLOT_FONTS },
+		{ BindingType::Texture, "u_MaskTexture", TEXTURE_SLOT_MASK },
 	};
 	m_mod_pipeline = Context::createPipeline(mod_pipeline_ci);
 
-	if (App.api == Api::Glide) {
+	if (ISGLIDE3X()) {
 		TextureCreateInfo glide_texture_ci;
 		glide_texture_ci.size = { 512, 512 };
 		glide_texture_ci.layer_count = 512;
@@ -229,7 +232,7 @@ Context::Context()
 		};
 		game_pipeline_ci.attachment_blends.clear();
 		for (auto& blend : g_blend_types)
-			game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha });
+			game_pipeline_ci.attachment_blends.push_back({ blend.second.second, BlendType::SAlpha_OneMinusSAlpha, BlendType::SAlpha_OneMinusSAlpha });
 		m_game_pipeline = Context::createPipeline(game_pipeline_ci);
 
 		TextureCreateInfo lut_texture_ci;
@@ -343,6 +346,7 @@ void Context::renderThread(void* context)
 	uint32_t frame_index = 0;
 
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->m_vertex_buffer);
+	Vertex::enableAttribArray();
 
 	while (ctx->m_rendering) {
 		WaitForSingleObject(ctx->m_semaphore_cpu[frame_index], INFINITE);
@@ -421,7 +425,7 @@ void Context::renderThread(void* context)
 						ctx->setViewport(cmd->m_game_size);
 						ctx->bindPipeline(ctx->m_prefx_pipeline);
 					}
-					ctx->drawQuad(3 + App.bloom.active, App.lut.selected);
+					ctx->drawQuad(3 + App.bloom.active, { App.lut.selected, 0 });
 
 					ctx->bindPipeline(ctx->m_game_pipeline, command->index);
 					break;
@@ -430,7 +434,7 @@ void Context::renderThread(void* context)
 						ctx->bindDefaultFrameBuffer();
 						ctx->setViewport(App.window.size);
 					} else {
-						ctx->bindFrameBuffer(ctx->m_game_framebuffer, App.api == Api::Glide);
+						ctx->bindFrameBuffer(ctx->m_game_framebuffer, ISGLIDE3X());
 						ctx->setViewport(cmd->m_game_size);
 					}
 					break;
@@ -450,7 +454,7 @@ void Context::renderThread(void* context)
 							}
 						}
 
-						if (App.api == Api::Glide) {
+						if (ISGLIDE3X()) {
 							if (App.bloom.active) {
 								const auto bloom_data = glm::vec2(App.bloom.exposure.value, App.bloom.gamma.value);
 								if (ctx->m_bloom_data != bloom_data) {
@@ -520,9 +524,14 @@ void Context::renderThread(void* context)
 			glDrawElements(GL_TRIANGLES, cmd->m_vertex_mod_count / 4 * 6, GL_UNSIGNED_INT, 0);
 		}
 
+		GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		glFlush();
+		glClientWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
+		glDeleteSync(sync);
+
+		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
 		option::Menu::instance().draw();
 		SwapBuffers(App.hdc);
-		ReleaseSemaphore(ctx->m_semaphore_gpu[frame_index], 1, NULL);
 
 		if (ctx->m_limiter.active) {
 			WaitForSingleObject(ctx->m_limiter.timer, (DWORD)ctx->m_limiter.frame_len_ms + 1);
@@ -553,26 +562,24 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 	if (game_resized) {
 		glm::mat4 mvp = glm::ortho(0.0f, (float)game_size.x, (float)game_size.y, 0.0f);
 		modules::HDText::Instance().setMVP(mvp);
-
 		m_mod_pipeline->setUniformMat4f("u_MVP", mvp);
-		m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
-		m_mod_pipeline->setUniformVec2f("u_Size", { (float)game_size.x, (float)game_size.y });
 
 		m_upscale_ubo->updateDataVec2f("tex_size", { (float)App.game.tex_size.x, (float)App.game.tex_size.y });
 		m_upscale_ubo->updateDataVec2f("rel_size", { 1.0f / App.game.tex_size.x, 1.0f / App.game.tex_size.y });
 
 		FrameBufferCreateInfo frambuffer_ci;
 		frambuffer_ci.size = game_size;
-		if (App.api == Api::Glide)
+		if (ISGLIDE3X())
 			frambuffer_ci.attachments = {
 				{ TEXTURE_SLOT_GAME, { 0.0f, 0.0f, 0.0f, 1.0f }, GL_LINEAR, GL_LINEAR },
-				{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } }
+				{ TEXTURE_SLOT_MAP, { 0.0f, 0.0f, 0.0f, 0.0f } },
+				{ TEXTURE_SLOT_MASK, { 0.0f, 0.0f, 0.0f, 0.0f }, GL_LINEAR, GL_LINEAR, GL_RED },
 			};
 		else
 			frambuffer_ci.attachments = { { TEXTURE_SLOT_GAME } };
 		m_game_framebuffer = Context::createFrameBuffer(frambuffer_ci);
 
-		if (App.api == Api::Glide) {
+		if (ISGLIDE3X()) {
 			m_game_pipeline->setUniformMat4f("u_MVP", mvp);
 
 			m_bloom_ubo->updateDataVec2f("rel_size", { 4.0f / game_size.x, 4.0f / game_size.y });
@@ -634,6 +641,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
+	m_mod_pipeline->setUniformVec2f("u_ViewportSize", { (float)App.viewport.size.x, (float)App.viewport.size.y });
 
 	modules::MiniMap::Instance().resize();
 	toggleVsync();
@@ -677,7 +685,7 @@ void Context::onStageChange()
 		case DrawStage::World:
 			break;
 		case DrawStage::UI:
-			if (App.api == Api::Glide && (App.bloom.active || App.lut.selected)) {
+			if (ISGLIDE3X() && (App.bloom.active || App.lut.selected) && *d2::screen_shift != SCREENPANEL_BOTH) {
 				flushVertices();
 				m_command_buffer[m_frame_index].pushCommand(CommandType::PreFx, m_current_blend_index);
 			}
@@ -687,8 +695,7 @@ void Context::onStageChange()
 				flushVertices();
 				m_blend_locked = true;
 				m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, 3);
-				setVertexFlag(true, 0x08);
-				setVertexFlag(!*d2::automap_on, 0x10);
+				setVertexFlagW(1 + !*d2::automap_on);
 			}
 			break;
 		case DrawStage::HUD:
@@ -696,15 +703,22 @@ void Context::onStageChange()
 				flushVertices();
 				m_blend_locked = false;
 				m_command_buffer[m_frame_index].pushCommand(CommandType::SetBlendState, m_current_blend_index);
-				setVertexFlag(false, 0x08);
+				setVertexFlagW(0);
 
 				modules::MiniMap::Instance().draw();
 			}
-			modules::HDText::Instance().drawFpsCounter();
+			modules::HDText::drawFpsCounter();
+			break;
+		case DrawStage::CursorItem:
+			flushVertices();
+			setVertexFlagW(10);
 			break;
 		case DrawStage::Cursor:
 			appendDelayedObjects();
 			modules::HDText::Instance().drawEntryText();
+#ifdef _HDTEXT
+			modules::HDText::showSampleText();
+#endif
 			modules::HDCursor::Instance().draw();
 			break;
 	}
@@ -720,6 +734,9 @@ void Context::setBlendState(uint32_t index)
 
 void Context::beginFrame()
 {
+	if (!App.wndproc && App.game.screen == GameScreen::Menu)
+		App.wndproc = (WNDPROC)SetWindowLongA(App.hwnd, GWL_WNDPROC, (LONG)win32::WndProc);
+
 	m_vertices.count = m_vertices.start = 0;
 	m_vertices.ptr = m_vertices.data[m_frame_index].data();
 
@@ -750,6 +767,7 @@ void Context::bindDefaultFrameBuffer()
 void Context::presentFrame()
 {
 	flushVertices();
+	setVertexFlagW(0);
 	m_command_buffer[m_frame_index].pushCommand(CommandType::Submit);
 
 	modules::HDText::Instance().update();
@@ -803,7 +821,7 @@ void Context::pushVertex(const GlideVertex* vertex, glm::vec2 fix, glm::ivec2 of
 	};
 	m_vertices.ptr->color1 = vertex->pargb;
 	m_vertices.ptr->color2 = m_vertex_params.color;
-	m_vertices.ptr->tex_num = m_vertex_params.tex_num;
+	m_vertices.ptr->tex_ids = m_vertex_params.tex_ids;
 	m_vertices.ptr->flags = m_vertex_params.flags;
 
 	m_vertices.ptr++;
@@ -823,7 +841,7 @@ void Context::flushVertices()
 	m_frame.drawcall_count++;
 }
 
-void Context::drawQuad(int16_t flags, int16_t tex_num)
+void Context::drawQuad(int8_t flag_x, glm::vec<2, int16_t> tex_ids)
 {
 	static Vertex quad[4] = {
 		{ { glm::detail::toFloat16(-1.0f), glm::detail::toFloat16(-1.0f) }, { 0.0f, 0.0f } },
@@ -832,8 +850,8 @@ void Context::drawQuad(int16_t flags, int16_t tex_num)
 		{ { glm::detail::toFloat16(-1.0f), glm::detail::toFloat16(+1.0f) }, { 0.0f, 1.0f } },
 	};
 	for (size_t i = 0; i < 4; i++) {
-		quad[i].tex_num = tex_num;
-		quad[i].flags = flags;
+		quad[i].tex_ids = tex_ids;
+		quad[i].flags = { flag_x, 0, 0, 0 };
 	}
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), &quad[0]);
@@ -885,8 +903,7 @@ void Context::setFpsLimit(bool active, int max_fps)
 	m_limiter.frame_len_ms = 1000.0f / max_fps;
 	m_limiter.frame_len_ns = (uint64_t)(m_limiter.frame_len_ms * 10000);
 
-	if (m_limiter.active)
-		resetFileTime();
+	resetFileTime();
 }
 
 void Context::resetFileTime()

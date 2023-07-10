@@ -47,6 +47,7 @@ namespace d2gl {
 #define TEXTURE_SLOT_PREFX 9
 #define TEXTURE_SLOT_BLOOM1 10
 #define TEXTURE_SLOT_BLOOM2 11
+#define TEXTURE_SLOT_MASK 12
 
 #define TEXTURE_SLOT_CURSOR 2
 #define TEXTURE_SLOT_FONTS 3
@@ -68,9 +69,9 @@ struct Vertices {
 struct VertexParams {
 	uint32_t color = 0;
 	uint8_t tex_shift = 0;
-	uint16_t tex_num = 0;
+	glm::vec<2, uint16_t> tex_ids = { 0, 0 };
 	glm::vec<2, uint16_t> offsets = { 0, 0 };
-	uint16_t flags = 0;
+	glm::vec<4, uint8_t> flags = { 0, 0, 0, 0 };
 };
 
 struct SharpenData {
@@ -190,7 +191,7 @@ public:
 
 	void pushVertex(const GlideVertex* vertex, glm::vec2 fix = { 0.0f, 0.0f }, glm::ivec2 offset = { 0, 0 });
 	void flushVertices();
-	void drawQuad(int16_t flags = 0, int16_t tex_num = 0);
+	void drawQuad(int8_t flag_x = 0, glm::vec<2, int16_t> tex_ids = { 0, 0 });
 
 	inline void toggleDelayPush(bool delay) { m_delay_push = delay; }
 	void pushObject(const std::unique_ptr<Object>& object);
@@ -198,9 +199,12 @@ public:
 
 	inline void setVertexColor(uint32_t color) { m_vertex_params.color = color; }
 	inline void setVertexTexShift(uint8_t shift) { m_vertex_params.tex_shift = shift; }
-	inline void setVertexTexNum(uint16_t num) { m_vertex_params.tex_num = num; }
+	inline void setVertexTexNum(glm::vec<2, uint16_t> tex_ids) { m_vertex_params.tex_ids = tex_ids; }
 	inline void setVertexOffset(glm::vec<2, uint16_t> offsets) { m_vertex_params.offsets = offsets; }
-	inline void setVertexFlag(bool set, uint16_t flag) { m_vertex_params.flags = set ? (m_vertex_params.flags | flag) : (m_vertex_params.flags & ~flag); }
+	inline void setVertexFlagX(uint8_t flag) { m_vertex_params.flags.x = flag; }
+	inline void setVertexFlagY(uint8_t flag) { m_vertex_params.flags.y = flag; }
+	inline void setVertexFlagZ(uint8_t flag) { m_vertex_params.flags.z = flag; }
+	inline void setVertexFlagW(uint8_t flag) { m_vertex_params.flags.w = flag; }
 
 	inline const double getFrameTime() { return m_frame.frame_time; }
 	inline const double getAvgFrameTime() { return m_frame.average_frame_time; }

@@ -26,6 +26,7 @@ uint32_t mpqLoad(const char* mpqfile);
 glm::ivec2 getCursorPos();
 bool isPerspective();
 bool isEscMenuOpen();
+bool isLangCJK(uint32_t lang_id);
 
 UnitAny* getPlayerUnit();
 UnitAny* findUnit(uint32_t type_id);
@@ -52,6 +53,7 @@ void gameDrawBegin();
 void automapDrawBegin();
 void automapDrawEnd();
 void uiDrawBegin();
+void uiDrawCursorItem();
 void uiDrawEnd();
 
 void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, uint8_t* palette);

@@ -22,6 +22,7 @@
 #include "types.h"
 
 // #define _DEBUG 1
+// #define _HDTEXT 1
 
 namespace d2gl {
 
@@ -37,13 +38,14 @@ struct D2GLApp {
 	bool ready = false;
 
 	std::string menu_title = "D2GL";
+	std::string version_str = "D2GL v1.2.0 by Bayaraa.";
 	std::string ini_file = "d2gl.ini";
 	std::string mpq_file = "d2gl.mpq";
 	std::string log_file = "d2gl.log";
 
 	Api api = Api::Glide;
 	std::unique_ptr<Context> context;
-	std::string version = "";
+	std::string gl_version = "";
 	bool vsync = true;
 	uint32_t frame_latency = 1;
 
@@ -95,7 +97,7 @@ struct D2GLApp {
 	} cursor;
 
 	Select<glm::uvec2> resolutions = {};
-	glm::ivec4 desktop_resolution  = { 0, 0, 0, 0 };
+	glm::ivec4 desktop_resolution = { 0, 0, 0, 0 };
 
 	struct ForegroundFPS {
 		bool active = false;
@@ -103,7 +105,7 @@ struct D2GLApp {
 	} foreground_fps;
 
 	struct BackgroundFPS {
-		bool active = false;
+		bool active = true;
 		Range<int> range = { 25, 25, 60 };
 	} background_fps;
 
@@ -144,18 +146,22 @@ struct D2GLApp {
 		Range<int> height = { 140, 100, 200 };
 	} mini_map;
 
-	int var1 = 0;
-	int var2 = 0;
-	int var3 = 0;
-	int var4 = 0;
-	int var5 = 0;
-	int var6 = 0;
-	int var7 = 0;
-	int var8 = 0;
-	int var9 = 0;
-	int var10 = 0;
-	int var11 = 0;
-	int var12 = 0;
+#ifdef _DEBUG
+	int var[10] = { 0 };
+#endif
+#ifdef _HDTEXT
+	struct {
+		Select<int> fonts = {};
+		Range<float> size = { 10.0f, 5.0f, 40.0f };
+		Range<float> weight = { 1.0f, 0.5f, 1.5f };
+		Range<float> letter_spacing = { 0.0f, -1.0f, 1.0f };
+		Range<float> line_height = { 1.0f, 0.0f, 3.0f };
+		Range<float> shadow_intensity = { 0.35f, 0.0f, 1.0f };
+		Range<float> offset_x = { 0.0f, -10.0f, 10.0f };
+		Range<float> offset_y = { 0.0f, -10.0f, 10.0f };
+		bool show_sample = false;
+	} hdt;
+#endif
 };
 // clang-format on
 
@@ -163,5 +169,23 @@ extern D2GLApp App;
 
 void dllAttach(HMODULE hmodule);
 void dllDetach();
+
+constexpr inline bool ISGLIDE3X()
+{
+#ifdef GLIDE3X_EXPORTS
+	return true;
+#else
+	return false;
+#endif
+}
+
+constexpr inline float FLOATVAL(float glide3x, float ddraw)
+{
+#ifdef GLIDE3X_EXPORTS
+	return glide3x;
+#else
+	return ddraw;
+#endif
+}
 
 }

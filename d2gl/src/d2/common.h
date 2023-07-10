@@ -36,6 +36,7 @@ typedef uint32_t(__stdcall* drawUnit_t)(UnitAny* unit, uint32_t, uint32_t, uint3
 typedef void* drawWeatherParticles_t;
 typedef UnitAny*(__stdcall* getSelectedUnit_t)(void);
 
+typedef uint32_t(__stdcall* getLangId_t)(void);
 typedef uint32_t(__stdcall* getUnitStat_t)(UnitAny* unit, uint32_t stat, uint32_t stat2);
 typedef uint32_t(__stdcall* getUnitStat109d_t)(UnitAny* unit, uint32_t stat);
 typedef uint32_t(__stdcall* getUnitState_t)(UnitAny* unit, uint32_t state_no);
@@ -75,6 +76,7 @@ extern uint32_t* screen_shift;
 extern int* video_mode;
 extern bool* perspective;
 extern bool* esc_menu_open;
+extern bool* is_alt_clicked;
 
 extern uint32_t* is_in_game;
 extern UnitAny* player_unit;
@@ -144,6 +146,7 @@ extern getFramedTextSize_t getFramedTextSize;
 extern getFontHeight_t getFontHeight;
 extern setTextSize_t setTextSize;
 
+extern getLangId_t getLangId;
 extern getSelectedUnit_t getSelectedUnit;
 extern getUnitStat_t getUnitStat_Fn;
 extern getUnitState_t getUnitState_Fn;
@@ -155,6 +158,7 @@ extern UnitAny* currently_drawing_unit;
 extern uint32_t currently_drawing_weather_particles;
 extern uintptr_t* currently_drawing_weather_particle_index_ptr;
 extern RECT* currently_drawing_rect;
+extern UnitAny* headsup_text_unit;
 
 extern std::unique_ptr<Patch> patch_minimap;
 extern std::unique_ptr<Patch> patch_motion_prediction;

@@ -25,7 +25,7 @@ Cpp11BracedListStyle: false
 FixNamespaceComments: false
 AlignOperands: false
 AlignTrailingComments: false
-ContinuationIndentWidth: 2
+ContinuationIndentWidth: 4
 PenaltyIndentedWhitespace: 0
 AllowShortCaseLabelsOnASingleLine: true
 IndentExternBlock: NoIndent
