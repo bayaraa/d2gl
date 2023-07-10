@@ -227,8 +227,16 @@ glm::ivec2 MotionPrediction::drawLine(int start_x, int start_y)
 
 glm::ivec2 MotionPrediction::drawSolidRect()
 {
-	if (isAvailable() && m_text_fn == D2DrawFn::NormalText)
-		return m_global_offset;
+	if (isAvailable() && m_text_fn == D2DrawFn::NormalText) {
+		if (d2::headsup_text_unit && m_player_motion.unit != d2::headsup_text_unit) {
+			if (d2::headsup_text_unit->dwType == d2::UnitType::Monster) {
+				const uint32_t type_id = d2::getUnitID(d2::headsup_text_unit) | ((uint8_t)d2::headsup_text_unit->dwType << 24);
+				const auto unit_offset = getUnitOffset(&m_units[type_id]);
+				return m_global_offset - unit_offset;
+			}
+			return m_global_offset;
+		}
+	}
 
 	return { 0, 0 };
 }
@@ -239,8 +247,16 @@ glm::ivec2 MotionPrediction::drawText(const wchar_t* str, int x, int y, D2DrawFn
 	if (!isAvailable() || !str)
 		return pos;
 
-	if (fn == m_text_fn)
-		pos -= m_global_offset;
+	if (fn == m_text_fn) {
+		if (d2::headsup_text_unit && m_player_motion.unit != d2::headsup_text_unit) {
+			if (d2::headsup_text_unit->dwType == d2::UnitType::Monster) {
+				const uint32_t type_id = d2::getUnitID(d2::headsup_text_unit) | ((uint8_t)d2::headsup_text_unit->dwType << 24);
+				const auto unit_offset = getUnitOffset(&m_units[type_id]);
+				pos += unit_offset;
+			}
+			pos -= m_global_offset;
+		}
+	}
 
 	return pos;
 }

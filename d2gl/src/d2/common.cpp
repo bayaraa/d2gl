@@ -125,6 +125,7 @@ UnitAny* currently_drawing_unit = nullptr;
 uint32_t currently_drawing_weather_particles = 0;
 uint32_t* currently_drawing_weather_particle_index_ptr = nullptr;
 RECT* currently_drawing_rect = nullptr;
+UnitAny* headsup_text_unit = nullptr;
 
 std::unique_ptr<Patch> patch_minimap;
 std::unique_ptr<Patch> patch_motion_prediction;
@@ -185,7 +186,7 @@ void initHooks()
 	}
 
 	patch_motion_prediction = std::make_unique<Patch>();
-	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC1053), (0x7FCF0, 0x83EC5053), (0x7B4F0, 0x83EC4C53), (0x941F0), (0x15C80), (0x71990), (0x7CA40), (0x76170), (0xA0A01, 0x8BEC83EC)), 5, (uintptr_t)rectangledTextBeginStub);
+	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC1053), (0x7FCF0, 0x83EC5053), (0x7B4F0, 0x83EC4C53), (0x941F0), (0x15C80), (0x71990), (0x7CA40), (0x76170), (0xA0A01, 0x8BEC83EC)), 5, (uintptr_t)(isVer(V_109d) ? rectangledTextBeginStub109d : (isVer(V_110) ? rectangledTextBeginStub110f : rectangledTextBeginStub)));
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x5D5B83C4), (0x7FE50), (0x7B650), (0x9431A), (0x15DAA), (0x71ABA), (0x7CB6A), (0x7629A), (0xA0B1B, 0x5E5B8BE5)), 5, (uintptr_t)rectangledTextEndStub);
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8B450083), (0x85629), (0x80B1E, 0x8B0683F8), (0xA05C5), (0x63E45), (0x8D595), (0xC0E25), (0x1A825), (0x5501E, 0x8B0683F8)), (isVer(V_110) || isVer(V_114d)) ? 5 : 6, (uintptr_t)unitHoverTextStub);
 	if (isVer(V_109d) || isVer(V_110))
