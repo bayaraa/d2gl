@@ -163,8 +163,7 @@ void main()
 			FragColor.a *= v_Flags.z / 100.0;
 	}
 
-	float mask = texture(u_MaskTexture, gl_FragCoord.xy / u_ViewportSize).r;
-	if(mask > 0.1)
+	if (texture(u_MaskTexture, gl_FragCoord.xy / u_ViewportSize).r > 0.1)
 		FragColor.a = 0.0;
 }
 

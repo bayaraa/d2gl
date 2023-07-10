@@ -378,7 +378,7 @@ void loadIni()
 	App.resolutions.items.push_back({ "Custom Size", glm::uvec2(0, 0) });
 	for (size_t i = 0; i < window_sizes.size(); i++) {
 		const auto& p = window_sizes[i];
-		if (App.desktop_resolution.z <= p.first || App.desktop_resolution.w <= p.second)
+		if (App.desktop_resolution.z <= (int)p.first || App.desktop_resolution.w <= (int)p.second)
 			continue;
 
 		char label[50] = { 0 };
