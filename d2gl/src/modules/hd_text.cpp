@@ -286,7 +286,8 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 		}
 	}
 
-	float font_size, line_count;
+	float font_size;
+	int line_count = 0;
 	auto font = getFont(1);
 	const auto text_color = g_text_colors.at(getColor(color));
 	glm::vec2 pos, padding, box_size, size;
@@ -382,7 +383,8 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 	// rectColor = 0, rectTransparency = 1, dwColor = 0   alt item
 	// rectColor = 140, rectTransparency = 5, dwColor = 0   alt item hovered
 
-	float font_size, line_count;
+	float font_size;
+	int line_count = 0;
 	auto font = getFont(m_text_size);
 	const auto text_color = g_text_colors.at(getColor(color));
 	uint32_t bg_color = m_bg_color;
