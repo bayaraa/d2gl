@@ -235,8 +235,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				if (option::Menu::instance().isVisible()) {
 					if (wParam == VK_ESCAPE) {
-						option::Menu::instance().toggle();
-						setCursorLock();
 						return 0;
 					}
 					if (wParam >= 0x30 && wParam <= 0x39)
@@ -246,8 +244,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_KEYUP: {
-			if (option::Menu::instance().isVisible() && wParam >= 0x30 && wParam <= 0x39)
-				return 0;
+			if (option::Menu::instance().isVisible()) {
+				if (wParam == VK_ESCAPE) {
+					option::Menu::instance().toggle();
+					setCursorLock();
+					return 0;
+				}
+				if (wParam >= 0x30 && wParam <= 0x39)
+					return 0;
+			}
 		}
 
 		case WM_LBUTTONUP:
