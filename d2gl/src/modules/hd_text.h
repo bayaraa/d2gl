@@ -30,6 +30,14 @@ enum class FramedTextType {
 	Monster,
 };
 
+struct HoveredUnit {
+	uint32_t id = 0;
+	uint32_t hp[2] = { 0 };
+	glm::ivec2 pos = { 0, 0 };
+	wchar_t name[50] = { 0 };
+	uint32_t color = 0;
+};
+
 class HDText {
 	std::map<uint8_t, std::unique_ptr<Font>> m_fonts;
 	std::unique_ptr<Object> m_object_bg;
@@ -41,7 +49,6 @@ class HDText {
 	bool m_map_names = false;
 
 	bool m_bordered_rect = false;
-	bool m_draw_sub_text = true;
 	bool m_is_player_dead = false;
 
 	glm::mat4 m_mvp = glm::mat4(0.0f);
@@ -53,11 +60,7 @@ class HDText {
 	clock_t m_entry_timer = 0;
 	int m_cur_level_no = 0;
 
-	uint32_t m_hovered_player_id = 0;
-	uint32_t m_hovered_player_hp1 = 0;
-	uint32_t m_hovered_player_hp2 = 0;
-	glm::ivec2 m_hovered_player_pos = { 0, 0 };
-	wchar_t m_hovered_player_str[30] = { 0 };
+	HoveredUnit m_hovered_unit;
 
 	const uint32_t m_bg_color = 0x000000CC;
 	const uint32_t m_border_color = 0x222222DD;
@@ -74,7 +77,7 @@ public:
 		return instance;
 	}
 
-	inline bool isActive() { return App.hd_cursor && App.hd_text; }
+	inline bool isActive() { return App.hd_text; }
 	inline void setMVP(const glm::mat4& mvp) { m_mvp = mvp; }
 
 	void reset();
@@ -100,6 +103,7 @@ public:
 	void drawRectFrame();
 	void loadUIImage();
 
+	void drawUnitHealthBar();
 	void startEntryText();
 	void drawEntryText();
 
@@ -107,7 +111,7 @@ public:
 
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);
-	void drawPlayerHealthBar(const wchar_t* name, uint32_t color);
+	void drawPlayerHealthBar(d2::UnitAny* unit);
 
 	inline wchar_t getColor(uint32_t color);
 

@@ -35,7 +35,7 @@ public:
 	GlyphSet(Texture* texture, const std::string& name);
 	~GlyphSet() = default;
 
-	inline const Glyph* getGlyph(wchar_t c) { return m_glyphes.find(c) != m_glyphes.end() ? &m_glyphes[c] : nullptr; }
+	const Glyph* getGlyph(wchar_t c);
 };
 
 }

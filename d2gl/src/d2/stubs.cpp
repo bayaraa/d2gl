@@ -442,6 +442,35 @@ __declspec(naked) void altItemsTextStub109d()
 	}
 }
 
+__declspec(naked) void unitHoverBeginPatch()
+{
+	__asm
+	{
+		mov is_unit_hovered, 0x1
+		ret
+	}
+}
+
+__declspec(naked) void unitHoverMidPatch()
+{
+	__asm
+	{
+		mov is_unit_hovered, 0x2
+		ret
+	}
+}
+
+__declspec(naked) void unitHoverEndPatch()
+{
+	__asm
+	{
+		pushad
+		call drawUnitHealthBar
+		popad
+		ret
+	}
+}
+
 __declspec(naked) void loadUIImageStub()
 {
 	__asm

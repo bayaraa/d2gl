@@ -294,7 +294,7 @@ Context::Context()
 	LARGE_INTEGER qpf;
 	QueryPerformanceFrequency(&qpf);
 	m_frame.frequency = double(qpf.QuadPart) / 1000.0;
-	m_frame.frame_times.assign(FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
+	m_frame.frame_times.assign(MAX_FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
 
 	m_limiter.timer = CreateWaitableTimer(NULL, TRUE, NULL);
 	setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
@@ -641,7 +641,7 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 	m_upscale_ubo->updateDataVec2f("out_size", { (float)App.game.tex_size.x * App.viewport.scale.x, (float)App.game.tex_size.y * App.viewport.scale.y });
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
-	m_mod_pipeline->setUniformVec2f("u_ViewportSize", { (float)App.viewport.size.x, (float)App.viewport.size.y });
+	m_mod_pipeline->setUniformVec4f("u_Viewport", { (float)App.viewport.offset.x, (float)App.viewport.offset.y, (float)App.viewport.size.x, (float)App.viewport.size.y });
 
 	modules::MiniMap::Instance().resize();
 	toggleVsync();
@@ -707,6 +707,7 @@ void Context::onStageChange()
 
 				modules::MiniMap::Instance().draw();
 			}
+			modules::HDText::Instance().drawEntryText();
 			modules::HDText::drawFpsCounter();
 			break;
 		case DrawStage::CursorItem:
@@ -714,8 +715,9 @@ void Context::onStageChange()
 			setVertexFlagW(10);
 			break;
 		case DrawStage::Cursor:
+			flushVertices();
+			setVertexFlagW(10);
 			appendDelayedObjects();
-			modules::HDText::Instance().drawEntryText();
 #ifdef _HDTEXT
 			modules::HDText::showSampleText();
 #endif
@@ -791,7 +793,9 @@ void Context::presentFrame()
 
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
-	m_frame.average_frame_time = std::reduce(m_frame.frame_times.begin(), m_frame.frame_times.end()) / FRAMETIME_SAMPLE_COUNT;
+	std::deque<double>::iterator iter = m_frame.frame_times.begin() + (MAX_FRAMETIME_SAMPLE_COUNT - m_frame.frame_sample_count);
+	m_frame.average_frame_time = std::reduce(iter, m_frame.frame_times.end()) / m_frame.frame_sample_count;
+	m_frame.frame_sample_count += m_frame.frame_sample_count == MAX_FRAMETIME_SAMPLE_COUNT ? 0 : 1;
 	m_frame.frame_count++;
 }
 
@@ -902,6 +906,7 @@ void Context::setFpsLimit(bool active, int max_fps)
 	m_limiter.active = active;
 	m_limiter.frame_len_ms = 1000.0f / max_fps;
 	m_limiter.frame_len_ns = (uint64_t)(m_limiter.frame_len_ms * 10000);
+	m_frame.frame_sample_count = 1;
 
 	resetFileTime();
 }

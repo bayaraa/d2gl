@@ -35,7 +35,7 @@ namespace d2gl {
 #define MAX_VERTICES 4 * 50000
 #define MAX_VERTICES_MOD 4 * 20000
 #define PIXEL_BUFFER_SIZE 12 * 1024 * 1024
-#define FRAMETIME_SAMPLE_COUNT 120
+#define MAX_FRAMETIME_SAMPLE_COUNT 120
 
 #define TEXTURE_SLOT_DEFAULT 0
 #define TEXTURE_SLOT_GAME 1
@@ -91,6 +91,7 @@ struct FrameMetrics {
 	uint32_t vertex_count = 0;
 	uint32_t drawcall_count = 0;
 	uint32_t frame_count = 0;
+	uint32_t frame_sample_count = 0;
 };
 
 struct LimiterMetrics {

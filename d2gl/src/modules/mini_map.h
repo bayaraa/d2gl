@@ -36,7 +36,7 @@ public:
 		return instance;
 	}
 
-	inline bool isActive() { return ISGLIDE3X() && App.hd_cursor && App.mini_map.active; }
+	inline bool isActive() { return ISGLIDE3X() && App.mini_map.active; }
 	inline uint32_t getTimeWidth() const { return m_time_width; }
 
 	void resize();

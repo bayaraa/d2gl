@@ -33,6 +33,8 @@ HDText::HDText()
 
 	std::string lang_file = helpers::getLangString(true);
 	auto buffer = helpers::loadFile("assets\\atlases\\" + lang_file + ".txt");
+	if (!buffer.size && m_lang_id == LANG_SIN)
+		buffer = helpers::loadFile("assets\\atlases\\chi.txt");
 	if (!buffer.size)
 		buffer = helpers::loadFile("assets\\atlases\\default.txt");
 
@@ -130,8 +132,8 @@ HDText::HDText()
 void HDText::reset()
 {
 	m_masking = false;
-	m_is_player_dead = d2::isUnitDead(d2::getPlayerUnit());
 	m_map_text_line = 1;
+	m_is_player_dead = d2::isUnitDead(d2::getPlayerUnit());
 }
 
 void HDText::update()
@@ -151,7 +153,6 @@ void HDText::update()
 			mask = false;
 		}
 	}
-
 	m_cur_level_no = App.game.screen == GameScreen::InGame ? *d2::level_no : 0;
 }
 
@@ -265,7 +266,7 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 
 bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
-	if (!isActive() || !str)
+	if (!str || !isActive())
 		return false;
 
 	if (*d2::is_alt_clicked)
@@ -273,20 +274,20 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 
 	const auto unit = d2::getSelectedUnit();
 	if (unit) {
-		if (unit->dwType == d2::UnitType::Monster && isVerMin(V_111) && y == 32 && !centered) {
-			drawMonsterHealthBar(unit);
-			return true;
-		}
-
-		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit)) {
-			m_hovered_player_id = d2::getUnitID(unit) | ((uint8_t)unit->dwType << 24);
-			if (isVer(V_114d))
-				wcscpy_s(m_hovered_player_str, str);
+		const bool is_monster = (unit->dwType == d2::UnitType::Monster && y == 32);
+		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit) || is_monster) {
+			m_hovered_unit.id = d2::getUnitID(unit) | ((uint8_t)unit->dwType << 24);
+			m_hovered_unit.color = color;
+			if (!is_monster) {
+				wcscpy_s(m_hovered_unit.name, str);
+				m_hovered_unit.pos = { x, y };
+			}
 			return false;
 		}
 	}
 
-	float font_size, line_count;
+	float font_size;
+	int line_count = 0;
 	auto font = getFont(1);
 	const auto text_color = g_text_colors.at(getColor(color));
 	glm::vec2 pos, padding, box_size, size;
@@ -370,7 +371,6 @@ bool HDText::drawFramedText(const wchar_t* str, int x, int y, uint32_t color, ui
 	font->drawText(str, pos + padding, text_color, true);
 	App.context->toggleDelayPush(false);
 
-	m_draw_sub_text = false;
 	return true;
 }
 
@@ -383,7 +383,8 @@ bool HDText::drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_
 	// rectColor = 0, rectTransparency = 1, dwColor = 0   alt item
 	// rectColor = 140, rectTransparency = 5, dwColor = 0   alt item hovered
 
-	float font_size, line_count;
+	float font_size;
+	int line_count = 0;
 	auto font = getFont(m_text_size);
 	const auto text_color = g_text_colors.at(getColor(color));
 	uint32_t bg_color = m_bg_color;
@@ -445,34 +446,24 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (App.game.screen != GameScreen::InGame || !isActive())
 		return false;
 
-	if (isVerMax(V_110)) {
-		static bool monster_hp = false;
-		const auto unit = d2::getSelectedUnit();
-		if (unit && unit->dwType == d2::UnitType::Monster && top == 18 && bottom == 34) {
-			if (!monster_hp) {
-				drawMonsterHealthBar(unit);
-				monster_hp = true;
-			}
-			return true;
-		}
-		monster_hp = false;
-	}
-
 	const int width = right - left;
 	const int height = bottom - top;
+
+	if (d2::is_unit_hovered) {
+		const auto unit = d2::getSelectedUnit();
+		if (unit && (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit))) {
+			if (d2::is_unit_hovered == 1) {
+				m_hovered_unit.hp[0] = width;
+				m_hovered_unit.pos = { left, top };
+			} else
+				m_hovered_unit.hp[1] = width;
+		}
+		return true;
+	}
 
 	// if (draw_mode == 1 && top < 200) {
 	//	trace("[] | %d | %d | %dx%d | %dx%d", color, draw_mode, left, top, width, height);
 	// }
-
-	if (height == g_text_size[m_lang_id].hp_bar && m_hovered_player_id && m_text_size == 1 && (color == 0 || color == 261)) {
-		if (m_hovered_player_hp1 == 0) {
-			m_hovered_player_hp1 = width;
-			m_hovered_player_pos = { left, top };
-		} else
-			m_hovered_player_hp2 = width;
-		return true;
-	}
 
 	if (color != 0) // skip drawing except black color
 		return false;
@@ -574,11 +565,19 @@ void HDText::drawSubText(uint8_t fn)
 	static int *length, *x, *y;
 
 	if (fn == 1) {
-		str = *(const wchar_t**)(ptr + (isVerMax(V_110) ? 0x20 : 0x68));
-		color = (uint32_t*)(ptr + (isVerMax(V_110) ? 0x78 : 0x74));
-		length = (int*)(ptr + (isVerMax(V_110) ? 0x1C : 0x10));
-		x = (int*)(ptr + (isVerMax(V_110) ? 0x18 : 0x18));
-		y = (int*)(ptr + (isVerMax(V_110) ? 0x70 : 0x6C));
+		if (isVerMax(V_110)) {
+			str = *(const wchar_t**)(ptr + 0x20);
+			color = (uint32_t*)(ptr + 0x78);
+			length = (int*)(ptr + 0x1C);
+			x = (int*)(ptr + 0x18);
+			y = (int*)(ptr + 0x70);
+		} else {
+			str = *(const wchar_t**)(ptr + 0x68);
+			color = (uint32_t*)(ptr + 0x74);
+			length = (int*)(ptr + 0x10);
+			x = (int*)(ptr + 0x18);
+			y = (int*)(ptr + 0x6C);
+		}
 	} else if (fn == 2) {
 		str = (const wchar_t*)(ptr + 0x390);
 		color = (uint32_t*)(ptr + 0x74);
@@ -593,8 +592,8 @@ void HDText::drawSubText(uint8_t fn)
 		y = (int*)(ptr + 0x8);
 	}
 
-	if (m_hovered_player_id) {
-		drawPlayerHealthBar(isVer(V_114d) ? m_hovered_player_str : str, *color);
+	if (m_hovered_unit.id) {
+		m_hovered_unit.id = 0;
 		*length = 0;
 		return;
 	}
@@ -780,7 +779,7 @@ void HDText::startEntryText()
 
 void HDText::drawEntryText()
 {
-	if (!m_entry_text_draw)
+	if (App.game.screen != GameScreen::InGame || !m_entry_text_draw)
 		return;
 
 	if (m_entry_timer < std::clock())
@@ -795,6 +794,20 @@ void HDText::drawEntryText()
 	const auto text_width = getNormalTextWidth(level_name, 0);
 	drawText(level_name, *d2::screen_width / 2 - text_width / 2, (uint32_t)((float)*d2::screen_height / 4.5f), 17, 0);
 	setTextSize(old_size);
+}
+
+void HDText::drawUnitHealthBar()
+{
+	d2::is_unit_hovered = 0;
+	if (!isActive())
+		return;
+
+	if (const auto unit = d2::getSelectedUnit()) {
+		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit))
+			drawPlayerHealthBar(unit);
+		else
+			drawMonsterHealthBar(unit);
+	}
 }
 
 void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
@@ -821,7 +834,7 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	const auto text_size = font->getTextSize(name);
 	float hp_percent = (float)hp / (float)max_hp;
 
-	glm::vec2 bar_size = { 120.0f, 18.0f };
+	glm::vec2 bar_size = { 140.0f, 18.0f };
 	if (text_size.x + 40.0f > bar_size.x)
 		bar_size.x = text_size.x + 40.0f;
 
@@ -845,33 +858,39 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 		text_color = L'\x34';
 	else if (type == d2::MonsterType::Champion)
 		text_color = L'\x33';
+	else
+		text_color = getColor(m_hovered_unit.color);
 	if (hp == 0)
 		text_color = L'\x31';
 
 	glm::vec2 text_pos = { center - text_size.x / 2, 19.3f + 14.5f };
 	font->drawText(name, text_pos, g_text_colors.at(text_color));
+	m_hovered_unit.color = 0;
 }
 
-void HDText::drawPlayerHealthBar(const wchar_t* name, uint32_t color)
+void HDText::drawPlayerHealthBar(d2::UnitAny* unit)
 {
-	const uint32_t hp = m_hovered_player_hp1;
-	const uint32_t max_hp = m_hovered_player_hp1 + m_hovered_player_hp2;
+	const uint32_t hp = m_hovered_unit.hp[0];
+	const uint32_t max_hp = m_hovered_unit.hp[0] + m_hovered_unit.hp[1];
 
 	const auto font = getFont(1);
 	font->setShadow(2);
 	font->setMasking(false);
 	font->setAlign(TextAlign::Center);
 
+	if (isVerMax(V_110) && unit->dwType == d2::UnitType::Player)
+		mbstowcs_s(nullptr, m_hovered_unit.name, d2::getPlayerName(unit), 16);
+	const wchar_t* name = unit->dwType == d2::UnitType::Player ? m_hovered_unit.name : d2::getMonsterName(unit);
 	const auto text_size = font->getTextSize(name);
-	float hp_percent = (float)hp / (float)max_hp;
+	const float hp_percent = (float)hp / (float)max_hp;
 
 	glm::vec2 bar_size = { 60.0f, 16.0f };
 	if (text_size.x + 20.0f > bar_size.x)
 		bar_size.x = text_size.x + 20.0f;
 
-	auto offset = modules::MotionPrediction::Instance().getUnitOffset(m_hovered_player_id);
-	const float center = (float)(m_hovered_player_pos.x + max_hp / 2) + (float)offset.x;
-	glm::vec2 bar_pos = { center - bar_size.x / 2, (float)m_hovered_player_pos.y + (float)offset.y };
+	auto offset = modules::MotionPrediction::Instance().getUnitOffset(m_hovered_unit.id);
+	const float center = (float)(m_hovered_unit.pos.x + max_hp / 2) + (float)offset.x;
+	glm::vec2 bar_pos = { center - bar_size.x / 2, (float)m_hovered_unit.pos.y + (float)offset.y };
 
 	m_object_bg->setFlags(2);
 	m_object_bg->setPosition(bar_pos);
@@ -887,10 +906,10 @@ void HDText::drawPlayerHealthBar(const wchar_t* name, uint32_t color)
 	}
 
 	glm::vec2 text_pos = { center - text_size.x / 2, bar_pos.y + 14.5f };
-	font->drawText(name, text_pos, g_text_colors.at(getColor(color)));
+	font->drawText(name, text_pos, g_text_colors.at(getColor(m_hovered_unit.color)));
 
-	m_hovered_player_id = 0;
-	m_hovered_player_hp1 = m_hovered_player_hp2 = 0;
+	m_hovered_unit.hp[0] = m_hovered_unit.hp[1] = 0;
+	m_hovered_unit.color = 0;
 }
 
 inline wchar_t HDText::getColor(uint32_t color)

@@ -58,4 +58,16 @@ GlyphSet::GlyphSet(Texture* texture, const std::string& name)
 	delete[] buffer.data;
 }
 
+const Glyph* GlyphSet::getGlyph(wchar_t c)
+{
+	if (m_glyphes.find(c) != m_glyphes.end())
+		return &m_glyphes[c];
+	if (c == L'\xa0')
+		return &m_glyphes[L' '];
+	if (c > 0x20)
+		return &m_glyphes[L'?'];
+
+	return nullptr;
+}
+
 }

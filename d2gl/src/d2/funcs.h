@@ -39,7 +39,7 @@ uint32_t getUnitStat(UnitAny* unit, uint32_t stat);
 UnitAny* getSelectedItem();
 
 bool isUnitDead(UnitAny* unit);
-wchar_t* getPlayerName(UnitAny* unit);
+char* getPlayerName(UnitAny* unit);
 MonsterType getMonsterType(UnitAny* unit);
 wchar_t* getMonsterName(UnitAny* unit);
 
@@ -86,6 +86,7 @@ void rectangledTextEnd();
 void unitHoverText();
 void altItemsText();
 void drawRectFrame();
+void drawUnitHealthBar();
 
 void loadUIImage();
 void drawSubTextA();

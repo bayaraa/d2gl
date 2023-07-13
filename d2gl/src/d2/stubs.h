@@ -49,6 +49,10 @@ void altItemsTextStub();
 void altItemsTextStub110f();
 void altItemsTextStub109d();
 
+void unitHoverBeginPatch();
+void unitHoverMidPatch();
+void unitHoverEndPatch();
+
 void loadUIImageStub();
 void loadUIImageStubECX();
 void drawSubTextAStub();
