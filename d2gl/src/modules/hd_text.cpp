@@ -798,10 +798,10 @@ void HDText::drawEntryText()
 
 void HDText::drawUnitHealthBar()
 {
+	d2::is_unit_hovered = 0;
 	if (!isActive())
 		return;
 
-	d2::is_unit_hovered = 0;
 	if (const auto unit = d2::getSelectedUnit()) {
 		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit))
 			drawPlayerHealthBar(unit);
