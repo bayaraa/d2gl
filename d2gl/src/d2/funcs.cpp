@@ -113,9 +113,9 @@ bool isUnitDead(UnitAny* unit)
 	return unit && (d2::getUnitFlag(unit) & 0x10000);
 }
 
-wchar_t* getPlayerName(UnitAny* unit)
+char* getPlayerName(UnitAny* unit)
 {
-	return (wchar_t*)(isVer(V_109d) ? unit->v109.pPlayerData->szName : unit->v110.pPlayerData->szName);
+	return (char*)(isVer(V_109d) ? unit->v109.pPlayerData->szName : unit->v110.pPlayerData->szName);
 }
 
 MonsterType getMonsterType(UnitAny* unit)
@@ -411,6 +411,11 @@ void altItemsText()
 void drawRectFrame()
 {
 	modules::HDText::Instance().drawRectFrame();
+}
+
+void drawUnitHealthBar()
+{
+	modules::HDText::Instance().drawUnitHealthBar();
 }
 
 void loadUIImage()

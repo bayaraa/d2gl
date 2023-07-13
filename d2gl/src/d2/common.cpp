@@ -35,6 +35,7 @@ int* video_mode = (int*)getProc((DLL_D2GFX), (0x1D208), (0x1D264), (0x1A220), (0
 bool* perspective = (bool*)getProc((DLL_D2GFX), (0xE188), (0xE198), (0x10C94), (0x10C30), (0x10C8C), (0x10BE0), (0x10BE4), (0x32DA48));
 bool* esc_menu_open = (bool*)getProc((DLL_D2CLIENT), (0x1248D8), (0x11A6CC), (0xFB094), (0x1040E4), (0x102B7C), (0xFADA4), (0x11C8B4), (0x3A27E4));
 bool* is_alt_clicked = (bool*)getProc((DLL_D2CLIENT), (0x1248E8), (0x11A6DC), (0xFB0A4), (0x1040F4), (0x102B8C), (0xFADB4), (0x11C8C4), (0x3A27F4));
+int is_unit_hovered = 0;
 
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
@@ -113,9 +114,6 @@ getUnitRoom_t getUnitRoom = (getUnitRoom_t)getProc((DLL_D2COMMON), (), (), (), (
 getLevelNoByRoom_t getLevelNoByRoom = (getLevelNoByRoom_t)getProc((DLL_D2COMMON), (), (), (), (), (), (), (-10691), ());
 uintptr_t getLevelName_Fn = getProc((DLL_D2CLIENT), (0x88420), (0x839F0), (0x9DC10), (0x61AA0), (0x8B1A0), (0xBE240), (0x18250), (0x53E70));
 
-// Offset D2WinUnitHover = getOffset((DLL_D2WIN), (), (-10124, 0xF7E9C1FA, 0x1F3), (-10175, 0x03C2572B, 0x1A3), (-10037, 0x03C2572B, 0x1A3), (-10201, 0x03C2572B, 0x1A3), (-10110, 0x03C2572B, 0x1A3), (-10124, 0x03C2572B, 0x1A3), (0x10318B, 0x03C22BF0));
-// DWORD D2WinUnitHoverRet = helpers::GetProcOffset(D2WinUnitHover) + (isVer(V_110) ? 5 : 6);
-
 // d2client + 0x291F8 : 1 2 3 4 (potion keys)
 // d2client + 0x27708 : life XX/XX
 // d2client + 0x277C7 : Mana XX/XX
@@ -136,17 +134,15 @@ void initHooks()
 	*is_in_game = 0;
 
 	Patch no_intro = Patch();
-	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F0C), (0x27A58), (0x1E210), (0x1E11C), (0x1E240), (0x1E0FC), (0x1E2F4), (0x2D4C84)), 4, 0x00000000);
-	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F34), (0x27A80), (0x1E238), (0x1E144), (0x1E268), (0x1E124), (0x1E31C), (0x2D4CAC)), 4, 0x00000000);
-	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F5C), (0x27AA8), (0x1E260), (0x1E16C), (0x1E290), (0x1E14C), (0x1E344), (0x2D4CD4)), 4, 0x00000000);
-	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F84), (0x27AD0), (0x1E288), (0x1E194), (0x1E2B8), (0x1E174), (0x1E36C), (0x2D4CFC)), 4, 0x00000000);
+	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F0C), (0x27A58), (0x1E210), (0x1E11C), (0x1E240), (0x1E0FC), (0x1E2F4), (0x2D4C84)), 1, 0x00);
+	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F34), (0x27A80), (0x1E238), (0x1E144), (0x1E268), (0x1E124), (0x1E31C), (0x2D4CAC)), 1, 0x00);
+	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F5C), (0x27AA8), (0x1E260), (0x1E16C), (0x1E290), (0x1E14C), (0x1E344), (0x2D4CD4)), 1, 0x00);
+	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F84), (0x27AD0), (0x1E288), (0x1E194), (0x1E2B8), (0x1E174), (0x1E36C), (0x2D4CFC)), 1, 0x00);
 	no_intro.toggle(App.skip_intro);
 
-	if (isVer(V_113d)) {
-		Patch multiple_instance = Patch();
-		multiple_instance.add(PatchType::Swap, getOffset((DLL_D2GFX), (), (), (), (), (), (), (0xB6B0), ()), 2, 0xEB450000);
-		multiple_instance.toggle(true);
-	}
+	Patch multiple_instance = Patch();
+	multiple_instance.add(PatchType::Swap, getOffset((DLL_D2GFX), (0x447C), (0x446A), (0x84CF), (0x84AF), (0x894F), (0x85BF), (0xB6B0), (0xF562B)), 2, isVer(V_109d) ? 0xEB47 : (isVer(V_110) ? 0xEB49 : 0xEB45));
+	multiple_instance.toggle(true);
 
 	Patch game_loop = Patch();
 	game_loop.add(PatchType::Call, getOffset((DLL_D2CLIENT), (0x9B3D, 0xE87A5F0B), (0xA2A2, 0xE8B51B0C), (0x89A2F, 0xE84A37F8), (0x3356F, 0xE85E9CFD), (0x7D1BF, 0xE84801F9), (0x44E2F, 0xE81A85FC), (0x45E7F, 0xE8E473FC), (0x4F256, 0xE8E5550C)), 5, (uintptr_t)gameDrawBeginStub);
@@ -184,6 +180,12 @@ void initHooks()
 		else
 			App.mini_map.active = false;
 	}
+
+	Patch common_patches = Patch();
+	common_patches.add(PatchType::Auto, getOffset((DLL_D2WIN, 0x85F60F9E, 0xC7), (-10124, 0, 0x150), (-10124, 0, 0x127), (-10175), (-10037), (-10201), (-10110), (-10124), (0x1030B4, 0x85DB0F9E, -1)), 5, (uintptr_t)unitHoverBeginPatch);
+	common_patches.add(PatchType::Auto, getOffset((DLL_D2WIN, 0x8D140152, 0x162), (-10124, 0x03C55650, 0x1CC), (-10124, 0x03C55650, 0x1A3), (-10175), (-10037), (-10201), (-10110), (-10124), (0x10314B, 0, -1)), 5, (uintptr_t)unitHoverMidPatch);
+	common_patches.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xC1E81F03, 0x1A0), (-10124, 0, 0x228), (-10124, 0, 0x1FF), (-10175), (-10037), (-10201), (-10110), (-10124), (0x103188, 0, -1)), 5, (uintptr_t)unitHoverEndPatch);
+	common_patches.toggle(true);
 
 	patch_motion_prediction = std::make_unique<Patch>();
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC1053), (0x7FCF0, 0x83EC5053), (0x7B4F0, 0x83EC4C53), (0x941F0), (0x15C80), (0x71990), (0x7CA40), (0x76170), (0xA0A01, 0x8BEC83EC)), 5, (uintptr_t)(isVer(V_109d) ? rectangledTextBeginStub109d : (isVer(V_110) ? rectangledTextBeginStub110f : rectangledTextBeginStub)));

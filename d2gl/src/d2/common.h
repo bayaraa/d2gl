@@ -77,6 +77,7 @@ extern int* video_mode;
 extern bool* perspective;
 extern bool* esc_menu_open;
 extern bool* is_alt_clicked;
+extern int is_unit_hovered;
 
 extern uint32_t* is_in_game;
 extern UnitAny* player_unit;
