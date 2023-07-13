@@ -234,10 +234,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 				}
 				if (option::Menu::instance().isVisible()) {
-					if (wParam == VK_ESCAPE) {
-						return 0;
-					}
-					if (wParam >= 0x30 && wParam <= 0x39)
+					if (wParam == VK_ESCAPE || (wParam >= 0x30 && wParam <= 0x39))
 						return 0;
 				}
 			}
