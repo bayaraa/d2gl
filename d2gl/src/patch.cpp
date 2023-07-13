@@ -112,8 +112,9 @@ bool SubPatch::prepare()
 
 	} else if (m_type == PatchType::Swap) {
 		uint8_t* bytes = (uint8_t*)&m_pointer;
+		const size_t start = 4 - m_length;
 		for (uint32_t i = 0; i < m_length; i++)
-			m_new_code[i] = bytes[3 - i];
+			m_new_code[i] = bytes[3 - start - i];
 	}
 
 	m_ready = true;
