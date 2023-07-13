@@ -450,51 +450,95 @@ inline std::map<uint32_t, std::vector<D2TextInfo>> g_options_text_others = {
 		{ 0, { 173, 34 }, L"이름 보여주기" }, // SHOW NAMES
 		{ 0, { 158, 38 }, L"단축키 설정" }, // CONFIGURE CONTROLS
 	} },
-	{ LANG_SIN, {} },
-	{ LANG_CHI, {
-		{ 0, {  74, 54 }, L"選項" }, // OPTIONS
-		{ 1, {   3, 54 }, L"储存并退出游戏" }, // SAVE AND EXIT GAME
+	{ LANG_SIN, {
+		{ 0, {  74, 54 }, L"选项" }, // OPTIONS
+		{ 1, {   3, 54 }, L"保存并退出" }, // SAVE AND EXIT GAME
 		{ 0, { 148, 54 }, L"返回游戏" }, // RETURN TO GAME
-		{ 0, { 149, 54 }, L"前一菜单" }, // PREVIOUS MENU
-		{ 0, {  96, 34 }, L"前一菜单" }, // PREVIOUS MENU
-		{ 0, {  24, 34 }, L"开" }, // ON
-		{ 0, {  25, 34 }, L"关" }, // OFF
+		{ 0, { 149, 54 }, L"前一个菜单" }, // PREVIOUS MENU
+		{ 0, {  96, 34 }, L"前一个菜单" }, // PREVIOUS MENU
+		{ 0, {  24, 34 }, L"开启" }, // ON
+		{ 0, {  25, 34 }, L"关闭" }, // OFF
 		{ 0, {  26, 34 }, L"是" }, // YES
 		{ 0, {  27, 34 }, L"否" }, // NO
-		{ 0, { 150, 54 }, L"声音选项" }, // SOUND OPTIONS
-		{ 0, {  48, 34 }, L"声音" }, // SOUND
+		{ 0, { 150, 54 }, L"音效选项" }, // SOUND OPTIONS
+		{ 0, {  48, 34 }, L"音效" }, // SOUND
 		{ 0, {  49, 34 }, L"音乐" }, // MUSIC
 		{ 0, {  80, 34 }, L"3D音效" }, // 3D SOUND
 		{ 0, {  97, 34 }, L"环场效果" }, // ENVIRONMENTAL EFFECTS
 		{ 0, {  81, 34 }, L"3D偏向" }, // 3D BIAS
 		{ 0, {  95, 34 }, L"NPC语音" }, // NPC SPEECH
-		{ 0, { 120, 34 }, L"语音和文字" }, // AUDIO AND TEXT
-		{ 0, {  98, 34 }, L"仅有语音" }, // AUDIO ONLY
-		{ 0, {  99, 34 }, L"仅有文字" }, // TEXT ONLY
-		{ 0, { 151, 54 }, L"影像选项" }, // VIDEO OPTIONS
+		{ 0, { 120, 34 }, L"语音和文本" }, // AUDIO AND TEXT 音效和文本
+		{ 0, {  98, 34 }, L"仅语音" }, // AUDIO ONLY 仅音效
+		{ 0, {  99, 34 }, L"仅文本" }, // TEXT ONLY
+		{ 0, { 151, 54 }, L"视频选项" }, // VIDEO OPTIONS
 		{ 0, {  72, 34 }, L"分辨率" }, // RESOLUTION
 		{ 0, {  71, 34 }, L"800x600" },
 		{ 0, {  77, 34 }, L"640x480" },
-		{ 0, { 100, 34 }, L"打光品质" }, // LIGHTING QUALITY
+		{ 0, { 100, 34 }, L"光照质量" }, // LIGHTING QUALITY
+		{ 0, {  28, 34 }, L"高" }, // HIGH
+		{ 0, {  29, 34 }, L"中" }, // MEDIUM
+		{ 0, {  30, 34 }, L"低" }, // LOW
+		{ 0, { 101, 34 }, L"混合阴影" }, // BLENDED SHADOWS
+		{ 0, {  50, 34 }, L"远景" }, // PERSPECTIVE
+		{ 0, {  51, 34 }, L"亮度" }, // GAMMA
+		{ 0, {  52, 34 }, L"对比度" }, // CONTRAST
+		{ 0, { 222, 54 }, L"透视地图选项" }, // AUTOMAP OPTIONS
+		{ 0, { 168, 34 }, L"透视地图尺寸" }, // AUTOMAP SIZE
+		{ 0, {  73, 34 }, L"全屏" }, // FULL SCREEN
+		{ 0, { 102, 34 }, L"小地图" }, // MINI MAP
+		{ 0, {  53, 34 }, L"渐隐" }, // FADE
+		{ 0, {  54, 34 }, L"全部" }, // EVERYTHING
+		{ 0, {  55, 34 }, L"居中" }, // CENTER
+		{ 0, {  56, 34 }, L"自动" }, // AUTO
+		{ 0, { 121, 34 }, L"打开时居中" }, // CENTER WHEN CLEARED
+		{ 0, { 103, 34 }, L"显示队伍" }, // SHOW PARTY
+		{ 0, { 104, 34 }, L"显示名字" }, // SHOW NAMES
+		{ 0, { 152, 54 }, L"操作设置" }, // CONFIGURE CONTROLS 设置控制
+	} },
+	{ LANG_CHI, {
+		{ 0, {  74, 54 }, L"選項" }, // OPTIONS
+		{ 1, {   3, 54 }, L"儲存並離開遊戲" }, // SAVE AND EXIT GAME
+		{ 0, { 148, 54 }, L"返回遊戲" }, // RETURN TO GAME
+		{ 0, { 149, 54 }, L"前一選單" }, // PREVIOUS MENU
+		{ 0, {  96, 34 }, L"前一選單" }, // PREVIOUS MENU
+		{ 0, {  24, 34 }, L"開" }, // ON
+		{ 0, {  25, 34 }, L"關" }, // OFF
+		{ 0, {  26, 34 }, L"是" }, // YES
+		{ 0, {  27, 34 }, L"不" }, // NO
+		{ 0, { 150, 54 }, L"聲音選項" }, // SOUND OPTIONS
+		{ 0, {  48, 34 }, L"聲音" }, // SOUND
+		{ 0, {  49, 34 }, L"音樂" }, // MUSIC
+		{ 0, {  80, 34 }, L"3D聲音" }, // 3D SOUND
+		{ 0, {  97, 34 }, L"環場效果" }, // ENVIRONMENTAL EFFECTS
+		{ 0, {  81, 34 }, L"3D偏向" }, // 3D BIAS
+		{ 0, {  95, 34 }, L"NPC語音" }, // NPC SPEECH
+		{ 0, { 120, 34 }, L"語音及文字" }, // AUDIO AND TEXT
+		{ 0, {  98, 34 }, L"只有語音" }, // AUDIO ONLY
+		{ 0, {  99, 34 }, L"只有文字" }, // TEXT ONLY
+		{ 0, { 151, 54 }, L"影像選項" }, // VIDEO OPTIONS
+		{ 0, {  72, 34 }, L"解析度" }, // RESOLUTION
+		{ 0, {  71, 34 }, L"800x600" },
+		{ 0, {  77, 34 }, L"640x480" },
+		{ 0, { 100, 34 }, L"打光品質" }, // LIGHTING QUALITY
 		{ 0, {  28, 34 }, L"高" }, // HIGH
 		{ 0, {  29, 34 }, L"中" }, // MEDIUM
 		{ 0, {  30, 34 }, L"低" }, // LOW
 		{ 0, { 101, 34 }, L"混合影子" }, // BLENDED SHADOWS
-		{ 0, {  50, 34 }, L"透视" }, // PERSPECTIVE
+		{ 0, {  50, 34 }, L"透視" }, // PERSPECTIVE
 		{ 0, {  51, 34 }, L"亮度" }, // GAMMA
-		{ 0, {  52, 34 }, L"对比度" }, // CONTRAST
-		{ 0, { 222, 54 }, L"自动地图选项" }, // AUTOMAP OPTIONS
-		{ 0, { 168, 34 }, L"自动地图大小" }, // AUTOMAP SIZE
-		{ 0, {  73, 34 }, L"全屏" }, // FULL SCREEN
-		{ 0, { 102, 34 }, L"小型地图" }, // MINI MAP
+		{ 0, {  52, 34 }, L"對比" }, // CONTRAST
+		{ 0, { 222, 54 }, L"自動地圖選項" }, // AUTOMAP OPTIONS
+		{ 0, { 168, 34 }, L"自動地圖的大小" }, // AUTOMAP SIZE
+		{ 0, {  73, 34 }, L"全畫面" }, // FULL SCREEN
+		{ 0, { 102, 34 }, L"小型地圖" }, // MINI MAP
 		{ 0, {  53, 34 }, L"淡化" }, // FADE
 		{ 0, {  54, 34 }, L"所有" }, // EVERYTHING
-		{ 0, {  55, 34 }, L"中间" }, // CENTER
-		{ 0, {  56, 34 }, L"自动" }, // AUTO
-		{ 0, { 121, 34 }, L"清除时置中" }, // CENTER WHEN CLEARED
-		{ 0, { 103, 34 }, L"显示队伍" }, // SHOW PARTY
-		{ 0, { 104, 34 }, L"显示名称" }, // SHOW NAMES
-		{ 0, { 152, 54 }, L"设定控制" }, // CONFIGURE CONTROLS
+		{ 0, {  55, 34 }, L"中間" }, // CENTER
+		{ 0, {  56, 34 }, L"自動" }, // AUTO
+		{ 0, { 121, 34 }, L"清除時置中" }, // CENTER WHEN CLEARED
+		{ 0, { 103, 34 }, L"顯示隊伍" }, // SHOW PARTY
+		{ 0, { 104, 34 }, L"顯示名稱" }, // SHOW NAMES
+		{ 0, { 152, 54 }, L"設定控制" }, // CONFIGURE CONTROLS
 	} },
 	{ LANG_POL, {
 		{ 0, {  91, 37 }, L"OPCJE" }, // OPTIONS
@@ -641,7 +685,11 @@ inline const std::map<uint32_t, std::vector<D2TextInfo>> g_death_text_others = {
 		{ 2, { 124, 36 }, L"Appuyez sur ECH pour continuer" }, // Press ESC to continue
 		{ 1, { 220, 36 }, L"Vous avez perdu de l'or" }, // You lost gold
 	} },
-	{ LANG_POR, {} },
+	{ LANG_POR, {
+		{ 1, {  20, 36 }, L"Você morreu" }, // youdiedhardcore.dc6
+		{ 1, { 175, 36 }, L"Pressione ESC para continuar." }, // youdiedinst.dc6
+		{ 1, {  23, 36 }, L"You lost gold" }, // youdiedsoftcore.dc6
+	} },
 	{ LANG_ITA, {
 		{ 0, { 181, 36 }, L"Sei morto" }, // You have died
 		{ 1, { 233, 36 }, L"Premi ESC per continuare" }, // Press ESC to continue
@@ -657,11 +705,15 @@ inline const std::map<uint32_t, std::vector<D2TextInfo>> g_death_text_others = {
 		{ 2, {   3, 38 }, L"계속하려면 ESC 키를 누르세요" }, // Press ESC to continue
 		{ 1, {  94, 38 }, L"골드를 잃었습니다" }, // You lost gold
 	} },
-	{ LANG_SIN, {} },
-	{ LANG_CHI, {
-		{ 0, { 111, 54 }, L"你已经死亡" }, // You have died
+	{ LANG_SIN, {
+		{ 0, { 111, 54 }, L"你挂了" }, // You have died
 		{ 0, { 248, 54 }, L"按ESC继续" }, // Press ESC to continue
-		{ 1, {  40, 54 }, L"你丢失了一些金币" }, // You lost gold
+		{ 1, {  40, 54 }, L"你丢失了金币" }, // You lost gold
+	} },
+	{ LANG_CHI, {
+		{ 0, { 111, 54 }, L"你掛了" }, // You have died
+		{ 0, { 248, 54 }, L"按下ESC鍵繼續" }, // Press ESC to continue
+		{ 1, {  40, 54 }, L"你損失金錢數量" }, // You lost gold
 	} },
 	{ LANG_POL, {
 		{ 1, { 117, 37 }, L"TWOJA POSTAĆ ZGINĘŁA" }, // You have died
@@ -669,12 +721,12 @@ inline const std::map<uint32_t, std::vector<D2TextInfo>> g_death_text_others = {
 		{ 1, { 250, 37 }, L"TWOJA POSTAĆ STRACIŁA ZŁOTO" }, // You lost gold
 	} },
 	{ LANG_RUS, {
-		{ 1, {  20, 36 }, L"ВЫ ПОГИБЛИ" },
-		{ 0, { 202, 41 }, L"ВЫ ПОГИБЛИ" }, // You have died
-		{ 1, { 245, 36 }, L"Нажмите ESC для продолжения" },
-		{ 2, {  73, 41 }, L"Нажмите ESC для продолжения" }, // Press ESC to continue
-		{ 1, { 106, 36 }, L"Вы потеряли золото" },
-		{ 1, { 124, 41 }, L"Вы потеряли золото" }, // You lost gold
+		{ 1, {  20, 36 }, L"Вы умерли." },
+		{ 0, { 202, 41 }, L"Вы умерли." }, // You have died
+		{ 1, { 245, 36 }, L"Нажмите ESC, чтобы продолжить." },
+		{ 2, {  73, 41 }, L"Нажмите ESC, чтобы продолжить." }, // Press ESC to continue
+		{ 1, { 106, 36 }, L"You lost gold" },
+		{ 1, { 124, 41 }, L"You lost gold" }, // You lost gold
 	} },
 };
 

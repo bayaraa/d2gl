@@ -1,53 +1,46 @@
 # Diablo 2 LoD Glide/DDraw to OpenGL Wrapper (D2GL)
 
-Wrap Diablo 2's glide/ddraw calls to opengl calls. Easier to switch between fullscreen and windowed, fixes some window and cursor related issues.
-Few pre included libretro's shader to upscale higher resolutions. Change in game text to high-definition text etc.
+D2GL is a Diablo 2 LoD Glide/DDraw to OpenGL wrapper that translates glide/ddraw calls to OpenGL calls. This makes D2 run better on modern hardware/OS and easier to switch between fullscreen and windowed modes, and resolves certain window and cursor-related issues. Additionally, it includes several libretro shaders for upscaling to higher resolutions, and allows for in-game text to be displayed in high-definition, D2DX's motion prediction, other QOL features.
+
+### Bug/Crash Report (***Important!***)
+
+Please don't just say it crashes. I can't do anything without additional information!  
+If you want to report bug or crash please include details about your system (OS, hardware), what you doing when crash occured, are other mods included (like plugy, basemod etc), is crashing on both wrappers (glide, ddraw).  
+Also run game.exe with `-3dfx -log` it will create `d2gl.log` and attach this along with diablo2's log file like this `D2230410.txt`. It helps investigation.
 
 ## Features
 
-- Turns Diablo 2 to modern opengl title.
-- Upscale to higher resolution using some libretro's shader.
+- In-Game Option Menu(`Ctrl+O`) to change settings on fly.
+- Upscale to higher resolution using pre-included libretro's shader.
 - Switch some parts in game to high-definition (all text, cursor etc.).
-- Unlocked FPS (menu screen 45fps / ingame).
+- Unlocked FPS (menu screen 45fps / ingame unlocked).
 - Modified version of "D2DX's Unit/Weather Motion Predictor" feature (better with v-sync on).
 - Few graphic post processing effects (Lut, sharpen, FXAA etc.).
+- Fast switching windowed to fullscreen with `Alt+Enter` key.
 
 ## Requirements
 
 - Diablo 2 LoD: ``1.09d``, ``1.10f``, ``1.11``, ``1.11b``, ``1.12a``, ``1.13c``, ``1.13d``, ``1.14d``.
-  - 1.14d dropped software rendering. So don't put ddraw.dll into game folder.
-- Windows 10/11
+- Windows 7/8/10/11, Linux with Wine (Proton, Lutris etc), MacOS with Wine (Crossover).
 - GPU with minimum OpenGL 3.3 support.
-  Currently i don't have access to NVidia or AMD or any dedicated GPU. Tested only Intel 550 iGPU but fps seems ok.
 
-## Usage
+## Installation
 
-Don't use custom wrapper on official servers (like battle.net) you will be banned.  
-Put d2gl.mpq and glide3x.dll or ddraw.dll (or both) into game installation folder.  
-Disable all compatibilty mode if you enabled on Game.exe and Diablo II.exe.  
-Run Game.exe without any flag will open game in DDraw mode (except 1.14d).  
-Run Game.exe with ``-3dfx`` flag will open game in Glide mode (don't use ``-w`` flag).  
-``CTRL+O`` ("O" as a letter) brings option menu and almost every setting can be changed directly ingame.
+See [Installation](https://github.com/bayaraa/d2gl/wiki/Installation).
 
-If you want to play in widescreen (with SGD2FreeRes) custom SGD2FreeRes is included in zip file.  
-If you want to play PD2 with this wrapper disable PD2's default hd mod D2HD.dll (rename or delete) and open d2gl.ini and set
-``pd2_fix=true``. It will fix some glide related crashes (Not fully tested but Rathma, DClone, some maps tested).
+## Configuration
 
-To load custom dll there are 2 settings in d2gl.ini ``load_dlls_early``, ``load_dlls_late``.  
-``load_dlls_early`` is loads right after wrapper attached.  
-``load_dlls_late`` is loads right after game window created (if you play PD2 use ``load_dlls_late=SGD2FreeRes.dll``).
+See [Configuration](https://github.com/bayaraa/d2gl/wiki/Configuration).
 
 ## Compatibility
 
-I did not really tested with other mods.
-Briefly tested on D2LoD 1.13c on single player with Basemod(1.1.3.9), BH Maphack(1.9.9), Plugy(14.0.3).
-Briefly tested on Project Diablo 2 Season 6 single player with/without plugy.
+See [Compatibility](https://github.com/bayaraa/d2gl/wiki/Compatibility).
 
 ## Credits
 
-Diablo II modding community (The Phrozen Keep) and Everyone who makes d2 mod and their source codes available.
+Diablo II modding community (The Phrozen Keep) and **Everyone** who makes d2 mod and their source codes available.
 
-- SGD2FreeRes D2 Custom HD resolution mod (Mir Drualga).
+- SGD2FreeRes D2 Custom Resolution (Mir Drualga).
 - D2DX's Unit/Weather Motion Predictor (Bolrog).
 - Libretro's common-shaders.
 - Detours (Microsoft).
