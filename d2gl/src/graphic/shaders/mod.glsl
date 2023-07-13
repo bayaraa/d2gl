@@ -119,7 +119,7 @@ void main()
 			FragColor = texture(u_MapTexture, v_TexCoord);
 			FragColor.rgb = greyscale(FragColor.rgb, 0.2);
 			if (v_Flags.z > 0u)
-				FragColor.a *= v_Flags.z / 100.0;
+				FragColor.a *= (float(v_Flags.z) * 0.01);
 		break;
 		case 6u:
 			FragColor = v_Color1;

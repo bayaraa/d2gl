@@ -100,7 +100,7 @@
       "FragColor=texture(u_MapTexture,v_TexCoord);"
       "FragColor.xyz=v(FragColor.xyz,.2);"
       "if(v_Flags.z>0u)"
-        "FragColor.w*=v_Flags.z/1e2;"
+        "FragColor.w*=float(v_Flags.z)*.01;"
       "break;"
     "case 6u:"
       "FragColor=v_Color1;"
