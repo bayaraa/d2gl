@@ -77,7 +77,7 @@ public:
 		return instance;
 	}
 
-	inline bool isActive() { return App.hd_cursor && App.hd_text; }
+	inline bool isActive() { return App.hd_text; }
 	inline void setMVP(const glm::mat4& mvp) { m_mvp = mvp; }
 
 	void reset();

@@ -707,6 +707,7 @@ void Context::onStageChange()
 
 				modules::MiniMap::Instance().draw();
 			}
+			modules::HDText::Instance().drawEntryText();
 			modules::HDText::drawFpsCounter();
 			break;
 		case DrawStage::CursorItem:
@@ -714,8 +715,9 @@ void Context::onStageChange()
 			setVertexFlagW(10);
 			break;
 		case DrawStage::Cursor:
+			flushVertices();
+			setVertexFlagW(10);
 			appendDelayedObjects();
-			modules::HDText::Instance().drawEntryText();
 #ifdef _HDTEXT
 			modules::HDText::showSampleText();
 #endif
