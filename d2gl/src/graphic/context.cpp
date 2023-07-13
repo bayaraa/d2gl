@@ -294,7 +294,7 @@ Context::Context()
 	LARGE_INTEGER qpf;
 	QueryPerformanceFrequency(&qpf);
 	m_frame.frequency = double(qpf.QuadPart) / 1000.0;
-	m_frame.frame_times.assign(FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
+	m_frame.frame_times.assign(MAX_FRAMETIME_SAMPLE_COUNT, m_frame.frame_time);
 
 	m_limiter.timer = CreateWaitableTimer(NULL, TRUE, NULL);
 	setFpsLimit(!App.vsync && App.foreground_fps.active, App.foreground_fps.range.value);
@@ -791,7 +791,9 @@ void Context::presentFrame()
 
 	m_frame.frame_times.pop_front();
 	m_frame.frame_times.push_back(m_frame.frame_time);
-	m_frame.average_frame_time = std::reduce(m_frame.frame_times.begin(), m_frame.frame_times.end()) / FRAMETIME_SAMPLE_COUNT;
+	std::deque<double>::iterator iter = m_frame.frame_times.begin() + (MAX_FRAMETIME_SAMPLE_COUNT - m_frame.frame_sample_count);
+	m_frame.average_frame_time = std::reduce(iter, m_frame.frame_times.end()) / m_frame.frame_sample_count;
+	m_frame.frame_sample_count += m_frame.frame_sample_count == MAX_FRAMETIME_SAMPLE_COUNT ? 0 : 1;
 	m_frame.frame_count++;
 }
 
@@ -902,6 +904,7 @@ void Context::setFpsLimit(bool active, int max_fps)
 	m_limiter.active = active;
 	m_limiter.frame_len_ms = 1000.0f / max_fps;
 	m_limiter.frame_len_ns = (uint64_t)(m_limiter.frame_len_ms * 10000);
+	m_frame.frame_sample_count = 1;
 
 	resetFileTime();
 }
