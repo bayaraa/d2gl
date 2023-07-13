@@ -805,7 +805,7 @@ void HDText::drawUnitHealthBar()
 	if (const auto unit = d2::getSelectedUnit()) {
 		if (unit->dwType == d2::UnitType::Player || d2::isMercUnit(unit))
 			drawPlayerHealthBar(unit);
-		else
+		else if (unit->dwType == d2::UnitType::Monster)
 			drawMonsterHealthBar(unit);
 	}
 }
