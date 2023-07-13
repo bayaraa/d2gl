@@ -43,7 +43,6 @@ struct D2TextInfo {
 struct D2TextMetrics {
 	glm::vec<2, uint8_t> large_text;
 	glm::vec<2, uint8_t> entry_text;
-	uint8_t hp_bar;
 };
 
 // clang-format off
@@ -104,18 +103,18 @@ inline const std::vector<D2PopupInfo> g_popups = {
 };
 
 inline const std::vector<D2TextMetrics> g_text_size = {
-	{ { 36, 26 }, { 26, 41 }, 16 }, // ENG
-	{ { 36, 26 }, { 26, 41 }, 16 }, // ESP
-	{ { 36, 26 }, { 26, 41 }, 16 }, // DEU
-	{ { 36, 26 }, { 26, 41 }, 16 }, // FRA
-	{ {  0,  0 }, {  0,  0 },  0 }, // POR
-	{ { 36, 26 }, { 26, 41 }, 16 }, // ITA
-	{ { 44, 31 }, { 26, 31 }, 22 }, // JPN
-	{ { 38, 34 }, { 26, 34 }, 22 }, // KOR
-	{ {  0,  0 }, {  0,  0 },  0 }, // SIN
-	{ { 54, 34 }, { 31, 33 }, 18 }, // CHI
-	{ { 37, 29 }, { 26, 29 }, 19 }, // POL
-	{ { 41, 30 }, { 26, 30 }, 17 }, // RUS
+	{ { 36, 26 }, { 26, 41 } }, // ENG
+	{ { 36, 26 }, { 26, 41 } }, // ESP
+	{ { 36, 26 }, { 26, 41 } }, // DEU
+	{ { 36, 26 }, { 26, 41 } }, // FRA
+	{ { 36, 26 }, { 26, 41 } }, // POR
+	{ { 36, 26 }, { 26, 41 } }, // ITA
+	{ { 44, 31 }, { 26, 31 } }, // JPN
+	{ { 38, 34 }, { 26, 34 } }, // KOR
+	{ { 54, 34 }, { 31, 33 } }, // SIN
+	{ { 54, 34 }, { 31, 33 } }, // CHI
+	{ { 37, 29 }, { 26, 29 } }, // POL
+	{ { 41, 30 }, { 26, 30 } }, // RUS
 };
 
 inline const std::vector<std::vector<std::string>> g_option_overwrites = {
@@ -123,11 +122,11 @@ inline const std::vector<std::vector<std::string>> g_option_overwrites = {
 	{ "automapfade", "automapparty" }, // ESP
 	{ "resolution" }, // DEU
 	{ "textonly", "automapfade", "blendshadow", "perspective", "smallno", "smallyes" }, // FRA
-	{  }, // POR
+	{ "3dbias", "perspective", "resolution", "smallon", "smalloff" }, // POR
 	{ "smallyes", "auto", "automapparty", "smallno" }, // ITA
 	{ "perspective", "640x480", "automapfade", "blendshadow", "center", "everything", "full", "gamma", "low", "medium", "mini", "music" }, // JPN
 	{ "smallyes", "smallno", "sound", "music", "3dsound", "eax", "audioonly", "textonly", "videooptions", "resolution", "640x480", "medium", "low", "blendshadow", "gamma", "contrast", "automapoptions", "automapmode", "full", "automapfade", "everything", "center", "auto", "automapcenter", "automapparty", "automappartynames", "cfgoptions" }, // KOR
-	{  }, // SIN
+	{ "previous", "resolution", "smallno", "smalloff", "smallyes", "soundoptions", "sprevious", "textonly", "videooptions", "3dbias", "640x480", "800x600", "audioonly", "audiotext", "auto", "automapcenter", "automapfade", "automapmode", "automapparty", "automappartynames", "blendshadow", "center", "contrast", "eax", "everything", "full", "gamma", "high", "lightquality", "low", "medium", "mini", "music", "perspective", "cfgoptions" }, // SIN
 	{ "previous", "resolution", "smallno", "smalloff", "smallyes", "soundoptions", "sprevious", "textonly", "videooptions", "3dbias", "640x480", "800x600", "audioonly", "audiotext", "auto", "automapcenter", "automapfade", "automapmode", "automapparty", "automappartynames", "blendshadow", "center", "contrast", "eax", "everything", "full", "gamma", "high", "lightquality", "low", "medium", "mini", "music", "perspective", "cfgoptions" }, // CHI
 	{ "perspective", "medium", "center" }, // POL
 	{ "3dbias", "perspective", "resolution", "smallon", "blendshadow", "auto", "mini", "full", "automapmode", "contrast" }, // RUS
@@ -314,7 +313,51 @@ inline std::map<uint32_t, std::vector<D2TextInfo>> g_options_text_others = {
 		{ 0, { 218, 26 }, L"AFFICHER NOMS" }, // SHOW NAMES
 		{ 1, { 226, 36 }, L"CONFIGURER COMMANDES" }, // CONFIGURE CONTROLS
 	} },
-	{ LANG_POR, {} },
+	{ LANG_POR, {
+		{ 0, { 160, 36 }, L"OPÇÕES" }, // OPTIONS
+		{ 1, { 178, 36 }, L"SALVAR E SAIR DO JOGO" }, // SAVE AND EXIT GAME
+		{ 1, { 100, 36 }, L"VOLTAR AO JOGO" }, // RETURN TO GAME
+		{ 1, {  57, 36 }, L"MENU ANTERIOR" }, // PREVIOUS MENU
+		{ 0, { 231, 26 }, L"MENU ANTERIOR" }, // PREVIOUS MENU
+		{ 0, {  41, 26 }, L"SOBRE" }, // ON
+		{ 0, {  52, 26 }, L"DESLIGADO" }, // OFF
+		{ 0, {  51, 26 }, L"SIM" }, // YES
+		{ 0, {  40, 26 }, L"NÃO" }, // NO
+		{ 1, {  53, 36 }, L"OPÇÕES DE SOM" }, // SOUND OPTIONS
+		{ 0, {  95, 26 }, L"SOM" }, // SOUND
+		{ 0, {  84, 26 }, L"MÚSICA" }, // MUSIC
+		{ 0, { 144, 26 }, L"SOM 3D" }, // 3D SOUND
+		{ 1, { 106, 26 }, L"EFEITOS AMBIENTAIS" }, // ENVIRONMENTAL EFFECTS
+		{ 0, { 109, 26 }, L"3D BIAS" }, // 3D BIAS
+		{ 0, { 157, 26 }, L"NPC FALA" }, // NPC SPEECH
+		{ 1, {   4, 26 }, L"ÁUDIO E TEXTO" }, // AUDIO AND TEXT
+		{ 0, { 184, 26 }, L"SOMENTE AUDIO" }, // AUDIO ONLY
+		{ 0, { 169, 26 }, L"SOMENTE TEXTO" }, // TEXT ONLY
+		{ 1, {  39, 36 }, L"OPÇÕES DE VÍDEO" }, // VIDEO OPTIONS
+		{ 0, { 175, 26 }, L"RESOLUÇÃO" }, // RESOLUTION
+		{ 0, { 135, 26 }, L"800x600" }, // 800x600
+		{ 0, { 123, 26 }, L"640x480" }, // 640x480
+		{ 1, {   9, 26 }, L"QUALIDADE DE ILUMINAÇÃO" }, // LIGHTING QUALITY
+		{ 0, {  57, 26 }, L"ALTO" }, // HIGH
+		{ 0, { 108, 26 }, L"MÉDIO" }, // MEDIUM
+		{ 0, {  66, 26 }, L"BAIXO" }, // LOW
+		{ 1, {  10, 26 }, L"SOMBRAS MISTURADAS" }, // BLENDED SHADOWS
+		{ 0, { 174, 26 }, L"PERSPECTIVA" }, // PERSPECTIVE
+		{ 0, { 105, 26 }, L"GAMA" }, // GAMMA
+		{ 0, { 151, 26 }, L"CONTRASTE" }, // CONTRAST
+		{ 1, { 122, 36 }, L"OPÇÕES DE AUTOMAPA" }, // AUTOMAP OPTIONS
+		{ 0, { 213, 26 }, L"TAMANHO DO AUTOMAPA" }, // AUTOMAP SIZE
+		{ 0, { 180, 26 }, L"TELA CHEIA" }, // FULL SCREEN
+		{ 0, { 131, 26 }, L"MINI MAPA" }, // MINI MAP
+		{ 0, {  70, 26 }, L"DESAPARECER" }, // FADE
+		{ 0, { 173, 26 }, L"TUDO" }, // EVERYTHING
+		{ 0, { 104, 26 }, L"CENTRO" }, // CENTER
+		{ 0, {  86, 26 }, L"AUTO" }, // AUTO
+		{ 1, {  80, 26 }, L"CENTRALIZAR QUANDO LIMPO" }, // CENTER WHEN CLEARED
+		{ 0, { 194, 26 }, L"FESTA DE SHOW" }, // SHOW PARTY
+		{ 0, { 190, 26 }, L"MOSTRAR NOMES" }, // SHOW NAMES
+		{ 1, { 167, 36 }, L"CONFIGURAR CONTROLES" }, // CONFIGURE CONTROLS
+	} },
 	{ LANG_ITA, {
 		{ 0, { 146, 36 }, L"OPZIONI" }, // OPTIONS
 		{ 2, {   4, 36 }, L"SALVA ED ESCI DAL GIOCO" }, // SAVE AND EXIT GAME
@@ -467,8 +510,8 @@ inline std::map<uint32_t, std::vector<D2TextInfo>> g_options_text_others = {
 		{ 0, {  97, 34 }, L"环场效果" }, // ENVIRONMENTAL EFFECTS
 		{ 0, {  81, 34 }, L"3D偏向" }, // 3D BIAS
 		{ 0, {  95, 34 }, L"NPC语音" }, // NPC SPEECH
-		{ 0, { 120, 34 }, L"语音和文本" }, // AUDIO AND TEXT 音效和文本
-		{ 0, {  98, 34 }, L"仅语音" }, // AUDIO ONLY 仅音效
+		{ 0, { 120, 34 }, L"语音和文本" }, // AUDIO AND TEXT
+		{ 0, {  98, 34 }, L"仅语音" }, // AUDIO ONLY
 		{ 0, {  99, 34 }, L"仅文本" }, // TEXT ONLY
 		{ 0, { 151, 54 }, L"视频选项" }, // VIDEO OPTIONS
 		{ 0, {  72, 34 }, L"分辨率" }, // RESOLUTION
@@ -493,7 +536,7 @@ inline std::map<uint32_t, std::vector<D2TextInfo>> g_options_text_others = {
 		{ 0, { 121, 34 }, L"打开时居中" }, // CENTER WHEN CLEARED
 		{ 0, { 103, 34 }, L"显示队伍" }, // SHOW PARTY
 		{ 0, { 104, 34 }, L"显示名字" }, // SHOW NAMES
-		{ 0, { 152, 54 }, L"操作设置" }, // CONFIGURE CONTROLS 设置控制
+		{ 0, { 152, 54 }, L"操作设置" }, // CONFIGURE CONTROLS
 	} },
 	{ LANG_CHI, {
 		{ 0, {  74, 54 }, L"選項" }, // OPTIONS
@@ -686,9 +729,9 @@ inline const std::map<uint32_t, std::vector<D2TextInfo>> g_death_text_others = {
 		{ 1, { 220, 36 }, L"Vous avez perdu de l'or" }, // You lost gold
 	} },
 	{ LANG_POR, {
-		{ 1, {  20, 36 }, L"Você morreu" }, // youdiedhardcore.dc6
-		{ 1, { 175, 36 }, L"Pressione ESC para continuar." }, // youdiedinst.dc6
-		{ 1, {  23, 36 }, L"You lost gold" }, // youdiedsoftcore.dc6
+		{ 1, {  20, 36 }, L"Você morreu" }, // You have died
+		{ 1, { 175, 36 }, L"Pressione ESC para continuar." }, // Press ESC to continue
+		{ 1, {  23, 36 }, L"Você perdeu ouro" }, // You lost gold
 	} },
 	{ LANG_ITA, {
 		{ 0, { 181, 36 }, L"Sei morto" }, // You have died
@@ -721,12 +764,12 @@ inline const std::map<uint32_t, std::vector<D2TextInfo>> g_death_text_others = {
 		{ 1, { 250, 37 }, L"TWOJA POSTAĆ STRACIŁA ZŁOTO" }, // You lost gold
 	} },
 	{ LANG_RUS, {
-		{ 1, {  20, 36 }, L"Вы умерли." },
-		{ 0, { 202, 41 }, L"Вы умерли." }, // You have died
-		{ 1, { 245, 36 }, L"Нажмите ESC, чтобы продолжить." },
-		{ 2, {  73, 41 }, L"Нажмите ESC, чтобы продолжить." }, // Press ESC to continue
-		{ 1, { 106, 36 }, L"You lost gold" },
-		{ 1, { 124, 41 }, L"You lost gold" }, // You lost gold
+		{ 1, {  20, 36 }, L"Вы умерли" },
+		{ 0, { 202, 41 }, L"Вы умерли" }, // You have died
+		{ 1, { 245, 36 }, L"Нажмите ESC, чтобы продолжить" },
+		{ 2, {  73, 41 }, L"Нажмите ESC, чтобы продолжить" }, // Press ESC to continue
+		{ 1, { 106, 36 }, L"Вы потеряли золото" },
+		{ 1, { 124, 41 }, L"Вы потеряли золото" }, // You lost gold
 	} },
 };
 

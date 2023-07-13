@@ -33,6 +33,8 @@ HDText::HDText()
 
 	std::string lang_file = helpers::getLangString(true);
 	auto buffer = helpers::loadFile("assets\\atlases\\" + lang_file + ".txt");
+	if (!buffer.size && m_lang_id == LANG_SIN)
+		buffer = helpers::loadFile("assets\\atlases\\chi.txt");
 	if (!buffer.size)
 		buffer = helpers::loadFile("assets\\atlases\\default.txt");
 
