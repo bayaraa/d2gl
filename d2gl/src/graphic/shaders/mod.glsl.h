@@ -140,7 +140,7 @@
           "break;"
       "}"
       "if(v_Flags.z>0u)"
-        "FragColor.w*=v_Flags.z/1e2;"
+        "FragColor.w*=float(v_Flags.z)*.01;"
     "}"
   "if(texture(u_MaskTexture,(gl_FragCoord.xy-u_Viewport.xy)/u_Viewport.zw).x>.1)"
     "FragColor.w=0.;"

@@ -160,7 +160,7 @@ void main()
 			break;
 		}
 		if (v_Flags.z > 0u)
-			FragColor.a *= v_Flags.z / 100.0;
+			FragColor.a *= (float(v_Flags.z) * 0.01);
 	}
 
 	if (texture(u_MaskTexture, (gl_FragCoord.xy - u_Viewport.xy) / u_Viewport.zw).r > 0.1)
