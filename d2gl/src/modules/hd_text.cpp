@@ -43,7 +43,7 @@ HDText::HDText()
 		auto lines = helpers::strToLines(data);
 
 		TextureCreateInfo texture_ci;
-		texture_ci.layer_count = 0;
+		texture_ci.layer_count = 1;
 		texture_ci.size = { 1024, 1024 };
 		texture_ci.slot = TEXTURE_SLOT_FONTS;
 		texture_ci.min_filter = GL_LINEAR;
@@ -56,9 +56,9 @@ HDText::HDText()
 			helpers::replaceAll(line, "\r", "");
 
 			auto info = helpers::splitToVector(line, '|');
-			if (info.size() > 8) {
-				if (glyph_sets.find(info[8]) == glyph_sets.end()) {
-					auto buffer2 = helpers::loadFile("assets\\atlases\\" + info[8] + "\\data.csv");
+			if (info.size() > 9) {
+				if (glyph_sets.find(info[9]) == glyph_sets.end()) {
+					auto buffer2 = helpers::loadFile("assets\\atlases\\" + info[1] + "\\data.csv");
 					if (buffer2.size) {
 						auto pos = (buffer2.data + (buffer2.size - 5));
 						while (*pos != '\n' || pos == buffer2.data)
@@ -68,24 +68,26 @@ HDText::HDText()
 						texture_ci.layer_count += std::atoi(num.c_str()) + 1;
 						delete[] buffer2.data;
 					}
-					glyph_sets.insert({ info[8], nullptr });
+					glyph_sets.insert({ info[1], nullptr });
 				}
 				info_list.push_back(info);
 			}
 		}
 
 		static std::unique_ptr<Texture> texture = Context::createTexture(texture_ci);
+		auto symbol_set = new GlyphSet(texture.get(), "NotoSymbol");
+
 		for (auto& info : info_list) {
-			const auto name = info[8];
+			const auto name = info[1];
 			if (!glyph_sets[name])
-				glyph_sets[name] = new GlyphSet(texture.get(), name);
+				glyph_sets[name] = new GlyphSet(texture.get(), name, symbol_set);
 
 			uint8_t id = (uint8_t)std::atoi(info[0].c_str());
 			bool bordered = (id == 2 || id == 3 || id == 7 || id == 18);
 			wchar_t color = g_initial_colors.find(id) != g_initial_colors.end() ? g_initial_colors.at(id) : 0;
-			const auto offset = glm::vec2(std::stof(info[6]), std::stof(info[7]));
+			const auto offset = glm::vec2(std::stof(info[7]), std::stof(info[8]));
 
-			FontCreateInfo font_ci = { name, std::stof(info[1]), std::stof(info[2]), std::stof(info[3]), std::stof(info[4]), std::stof(info[5]), offset, color, bordered };
+			FontCreateInfo font_ci = { name, std::stof(info[2]), std::stof(info[3]), std::stof(info[4]), std::stof(info[5]), std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
 			m_fonts[id] = std::make_unique<Font>(glyph_sets[name], font_ci);
 		}
 
@@ -942,26 +944,28 @@ void HDText::showSampleText()
 		auto texts = g_sample_text.at((d2::isLangCJK(lang_id) || lang_id == LANG_RUS) ? lang_id : LANG_ENG);
 
 		const auto old_size = HDText::Instance().getTextSize();
-		d2::drawSolidRectEx(60, 60, App.game.size.x - 60, App.game.size.y - 140, 1, 2);
+		d2::drawSolidRectEx(40, 40, App.game.size.x - 40, App.game.size.y - 100, 1, 2);
 		if (id <= 13) {
 			bool old_val = App.hd_text;
 			App.hd_text = false;
 			d2::setTextSize(id);
-			d2::drawNormalText(texts.txt1, 80, 120, 0, 0);
+			d2::drawNormalText(texts.txt1, 60, 140, 0, 0);
 			d2::setTextSize(id);
-			d2::drawNormalText(texts.txt2, 80, 220, 0, 0);
+			d2::drawNormalText(texts.txt2, 60, 260, 0, 0);
 			d2::setTextSize(id);
-			d2::drawNormalText(texts.txt3, 80, 440, 0, 0);
+			d2::drawNormalText(texts.txt3, 60, 460, 0, 0);
 			App.hd_text = old_val;
 		}
 
 		d2::drawSolidRectEx(60, 60, App.game.size.x - 60, App.game.size.y - 140, 1, 1);
 		d2::setTextSizeHooked(id);
-		d2::drawNormalTextHooked(texts.txt1, 80, 120, 0, 0);
+		d2::drawNormalTextHooked(texts.txt1, 60, 100, 0, 0);
 		d2::setTextSizeHooked(id);
-		d2::drawNormalTextHooked(texts.txt2, 80, 220, 0, 0);
+		d2::drawNormalTextHooked(texts.txt1, 60, 140, 0, 0);
 		d2::setTextSizeHooked(id);
-		d2::drawNormalTextHooked(texts.txt3, 80, 440, 0, 0);
+		d2::drawNormalTextHooked(texts.txt2, 60, 260, 0, 0);
+		d2::setTextSizeHooked(id);
+		d2::drawNormalTextHooked(texts.txt3, 60, 460, 0, 0);
 		d2::setTextSizeHooked(old_size);
 	}
 }

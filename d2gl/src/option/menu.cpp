@@ -167,6 +167,8 @@ void Menu::draw()
 
 	// clang-format off
 	const ImVec4 col = ImColor(50, 50, 50);
+	static int active_tab = 0;
+
 	ImGui::PushStyleColor(ImGuiCol_Border, col);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 16.0f, 10.0f });
 	if (ImGui::BeginTabBar("tabs", ImGuiTabBarFlags_None)) {
@@ -177,8 +179,7 @@ void Menu::draw()
 		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Gray]);
 		ImGui::Text(App.version_str.c_str());
 		ImGui::PopStyleColor();
-		ImGui::PopFont();
-		static int active_tab = 0;
+		ImGui::PopFont();	
 		// ImGui::SetTabItemClosed("Screen");
 		if (tabBegin("Screen", 0, &active_tab)) {
 			childBegin("##w1", true, true);
@@ -388,6 +389,7 @@ void Menu::draw()
 			drawSlider_m(float, "Shadow Intensity", App.hdt.shadow_intensity, "%.3f", "", hdt_shadow_intensity);
 			drawSlider_m(float, "Text Offset (X Coordinate)", App.hdt.offset_x, "%.3f", "", hdt_offset_x);
 			drawSlider_m(float, "Text Offset (Y Coordinate)", App.hdt.offset_y, "%.3f", "", hdt_offset_y);
+			drawSlider_m(float, "Symbol Offset (Y Coordinate)", App.hdt.symbol_offset, "%.3f", "", hdt_symbol_offset);
 			childSeparator("##hdt1");
 			ImGui::BeginDisabled(App.game.screen != GameScreen::InGame);
 			drawCheckbox_m("Show sample text", App.hdt.show_sample, "", hdt_show_sample);
@@ -396,12 +398,12 @@ void Menu::draw()
 			const auto font_id = (uint32_t)App.hdt.fonts.items[App.hdt.fonts.selected].value;
 			const auto font = modules::HDText::Instance().getFont(font_id);
 			font->updateMetrics();
-			char result[2000] = { "" };
+			char result[2100] = { "" };
 			const auto& str = modules::HDText::Instance().getAllFontMetricString();
 			strcpy_s(result, str.c_str());
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8.0f, 7.0f });
 			ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
-			ImGui::InputTextMultiline("##result", result, IM_ARRAYSIZE(result), { 0, 222 }, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_NoHorizontalScroll);
+			ImGui::InputTextMultiline("##result", result, IM_ARRAYSIZE(result), { 0, 249 }, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_NoHorizontalScroll);
 			ImGui::PopStyleVar();
 			if (ImGui::Button("Copy Text"))
 				ImGui::SetClipboardText(result);
@@ -414,17 +416,19 @@ void Menu::draw()
 		ImGui::EndTabBar();
 	}
 	ImGui::PopFont();
-	ImGui::SetCursorPos({ 16.0f, 460.0f });
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0.0f, 0.0f });
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-	ImGui::BeginChildFrame(ImGui::GetID("#wiki"), { 300.0f, 24.0f }, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground);
-	ImGui::PopStyleVar(3);
-	ImGui::PushFont(m_fonts[15]);
-	if (ImGui::Button(" Open Configuration Wiki Page > "))
-		ShellExecute(0, 0, L"https://github.com/bayaraa/d2gl/wiki/Configuration", 0, 0, SW_SHOW);
-	ImGui::PopFont();
-	ImGui::EndChildFrame();
+	if (active_tab != 3) {
+		ImGui::SetCursorPos({ 16.0f, 460.0f });
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0.0f, 0.0f });
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+		ImGui::BeginChildFrame(ImGui::GetID("#wiki"), { 300.0f, 24.0f }, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground);
+		ImGui::PopStyleVar(3);
+		ImGui::PushFont(m_fonts[15]);
+		if (ImGui::Button(" Open Configuration Wiki Page > "))
+			ShellExecute(0, 0, L"https://github.com/bayaraa/d2gl/wiki/Configuration", 0, 0, SW_SHOW);
+		ImGui::PopFont();
+		ImGui::EndChildFrame();
+	}
 	ImGui::End();
 
 	// clang-format on

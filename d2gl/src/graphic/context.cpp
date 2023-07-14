@@ -1,4 +1,4 @@
-/*
+﻿/*
 	D2GL: Diablo 2 LoD Glide/DDraw to OpenGL Wrapper.
 	Copyright (C) 2023  Bayaraa
 
@@ -715,12 +715,12 @@ void Context::onStageChange()
 			setVertexFlagW(10);
 			break;
 		case DrawStage::Cursor:
-			flushVertices();
-			setVertexFlagW(10);
-			appendDelayedObjects();
 #ifdef _HDTEXT
 			modules::HDText::showSampleText();
 #endif
+			flushVertices();
+			setVertexFlagW(10);
+			appendDelayedObjects();
 			modules::HDCursor::Instance().draw();
 			break;
 	}

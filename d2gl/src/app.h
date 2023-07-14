@@ -159,6 +159,7 @@ struct D2GLApp {
 		Range<float> shadow_intensity = { 0.35f, 0.0f, 1.0f };
 		Range<float> offset_x = { 0.0f, -10.0f, 10.0f };
 		Range<float> offset_y = { 0.0f, -10.0f, 10.0f };
+		Range<float> symbol_offset = { 0.0f, -5.0f, 5.0f };
 		bool show_sample = false;
 	} hdt;
 #endif

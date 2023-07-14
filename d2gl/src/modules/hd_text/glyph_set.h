@@ -30,12 +30,16 @@ struct Glyph {
 
 class GlyphSet {
 	std::map<wchar_t, Glyph> m_glyphes;
+	std::map<wchar_t, Glyph>* m_symbols = nullptr;
+	bool m_is_symbol = false;
 
 public:
-	GlyphSet(Texture* texture, const std::string& name);
+	GlyphSet(Texture* texture, const std::string& name, GlyphSet* symbol_set = nullptr);
 	~GlyphSet() = default;
 
 	const Glyph* getGlyph(wchar_t c);
+	inline bool isSymbol() { return m_is_symbol; }
+	inline std::map<wchar_t, Glyph>* getGlyphes() { return &m_glyphes; }
 };
 
 }
