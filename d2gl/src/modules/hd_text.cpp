@@ -935,6 +935,40 @@ void HDText::drawFpsCounter()
 	d2::setTextSizeHooked(old_size);
 }
 
+void HDText::drawItemQuantity(int x, int y)
+{
+	if (!App.show_item_quantity || !d2::currently_drawing_item)
+		return;
+
+	const auto item = d2::currently_drawing_item;
+	if (item->dwType == d2::UnitType::Item && d2::getItemLocation(item) != 0xFF) {
+		if (const auto quantity = d2::getUnitStat(item, 70)) {
+			static wchar_t str[10] = { 0 };
+			swprintf_s(str, L"%d", quantity);
+
+			const auto old_size = modules::HDText::Instance().getTextSize();
+			d2::setTextSizeHooked(6);
+			if (App.hd_text) {
+				static auto bg = std::make_unique<Object>();
+				uint32_t width, height;
+
+				d2::getFramedTextSizeHooked(str, &width, &height);
+				glm::vec2 size = { (float)(width + 10), (float)(height + 2) };
+				glm::vec2 pos = { (float)(x - 5 + 3), (float)(y - 1 - height - 2) };
+
+				bg->setFlags(6, 0, 0, 1);
+				bg->setPosition(pos);
+				bg->setSize(size);
+				bg->setColor(0x00000099, 1);
+				bg->setExtra({ 0.4f, 0.6f });
+				App.context->pushObject(bg);
+			}
+			d2::drawNormalTextHooked(str, x + 3, y - 2, 0, 0);
+			d2::setTextSizeHooked(old_size);
+		}
+	}
+}
+
 #ifdef _HDTEXT
 void HDText::showSampleText()
 {

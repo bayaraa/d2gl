@@ -272,7 +272,7 @@ struct MonsterData109 {
 	DWORD anEnchants[9];
 };
 
-struct ItemData {
+struct ItemData110 {
 	ItemQuality dwQuality;
 	DWORD _1[2];
 	DWORD dwItemFlags;
@@ -303,6 +303,13 @@ struct ItemData {
 	UnitAny* pOwner;
 };
 
+struct ItemData109 {
+	ItemQuality dwQuality;
+	DWORD _1[15];
+	BYTE BodyLocation;
+	BYTE ItemLocation;
+};
+
 struct UnitAny {
 	UnitType dwType;
 	union {
@@ -313,7 +320,7 @@ struct UnitAny {
 			DWORD dwMode;
 			union {
 				PlayerData* pPlayerData;
-				ItemData* pItemData;
+				ItemData110* pItemData;
 				MonsterData110* pMonsterData;
 				void* pObjectData;
 			};
@@ -354,7 +361,7 @@ struct UnitAny {
 			DWORD _3[13];
 			union {
 				PlayerData* pPlayerData;
-				ItemData* pItemData;
+				ItemData109* pItemData;
 				MonsterData109* pMonsterData;
 				void* pObjectData;
 			};

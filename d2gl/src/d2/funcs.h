@@ -42,9 +42,10 @@ bool isUnitDead(UnitAny* unit);
 char* getPlayerName(UnitAny* unit);
 MonsterType getMonsterType(UnitAny* unit);
 wchar_t* getMonsterName(UnitAny* unit);
+bool isMercUnit(UnitAny* unit);
 
 ItemQuality getItemQuality(UnitAny* unit);
-bool isMercUnit(UnitAny* unit);
+BYTE getItemLocation(UnitAny* unit);
 
 CellFile* getCellFile(CellContext* cell);
 DWORD getCellNo(CellContext* cell);

@@ -160,6 +160,7 @@ extern uint32_t currently_drawing_weather_particles;
 extern uintptr_t* currently_drawing_weather_particle_index_ptr;
 extern RECT* currently_drawing_rect;
 extern UnitAny* headsup_text_unit;
+extern UnitAny* currently_drawing_item;
 
 extern std::unique_ptr<Patch> patch_minimap;
 extern std::unique_ptr<Patch> patch_motion_prediction;

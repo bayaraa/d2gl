@@ -362,6 +362,9 @@ void Menu::draw()
 			drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 				saveBool("Feature", "no_pickup", App.no_pickup);
 			drawSeparator();
+			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
+				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
+			drawSeparator();
 			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 				saveBool("Feature", "show_fps", App.show_fps);
 			drawSeparator();
@@ -409,6 +412,15 @@ void Menu::draw()
 				ImGui::SetClipboardText(result);
 			childEnd();
 			m_ignore_font = false;
+			ImGui::PopFont();
+			tabEnd();
+		}
+#endif
+#ifdef _DEBUG
+		if (tabBegin("Debug", 3, &active_tab)) {
+			ImGuiIO& io = ImGui::GetIO();
+			ImGui::PushFont(io.Fonts->Fonts[0]);
+			ImGui::Checkbox("Check6", (bool*)(&App.var[6]));
 			ImGui::PopFont();
 			tabEnd();
 		}

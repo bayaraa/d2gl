@@ -142,17 +142,22 @@ wchar_t* getMonsterName(UnitAny* unit)
 	return isVer(V_109d) ? unit->v109.pMonsterData->wName : unit->v110.pMonsterData->wName;
 }
 
-ItemQuality getItemQuality(UnitAny* unit)
-{
-	return isVer(V_109d) ? unit->v109.pItemData->dwQuality : unit->v110.pItemData->dwQuality;
-}
-
 bool isMercUnit(UnitAny* unit)
 {
 	if (unit->dwType != d2::UnitType::Monster || isVer(V_109d))
 		return false;
 
 	return unit->v110.dwClassId == MERC_A1 || unit->v110.dwClassId == MERC_A2 || unit->v110.dwClassId == MERC_A3 || unit->v110.dwClassId == MERC_A4 || unit->v110.dwClassId == MERC_A5;
+}
+
+ItemQuality getItemQuality(UnitAny* unit)
+{
+	return isVer(V_109d) ? unit->v109.pItemData->dwQuality : unit->v110.pItemData->dwQuality;
+}
+
+BYTE getItemLocation(UnitAny* unit)
+{
+	return isVer(V_109d) ? unit->v109.pItemData->ItemLocation : unit->v110.pItemData->ItemLocation;
 }
 
 CellFile* getCellFile(CellContext* cell)
@@ -222,6 +227,8 @@ void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, 
 		const auto pos = modules::MotionPrediction::Instance().drawImage(x, y, D2DrawFn::Image, gamma, draw_mode);
 		drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
 	}
+
+	modules::HDText::drawItemQuantity(x, y);
 }
 
 void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int screen_mode, uint8_t* palette)

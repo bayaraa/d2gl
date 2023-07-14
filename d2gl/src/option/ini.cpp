@@ -236,6 +236,8 @@ void saveIni()
 		"skip_intro=%s\n\n"
 		"; Auto /nopickup option on launch (exclude 1.09d).\n"
 		"no_pickup=%s\n\n"
+		"; Show item quantity on bottom left corner of icon.\n"
+		"show_item_quantity=%s\n\n"
 		"; Show FPS Counter (bottom center).\n"
 		"show_fps=%s\n\n"
 		"; Unlock Cursor (cursor will not locked within window).\n"
@@ -253,6 +255,7 @@ void saveIni()
 		boolString(App.motion_prediction),
 		boolString(App.skip_intro),
 		boolString(App.no_pickup),
+		boolString(App.show_item_quantity),
 		boolString(App.show_fps),
 		boolString(App.cursor.unlock));
 	out_file << buf;
@@ -352,6 +355,7 @@ void loadIni()
 		App.motion_prediction = getBool("Feature", "motion_prediction", App.motion_prediction);
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);
 		App.no_pickup = getBool("Feature", "no_pickup", App.no_pickup);
+		App.show_item_quantity = getBool("Feature", "show_item_quantity", App.show_item_quantity);
 		App.show_fps = getBool("Feature", "show_fps", App.show_fps);
 		App.cursor.unlock = getBool("Feature", "unlock_cursor", App.cursor.unlock);
 
