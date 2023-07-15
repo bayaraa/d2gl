@@ -1,4 +1,5 @@
 # Diablo 2 LoD Glide/DDraw to OpenGL Wrapper (D2GL)
+[![Github All Releases](https://img.shields.io/github/downloads/bayaraa/d2gl/total.svg)]()
 
 D2GL is a Diablo 2 LoD Glide/DDraw to OpenGL wrapper that translates glide/ddraw calls to OpenGL calls. This makes D2 run better on modern hardware/OS and easier to switch between fullscreen and windowed modes, and resolves certain window and cursor-related issues. Additionally, it includes several libretro shaders for upscaling to higher resolutions, and allows for in-game text to be displayed in high-definition, D2DX's motion prediction, other QOL features.
 
