@@ -366,3 +366,5 @@ FodyWeavers.xsd
 /bin
 /data
 /d2gl.props
+!/d2gl/vendor/lib/Debug/
+!/d2gl/vendor/lib/Release/

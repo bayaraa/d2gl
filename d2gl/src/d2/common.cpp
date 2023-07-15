@@ -124,6 +124,7 @@ uint32_t currently_drawing_weather_particles = 0;
 uint32_t* currently_drawing_weather_particle_index_ptr = nullptr;
 RECT* currently_drawing_rect = nullptr;
 UnitAny* headsup_text_unit = nullptr;
+UnitAny* currently_drawing_item = nullptr;
 
 std::unique_ptr<Patch> patch_minimap;
 std::unique_ptr<Patch> patch_motion_prediction;
@@ -181,11 +182,16 @@ void initHooks()
 			App.mini_map.active = false;
 	}
 
-	Patch common_patches = Patch();
-	common_patches.add(PatchType::Auto, getOffset((DLL_D2WIN, 0x85F60F9E, 0xC7), (-10124, 0, 0x150), (-10124, 0, 0x127), (-10175), (-10037), (-10201), (-10110), (-10124), (0x1030B4, 0x85DB0F9E, -1)), 5, (uintptr_t)unitHoverBeginPatch);
-	common_patches.add(PatchType::Auto, getOffset((DLL_D2WIN, 0x8D140152, 0x162), (-10124, 0x03C55650, 0x1CC), (-10124, 0x03C55650, 0x1A3), (-10175), (-10037), (-10201), (-10110), (-10124), (0x10314B, 0, -1)), 5, (uintptr_t)unitHoverMidPatch);
-	common_patches.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xC1E81F03, 0x1A0), (-10124, 0, 0x228), (-10124, 0, 0x1FF), (-10175), (-10037), (-10201), (-10110), (-10124), (0x103188, 0, -1)), 5, (uintptr_t)unitHoverEndPatch);
-	common_patches.toggle(true);
+	Patch unit_hover_patch = Patch();
+	unit_hover_patch.add(PatchType::Auto, getOffset((DLL_D2WIN, 0x85F60F9E, 0xC7), (-10124, 0, 0x150), (-10124, 0, 0x127), (-10175), (-10037), (-10201), (-10110), (-10124), (0x1030B4, 0x85DB0F9E, -1)), 5, (uintptr_t)unitHoverBeginPatch);
+	unit_hover_patch.add(PatchType::Auto, getOffset((DLL_D2WIN, 0x8D140152, 0x162), (-10124, 0x03C55650, 0x1CC), (-10124, 0x03C55650, 0x1A3), (-10175), (-10037), (-10201), (-10110), (-10124), (0x10314B, 0, -1)), 5, (uintptr_t)unitHoverMidPatch);
+	unit_hover_patch.add(PatchType::Auto, getOffset((DLL_D2WIN, 0xC1E81F03, 0x1A0), (-10124, 0, 0x228), (-10124, 0, 0x1FF), (-10175), (-10037), (-10201), (-10110), (-10124), (0x103188, 0, -1)), 5, (uintptr_t)unitHoverEndPatch);
+	unit_hover_patch.toggle(true);
+
+	Patch show_item_quantity_patch = Patch();
+	show_item_quantity_patch.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x57566AFF), (0xB807D, 0x55536AFF), (0xBA42D, 0x55536AFF), (0x6B96B), (0x4689B), (0x9347B), (0x6B69B), (0x5F57B), (0x6EF78, 0x52536AFF)), 5, (uintptr_t)((isVerMax(V_110) || isVer(V_114d)) ? drawItemImageBeginPatchESI : drawItemImageBeginPatch));
+	show_item_quantity_patch.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0xD1E803C5), (0xB80B8, 0xBAFF0000), (0xBA468, 0xBAFF0000), (0x6B993), (0x468C3), (0x934A3), (0x6B6C3), (0x5F5A3), (0x6EF9D, 0xD1E803C7)), 5, (uintptr_t)drawItemImageEndPatch);
+	show_item_quantity_patch.toggle(true);
 
 	patch_motion_prediction = std::make_unique<Patch>();
 	patch_motion_prediction->add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x83EC1053), (0x7FCF0, 0x83EC5053), (0x7B4F0, 0x83EC4C53), (0x941F0), (0x15C80), (0x71990), (0x7CA40), (0x76170), (0xA0A01, 0x8BEC83EC)), 5, (uintptr_t)(isVer(V_109d) ? rectangledTextBeginStub109d : (isVer(V_110) ? rectangledTextBeginStub110f : rectangledTextBeginStub)));

@@ -31,6 +31,7 @@ struct FontCreateInfo {
 	float line_height = 0.0f;
 	float shadow_intensity = 0.0f;
 	glm::vec2 offset = { 0.0f, 0.0f };
+	float symbol_offset = 0.0f;
 	wchar_t color = 0;
 	bool bordered = false;
 };
@@ -49,6 +50,7 @@ class Font {
 	float m_letter_spacing = 0.0f;
 	float m_shadow_intensity = 0.9f;
 	glm::vec2 m_offset = { 0.0f, 0.0f };
+	float m_symbol_offset = 0.0f;
 
 	float m_smoothness = 5.0f;
 	uint8_t m_shadow_level = 0;
@@ -65,11 +67,6 @@ public:
 	~Font() = default;
 
 	inline void setSize(float size) { m_size = size, m_scale = size / 32.0f, m_smoothness = size; }
-	inline void setWeight(float weight) { m_weight = weight; }
-	inline void setLetterSpacing(float letter_spacing) { m_letter_spacing = letter_spacing; }
-	inline void setLineHeight(float line_height) { m_line_height = line_height; }
-	inline void setOffset(glm::vec2 offset) { m_offset = offset; }
-
 	inline void setAlign(TextAlign align) { m_align = align; }
 	inline void setShadow(uint8_t level = 0) { m_shadow_level = level; }
 	inline void setMasking(bool masking) { m_masking = masking; }

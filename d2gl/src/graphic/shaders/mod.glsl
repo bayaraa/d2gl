@@ -124,6 +124,8 @@ void main()
 		case 6u:
 			FragColor = v_Color1;
 			float alpha = (v_TexCoord.x < 0.5) ? smoothstep(0.0, v_Extra.x, v_TexCoord.x) : smoothstep(1.0, v_Extra.y, v_TexCoord.x);
+			if (v_Flags.w == 1u)
+				alpha *= (v_TexCoord.y < 0.5) ? smoothstep(0.0, 0.3, v_TexCoord.y) : smoothstep(1.0, 0.7, v_TexCoord.y);
 			FragColor.a *= alpha;
 		break;
 		case 7u:

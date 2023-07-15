@@ -23,13 +23,10 @@
 namespace d2gl {
 
 Font::Font(GlyphSet* glyph_set, const FontCreateInfo& font_ci)
-	: m_glyph_set(glyph_set), m_name(font_ci.name), m_shadow_intensity(font_ci.shadow_intensity), m_color(font_ci.color), m_bordered(font_ci.bordered)
+	: m_glyph_set(glyph_set), m_name(font_ci.name), m_weight(font_ci.weight), m_letter_spacing(font_ci.letter_spacing), m_line_height(font_ci.line_height),
+	  m_shadow_intensity(font_ci.shadow_intensity), m_offset(font_ci.offset), m_symbol_offset(font_ci.symbol_offset), m_color(font_ci.color), m_bordered(font_ci.bordered)
 {
 	setSize(font_ci.size);
-	setWeight(font_ci.weight);
-	setLetterSpacing(font_ci.letter_spacing);
-	setLineHeight(font_ci.line_height);
-	setOffset(font_ci.offset);
 	m_object = std::make_unique<Object>();
 }
 
@@ -140,6 +137,12 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 			return glyph->advance * m_scale;
 
 		glm::vec2 object_pos = pos + glyph->offset * m_scale;
+		float weight = m_weight;
+		if (m_glyph_set->isSymbol()) {
+			object_pos.y += m_size * m_symbol_offset;
+			weight = 1.0f + ((m_weight - 1.0f) * 0.5f);
+		}
+
 		m_object->setSize(glyph->size * m_scale);
 		m_object->setTexIds({ glyph->tex_id, 0 });
 		m_object->setTexCoord(glyph->tex_coord);
@@ -151,7 +154,7 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 			m_object->setFlags(3, m_shadow_level, m_masking);
 			App.context->pushObject(m_object);
 		}
-		m_object->setExtra({ m_smoothness, m_weight });
+		m_object->setExtra({ m_smoothness, weight });
 		m_object->setFlags(3, 0, m_masking, m_bordered);
 		App.context->pushObject(m_object);
 
@@ -171,6 +174,7 @@ void Font::updateMetrics()
 	m_shadow_intensity = App.hdt.shadow_intensity.value;
 	m_offset.x = App.hdt.offset_x.value;
 	m_offset.y = App.hdt.offset_y.value;
+	m_symbol_offset = App.hdt.symbol_offset.value;
 }
 
 void Font::getMetrics()
@@ -182,12 +186,13 @@ void Font::getMetrics()
 	App.hdt.shadow_intensity.value = m_shadow_intensity;
 	App.hdt.offset_x.value = m_offset.x;
 	App.hdt.offset_y.value = m_offset.y;
+	App.hdt.symbol_offset.value = m_symbol_offset;
 }
 
 char* Font::getMetricsString(uint8_t id)
 {
 	static char str[120] = "";
-	sprintf_s(str, "%d | %2.3f | %.3f | %.3f | %.3f | %.3f | %2.3f | %2.3f | %s", id, m_size, m_weight, m_letter_spacing, m_line_height, m_shadow_intensity, m_offset.x, m_offset.y, m_name.c_str());
+	sprintf_s(str, "%d | %s | %2.3f | %.3f | %.3f | %.3f | %.3f | %2.3f | %2.3f | %2.3f", id, m_name.c_str(), m_size, m_weight, m_letter_spacing, m_line_height, m_shadow_intensity, m_offset.x, m_offset.y, m_symbol_offset);
 	return str;
 }
 #endif

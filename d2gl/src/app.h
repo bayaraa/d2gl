@@ -38,7 +38,7 @@ struct D2GLApp {
 	bool ready = false;
 
 	std::string menu_title = "D2GL";
-	std::string version_str = "D2GL v1.2.1 by Bayaraa.";
+	std::string version_str = "D2GL v1.2.2 by Bayaraa.";
 	std::string ini_file = "d2gl.ini";
 	std::string mpq_file = "d2gl.mpq";
 	std::string log_file = "d2gl.log";
@@ -67,6 +67,7 @@ struct D2GLApp {
 		glm::uvec2 size = { 800, 600 };
 		glm::uvec2 size_save = { 800, 600 };
 		bool fullscreen = false;
+		bool auto_minimize = false;
 		bool centered = true;
 		bool dark_mode = true;
 		bool resized = false;
@@ -131,6 +132,7 @@ struct D2GLApp {
 	bool motion_prediction = false;
 	bool skip_intro = false;
 	bool no_pickup = false;
+	bool show_item_quantity = false;
 	bool show_fps = false;
 
 	struct {
@@ -159,6 +161,7 @@ struct D2GLApp {
 		Range<float> shadow_intensity = { 0.35f, 0.0f, 1.0f };
 		Range<float> offset_x = { 0.0f, -10.0f, 10.0f };
 		Range<float> offset_y = { 0.0f, -10.0f, 10.0f };
+		Range<float> symbol_offset = { 0.0f, -5.0f, 5.0f };
 		bool show_sample = false;
 	} hdt;
 #endif

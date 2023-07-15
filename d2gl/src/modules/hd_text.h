@@ -108,6 +108,7 @@ public:
 	void drawEntryText();
 
 	static void drawFpsCounter();
+	static void drawItemQuantity(int x, int y);
 
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);
