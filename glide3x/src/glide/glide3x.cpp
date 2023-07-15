@@ -225,7 +225,9 @@ FX_ENTRY void FX_CALL grGlideShutdown(void)
 }
 
 // Unused functions
-
+// These functions seems doesn't called at all in any version
+// No assetion fail reports
+/*
 FX_ENTRY FxI32 FX_CALL grQueryResolutions(const GrResolution* resTemplate, GrResolution* output)
 {
 	assert(false);
@@ -492,7 +494,7 @@ FX_ENTRY void FX_CALL grDisableAllEffects(void)
 {
 	assert(false);
 }
-
+*/
 #ifdef __cplusplus
 }
 #endif
