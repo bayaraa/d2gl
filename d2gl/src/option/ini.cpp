@@ -118,7 +118,7 @@ bool saveString(LPCSTR section, LPCSTR key, const std::string& val)
 
 void saveIni()
 {
-	char buf[3000] = { 0 };
+	char buf[3400] = { 0 };
 	std::ofstream out_file;
 	out_file.open(App.ini_file);
 
@@ -139,6 +139,8 @@ void saveIni()
 		"; Window position.\n"
 		"window_posx=%d\n"
 		"window_posy=%d\n\n"
+		"; Auto minimize when lose focus while in fullscreen.\n"
+		"auto_minimize=%s\n\n"
 		"; Dark style window title bar.\n"
 		"dark_mode=%s\n\n"
 		"; Vertical synchronization.\n"
@@ -160,6 +162,7 @@ void saveIni()
 		boolString(App.window.centered),
 		App.window.position.x,
 		App.window.position.y,
+		boolString(App.window.auto_minimize),
 		boolString(App.window.dark_mode),
 		boolString(App.vsync),
 		boolString(App.foreground_fps.active),
@@ -309,6 +312,7 @@ void loadIni()
 
 	if (helpers::fileExists(App.ini_file)) {
 		App.window.fullscreen = getBool("Screen", "fullscreen", App.window.fullscreen);
+		App.window.auto_minimize = getBool("Screen", "auto_minimize", App.window.auto_minimize);
 		App.window.dark_mode = getBool("Screen", "dark_mode", App.window.dark_mode);
 		App.vsync = getBool("Screen", "vsync", App.vsync);
 

@@ -155,7 +155,7 @@ void Menu::draw()
 		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 	static ImGuiCond window_pos_cond = ImGuiCond_Appearing;
 
-	ImGui::SetNextWindowSize({ 660.0f, 500.0f }, ImGuiCond_Always);
+	ImGui::SetNextWindowSize({ 680.0f, 540.0f }, ImGuiCond_Always);
 	ImGui::SetNextWindowSizeConstraints({ 10.0f, 10.0f }, max_size);
 	ImGui::SetNextWindowPos(window_pos, window_pos_cond, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowBgAlpha(0.90f);
@@ -174,7 +174,7 @@ void Menu::draw()
 	if (ImGui::BeginTabBar("tabs", ImGuiTabBarFlags_None)) {
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
-		ImGui::SetCursorPos({ 510.0f, 74.0f });
+		ImGui::SetCursorPos({ 530.0f, 74.0f });
 		ImGui::PushFont(m_fonts[14]);
 		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Gray]);
 		ImGui::Text(App.version_str.c_str());
@@ -213,6 +213,8 @@ void Menu::draw()
 				drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
 			ImGui::EndDisabled();
 			drawSeparator();
+			drawCheckbox_m("Auto Minimize", m_options.window.auto_minimize, "Auto minimize when lose focus while in fullscreen.", auto_minimize);
+			drawSeparator();
 			drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
 			childEnd();
 			if (drawNav("Apply Changes")) {
@@ -229,6 +231,7 @@ void Menu::draw()
 				App.window.size_save = m_options.window.size_save;
 				App.window.centered = m_options.window.centered;
 				App.window.position = m_options.window.position;
+				App.window.auto_minimize = m_options.window.auto_minimize;
 				App.window.dark_mode = m_options.window.dark_mode;
 				App.vsync = m_options.vsync;
 				App.foreground_fps = m_options.foreground_fps;
@@ -241,6 +244,7 @@ void Menu::draw()
 				saveInt("Screen", "window_posx", App.window.position.x);
 				saveInt("Screen", "window_posy", App.window.position.y);
 
+				saveBool("Screen", "auto_minimize", App.window.auto_minimize);
 				saveBool("Screen", "dark_mode", App.window.dark_mode);
 				saveBool("Screen", "vsync", App.vsync);
 
@@ -337,6 +341,9 @@ void Menu::draw()
 					}
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
+			drawSeparator();
+			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
+				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
 			/*drawSeparator();
 			ImGui::BeginDisabled(true);
 				drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs. (coming soon)", hd_orbs)
@@ -361,9 +368,6 @@ void Menu::draw()
 			drawSeparator();
 			drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 				saveBool("Feature", "no_pickup", App.no_pickup);
-			drawSeparator();
-			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
-				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
 			drawSeparator();
 			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 				saveBool("Feature", "show_fps", App.show_fps);
@@ -429,7 +433,7 @@ void Menu::draw()
 	}
 	ImGui::PopFont();
 	if (active_tab != 3) {
-		ImGui::SetCursorPos({ 16.0f, 460.0f });
+		ImGui::SetCursorPos({ 16.0f, 500.0f });
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0.0f, 0.0f });
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);

@@ -183,6 +183,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				CallWindowProcA(App.wndproc, hWnd, WM_SYSKEYUP, VK_MENU, 0);
 			} else {
 				App.context->setFpsLimit(App.background_fps.active || fps_capped, App.background_fps.active ? App.background_fps.range.value : App.foreground_fps.range.value);
+				if (App.window.fullscreen && App.window.auto_minimize)
+					PostMessage(hWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				setCursorUnlock();
 			}
 			return 0;
