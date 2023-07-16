@@ -66,7 +66,7 @@ public:
 	Font(GlyphSet* glyph_set, const FontCreateInfo& font_ci);
 	~Font() = default;
 
-	inline void setSize(float size) { m_size = size, m_scale = size / 32.0f, m_smoothness = size; }
+	inline void setSize(float size) { m_size = size / App.hd_text.scale.value, m_scale = size / 32.0f, m_smoothness = size; }
 	inline void setAlign(TextAlign align) { m_align = align; }
 	inline void setShadow(uint8_t level = 0) { m_shadow_level = level; }
 	inline void setMasking(bool masking) { m_masking = masking; }
