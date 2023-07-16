@@ -87,8 +87,9 @@ HDText::HDText()
 			wchar_t color = g_initial_colors.find(id) != g_initial_colors.end() ? g_initial_colors.at(id) : 0;
 			const auto offset = glm::vec2(std::stof(info[7]), std::stof(info[8]));
 			float font_size = std::stof(info[2]) * App.hd_text.scale.value;
+			float line_height = std::stof(info[5]) * App.hd_text.scale.value;
 
-			FontCreateInfo font_ci = { name, font_size, std::stof(info[3]), std::stof(info[4]), std::stof(info[5]), std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
+			FontCreateInfo font_ci = { name, font_size, std::stof(info[3]), std::stof(info[4]), line_height, std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
 			m_fonts[id] = std::make_unique<Font>(glyph_sets[name], font_ci);
 		}
 

@@ -74,7 +74,7 @@ public:
 	inline wchar_t getColor() { return m_color; }
 	inline float getFontSize() { return m_size; }
 	inline float getWeight() { return m_weight; }
-	inline float getLineHeight() { return m_size * m_line_height; }
+	inline float getLineHeight() { return m_size * m_line_height * App.hd_text.scale.value; }
 	inline float getLetterSpacing() { return m_size * m_letter_spacing; }
 	inline glm::vec2 getTextOffset() { return m_size * m_offset; }
 	inline int getLineCount() { return m_line_count; }
