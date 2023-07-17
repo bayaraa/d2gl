@@ -41,6 +41,7 @@ HDText::HDText()
 	if (buffer.size) {
 		std::string data((const char*)buffer.data, buffer.size);
 		auto lines = helpers::strToLines(data);
+		delete[] buffer.data;
 
 		TextureCreateInfo texture_ci;
 		texture_ci.layer_count = 1;
@@ -57,7 +58,7 @@ HDText::HDText()
 
 			auto info = helpers::splitToVector(line, '|');
 			if (info.size() > 9) {
-				if (glyph_sets.find(info[9]) == glyph_sets.end()) {
+				if (glyph_sets.find(info[1]) == glyph_sets.end()) {
 					auto buffer2 = helpers::loadFile("assets\\atlases\\" + info[1] + "\\data.csv");
 					if (buffer2.size) {
 						auto pos = (buffer2.data + (buffer2.size - 5));
@@ -75,7 +76,7 @@ HDText::HDText()
 		}
 
 		static std::unique_ptr<Texture> texture = Context::createTexture(texture_ci);
-		auto symbol_set = new GlyphSet(texture.get(), "NotoSymbol");
+		static auto symbol_set = new GlyphSet(texture.get(), "NotoSymbol");
 
 		for (auto& info : info_list) {
 			const auto name = info[1];
@@ -90,8 +91,6 @@ HDText::HDText()
 			FontCreateInfo font_ci = { name, std::stof(info[2]), std::stof(info[3]), std::stof(info[4]), std::stof(info[5]), std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
 			m_fonts[id] = std::make_unique<Font>(glyph_sets[name], font_ci);
 		}
-
-		delete[] buffer.data;
 
 		if (m_lang_id != LANG_ENG && m_lang_id != LANG_DEF) {
 			if (m_lang_id != LANG_POR && m_lang_id != LANG_SIN && m_lang_id != LANG_RUS) {

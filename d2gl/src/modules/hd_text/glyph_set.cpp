@@ -33,6 +33,8 @@ GlyphSet::GlyphSet(Texture* texture, const std::string& name, GlyphSet* symbol_s
 	uint32_t start_layer = 0;
 	std::string data((const char*)buffer.data, buffer.size);
 	auto lines = helpers::strToLines(data);
+	delete[] buffer.data;
+
 	for (auto& line : lines) {
 		auto cols = helpers::splitToVector(line);
 
@@ -55,8 +57,6 @@ GlyphSet::GlyphSet(Texture* texture, const std::string& name, GlyphSet* symbol_s
 		m_glyphes[cc].tex_id = start_layer;
 		m_glyphes[cc].tex_coord = coords / 1024.0f;
 	}
-
-	delete[] buffer.data;
 }
 
 const Glyph* GlyphSet::getGlyph(wchar_t c)

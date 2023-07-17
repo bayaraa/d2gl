@@ -373,6 +373,7 @@ ImageData loadImage(const std::string& file_path, bool flipped)
 	if (buffer.size) {
 		stbi_set_flip_vertically_on_load(flipped);
 		image.data = stbi_load_from_memory(buffer.data, buffer.size, &image.width, &image.height, &image.bit, 4);
+		delete[] buffer.data;
 	}
 
 	return image;
