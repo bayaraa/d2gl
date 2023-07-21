@@ -329,7 +329,7 @@ void __fastcall takeScreenShotHooked()
 void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
 {
 	// Glide mode light gray text appears black. So direct to dark gray.
-	if (ISGLIDE3X() && !App.hd_text && color == 15)
+	if (ISGLIDE3X() && !App.hd_text.active && color == 15)
 		color = 5;
 
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalText);

@@ -127,8 +127,12 @@ struct D2GLApp {
 		Range<float> gamma = { 1.0f, 0.5f, 1.2f };
 	} bloom;
 
+	struct {
+		bool active = false;
+		Range<float> scale = { 1.0f, 0.5f, 1.2f };
+	} hd_text;
+
 	bool hd_cursor = false;
-	bool hd_text = false;
 	bool motion_prediction = false;
 	bool skip_intro = false;
 	bool no_pickup = false;
