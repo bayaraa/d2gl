@@ -217,8 +217,8 @@ void saveIni()
 		"; HD cursor in game & menu screen.\n"
 		"hd_cursor=%s\n\n"
 		"; HD in game text.\n"
-		"hd_text=%s\n\n"
-		"hd_text_scale=%.2f\n\n"
+		"hd_text=%s\n"
+		"hd_text_scale=%.3f\n\n"
 		//"; HD life & mana orbs.\n"
 		//"hd_orbs=%s\n"
 		//"hd_orbs_centered=%s\n\n"
@@ -340,7 +340,7 @@ void loadIni()
 
 		App.hd_cursor = getBool("Feature", "hd_cursor", App.hd_cursor);
 		App.hd_text.active = getBool("Feature", "hd_text", App.hd_text.active);
-		App.hd_text.scale.value = getFloat("Feature", "hd_text_scale", App.hd_text.scale);
+		App.hd_text.scale.value = ISHDTEXT() ? 1.0f : getFloat("Feature", "hd_text_scale", App.hd_text.scale);
 
 		// App.hd_orbs.active = getBool("Feature", "hd_orbs", App.hd_orbs.active);
 		// App.hd_orbs.centered = getBool("Feature", "hd_orbs_centered", App.hd_orbs.centered);
@@ -359,8 +359,7 @@ void loadIni()
 
 		App.gl_ver.x = getInt("Other", "gl_ver_major", App.gl_ver.x, 3, 4);
 		App.gl_ver.y = getInt("Other", "gl_ver_minor", App.gl_ver.y, 0, 6);
-		if (App.gl_ver.x == 3)
-			App.gl_ver.x = 3;
+		App.gl_ver.y = App.gl_ver.x == 3 ? 3 : App.gl_ver.y;
 
 		App.use_compute_shader = getBool("Other", "use_compute_shader", App.use_compute_shader);
 		App.frame_latency = getInt("Other", "frame_latency", App.frame_latency, 1, 5);

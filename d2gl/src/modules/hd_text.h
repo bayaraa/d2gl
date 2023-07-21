@@ -83,6 +83,7 @@ public:
 
 	void reset();
 	void update();
+	void updateFontSize();
 
 	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 	bool drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);

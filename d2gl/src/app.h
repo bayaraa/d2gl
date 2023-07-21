@@ -138,7 +138,7 @@ struct D2GLApp {
 
 	struct {
 		bool active = false;
-		Range<float> scale = { 1.0f, 0.5f, 1.2f };
+		Range<float> scale = { 1.0f, 0.8f, 1.2f };
 	} hd_text;
 
 	bool hd_cursor = false;
@@ -201,6 +201,15 @@ constexpr inline float FLOATVAL(float glide3x, float ddraw)
 	return glide3x;
 #else
 	return ddraw;
+#endif
+}
+
+constexpr inline bool ISHDTEXT()
+{
+#ifdef _HDTEXT
+	return true;
+#else
+	return false;
 #endif
 }
 

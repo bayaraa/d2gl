@@ -345,15 +345,12 @@ void Menu::draw()
 				d2::patch_hd_text->toggle(App.hd_text.active);
 				saveBool("Feature", "hd_text", App.hd_text.active);
 			}
-			drawSlider_m(float, "", App.hd_text.scale, "%.2f", "", hd_text_scale)
-			{
-				for (int i = 0; i < 23; i++) {
-					  const auto font = modules::HDText::Instance().getFont((uint32_t)i);
-					  font->setSize(font->getFontSize() * App.hd_text.scale.value);
-				}
-				saveFloat("Feature", "hd_text_scale", App.hd_text.scale.value);
-			}
-			drawDescription("Scale for HD text size", m_colors[Color::Gray], 12);
+			ImGui::BeginDisabled(!App.hd_text.active || ISHDTEXT());
+				drawSlider_m(float, "", App.hd_text.scale, "%.3f", "Global scale for HD text.", hd_text_scale)
+					saveFloat("Feature", "hd_text_scale", App.hd_text.scale.value);
+				if (App.hd_text.active)
+					modules::HDText::Instance().updateFontSize();
+			ImGui::EndDisabled();
 			drawSeparator();
 			ImGui::BeginDisabled(!ISGLIDE3X() || !App.mini_map.available);
 				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on minimap widget.", mini_map)
@@ -369,15 +366,11 @@ void Menu::draw()
 						saveBool("Feature", "mini_map_text_over", App.mini_map.text_over);
 					ImGui::Dummy({ 0.0f, 2.0f });
 					drawSlider_m(int, "", App.mini_map.width, "%d", "Minimap width.", mini_map_width_val)
-					{
-						modules::MiniMap::Instance().resize();
 						saveInt("Feature", "mini_map_width", App.mini_map.width.value);
-					}
 					drawSlider_m(int, "", App.mini_map.height, "%d", "Minimap height.", mini_map_height_val)
-					{
-						modules::MiniMap::Instance().resize();
 						saveInt("Feature", "mini_map_height", App.mini_map.height.value);
-					}
+					if (App.mini_map.active)
+						modules::MiniMap::Instance().resize();
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			/*drawSeparator();
@@ -405,14 +398,14 @@ void Menu::draw()
 			drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 				saveBool("Feature", "no_pickup", App.no_pickup);
 			drawSeparator();
+			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
+				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
+			drawSeparator();
 			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 				saveBool("Feature", "show_fps", App.show_fps);
 			drawSeparator();
 			drawCheckbox_m("Unlock Cursor", App.cursor.unlock, "Cursor will not locked within window.", unlock_cursor)
 				saveBool("Feature", "unlock_cursor", App.cursor.unlock);
-			drawSeparator();
-			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
-				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
 			childEnd();
 			tabEnd();
 		}

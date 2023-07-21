@@ -86,10 +86,8 @@ HDText::HDText()
 			bool bordered = (id == 2 || id == 3 || id == 7 || id == 18);
 			wchar_t color = g_initial_colors.find(id) != g_initial_colors.end() ? g_initial_colors.at(id) : 0;
 			const auto offset = glm::vec2(std::stof(info[7]), std::stof(info[8]));
-			float font_size = std::stof(info[2]) * App.hd_text.scale.value;
-			float line_height = std::stof(info[5]) * App.hd_text.scale.value;
 
-			FontCreateInfo font_ci = { name, font_size, std::stof(info[3]), std::stof(info[4]), line_height, std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
+			FontCreateInfo font_ci = { name, std::stof(info[2]), std::stof(info[3]), std::stof(info[4]), std::stof(info[5]), std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
 			m_fonts[id] = std::make_unique<Font>(glyph_sets[name], font_ci);
 		}
 
@@ -976,6 +974,12 @@ void HDText::drawItemQuantity(bool draw, int x, int y)
 	d2::currently_drawing_item = nullptr;
 }
 
+void HDText::updateFontSize()
+{
+	for (auto& p : m_fonts)
+		p.second->setSize();
+}
+
 #ifdef _HDTEXT
 void HDText::showSampleText()
 {
@@ -987,15 +991,15 @@ void HDText::showSampleText()
 		const auto old_size = HDText::Instance().getTextSize();
 		d2::drawSolidRectEx(40, 40, App.game.size.x - 40, App.game.size.y - 100, 1, 2);
 		if (id <= 13) {
-			bool old_val = App.hd_text;
-			App.hd_text = false;
+			bool old_val = App.hd_text.active;
+			App.hd_text.active = false;
 			d2::setTextSize(id);
 			d2::drawNormalText(texts.txt1, 60, 140, 0, 0);
 			d2::setTextSize(id);
 			d2::drawNormalText(texts.txt2, 60, 260, 0, 0);
 			d2::setTextSize(id);
 			d2::drawNormalText(texts.txt3, 60, 460, 0, 0);
-			App.hd_text = old_val;
+			App.hd_text.active = old_val;
 		}
 
 		d2::drawSolidRectEx(60, 60, App.game.size.x - 60, App.game.size.y - 140, 1, 1);

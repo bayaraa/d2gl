@@ -23,10 +23,10 @@
 namespace d2gl {
 
 Font::Font(GlyphSet* glyph_set, const FontCreateInfo& font_ci)
-	: m_glyph_set(glyph_set), m_name(font_ci.name), m_weight(font_ci.weight), m_letter_spacing(font_ci.letter_spacing), m_line_height(font_ci.line_height),
+	: m_glyph_set(glyph_set), m_name(font_ci.name), m_size(font_ci.size), m_weight(font_ci.weight), m_letter_spacing(font_ci.letter_spacing), m_line_height(font_ci.line_height),
 	  m_shadow_intensity(font_ci.shadow_intensity), m_offset(font_ci.offset), m_symbol_offset(font_ci.symbol_offset), m_color(font_ci.color), m_bordered(font_ci.bordered)
 {
-	setSize(font_ci.size);
+	setSize();
 	m_object = std::make_unique<Object>();
 }
 
@@ -69,7 +69,7 @@ glm::vec2 Font::getTextSize(const wchar_t* str, const int max_chars)
 	m_line_count = line_num + 1;
 	m_line_width[line_num] = advance;
 	m_text_size.x = glm::max(m_text_size.x, advance);
-	m_text_size.y += line_height - (line_height - m_size);
+	m_text_size.y += line_height - (line_height - m_font_size);
 
 	return m_text_size;
 }
@@ -84,7 +84,9 @@ void Font::drawText(const wchar_t* str, glm::vec2 pos, uint32_t color, bool fram
 	if (framed) {
 		offset.x = text_offset.x = 0.0f;
 		offset.y += (float)m_line_count * line_height - line_height;
-	}
+	} else
+		offset.y += (m_font_size - m_size) / 2.0f;
+
 	if (m_align == TextAlign::Right)
 		offset.x += m_text_size.x - m_line_width[0];
 	else if (m_align == TextAlign::Center)
@@ -139,7 +141,7 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 		glm::vec2 object_pos = pos + glyph->offset * m_scale;
 		float weight = m_weight;
 		if (m_glyph_set->isSymbol()) {
-			object_pos.y += m_size * m_symbol_offset;
+			object_pos.y += m_font_size * m_symbol_offset;
 			weight = 1.0f + ((m_weight - 1.0f) * 0.5f);
 		}
 
@@ -167,7 +169,7 @@ float Font::drawChar(wchar_t c, glm::vec2 pos, uint32_t color)
 #ifdef _HDTEXT
 void Font::updateMetrics()
 {
-	setSize(App.hdt.size.value);
+	m_size = App.hdt.size.value;
 	m_weight = App.hdt.weight.value;
 	m_letter_spacing = App.hdt.letter_spacing.value;
 	m_line_height = App.hdt.line_height.value;
@@ -175,6 +177,7 @@ void Font::updateMetrics()
 	m_offset.x = App.hdt.offset_x.value;
 	m_offset.y = App.hdt.offset_y.value;
 	m_symbol_offset = App.hdt.symbol_offset.value;
+	setSize();
 }
 
 void Font::getMetrics()
