@@ -33,7 +33,7 @@ void logInit()
 		time_t now = time(0);
 		tm gmt_time;
 		localtime_s(&gmt_time, &now);
-		fprintf(log_file, "== D2GL logging started. (%d/%d/%d) ==\n\n", gmt_time.tm_year + 1900, gmt_time.tm_mon + 1, gmt_time.tm_mday);
+		fprintf(log_file, "== D2GL v%s logging started. (%d/%d/%d) ==\n\n", App.version_str.c_str(), gmt_time.tm_year + 1900, gmt_time.tm_mon + 1, gmt_time.tm_mday);
 		logFileClose();
 	}
 }

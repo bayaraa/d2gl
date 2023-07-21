@@ -181,7 +181,7 @@ void Menu::draw()
 		ImGui::SetCursorPos({ 530.0f, 74.0f });
 		ImGui::PushFont(m_fonts[14]);
 		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Gray]);
-		ImGui::Text(App.version_str.c_str());
+		ImGui::Text("D2GL v%s by Bayaraa.", App.version_str.c_str());
 		ImGui::PopStyleColor();
 		ImGui::PopFont();	
 		// ImGui::SetTabItemClosed("Screen");
@@ -284,7 +284,7 @@ void Menu::draw()
 				if (drawButton("Apply", { 100.0f, 0.0f }))
 					App.shader.selected = App.shader.presets.selected;
 			ImGui::EndDisabled();
-			drawDescription("Libretro's slang upscale shader preset file (slangp).", m_colors[Color::Gray]);
+			drawDescription("RetroArch's slang shader preset files (.slangp).", m_colors[Color::Gray]);
 			childBegin("##w3", true);
 			drawSeparator();
 			drawCheckbox_m("Luma Sharpen", App.sharpen.active, "", sharpen)

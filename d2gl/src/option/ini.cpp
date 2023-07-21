@@ -174,7 +174,7 @@ void saveIni()
 	static const char* graphic_setting =
 		"[Graphic]\n\n"
 		"; Upscale shader.\n"
-		"; Libretro's slang upscale shader preset file (slangp).\n"
+		"; RetroArch's slang shader preset files (.slangp).\n"
 		"shader_preset=%d\n\n"
 		"; Color grading (LUT) (only available in glide mode).\n"
 		"; Set one of 1-%d predefined luts. 0 = game default.\n"
