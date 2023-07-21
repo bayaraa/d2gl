@@ -327,10 +327,16 @@ void Menu::draw()
 			drawSeparator();
 			drawLabel("Stretched Viewport", m_colors[Color::Orange]);
 			drawCheckbox_m("Horizontal", App.viewport.stretched.x, "", stretched_horizontal)
+			{
+				App.context->getCommandBuffer()->resize();
 				saveBool("Graphic", "stretched_horizontal", App.viewport.stretched.x);
+			}
 			ImGui::SameLine(150.0f);
 			drawCheckbox_m("Vertical", App.viewport.stretched.y, "", stretched_vertical)
+			{
+				App.context->getCommandBuffer()->resize();
 				saveBool("Graphic", "stretched_vertical", App.viewport.stretched.y);
+			}
 			drawDescription("Stretch viewport to window size.", m_colors[Color::Gray], 14);
 			childEnd();
 			tabEnd();

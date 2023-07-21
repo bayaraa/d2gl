@@ -382,6 +382,8 @@ void Context::renderThread(void* context)
 		}
 
 		Vertex::bindingDescription();
+		const glm::ivec2 vp_size = { App.viewport.stretched.x ? App.window.size.x : App.viewport.size.x, App.viewport.stretched.y ? App.window.size.y : App.viewport.size.y };
+		const glm::ivec2 vp_offset = { App.viewport.stretched.x ? 0 : App.viewport.offset.x, App.viewport.stretched.y ? 0 : App.viewport.offset.y };
 
 		for (uint32_t i = 0; i < cmd->m_count; i++) {
 			const auto command = &cmd->m_commands[i];
@@ -471,9 +473,6 @@ void Context::renderThread(void* context)
 							ctx->drawQuad();
 						}
 
-						const glm::ivec2 vp_size = { App.viewport.stretched.x ? App.window.size.x : App.viewport.size.x, App.viewport.stretched.y ? App.window.size.y : App.viewport.size.y };
-						const glm::ivec2 vp_offset = { App.viewport.stretched.x ? 0 : App.viewport.offset.x, App.viewport.stretched.y ? 0 : App.viewport.offset.y };
-
 						if (App.sharpen.active || App.fxaa.active)
 							Upscaler::Instance().process(ctx->m_game_framebuffer, vp_size, vp_offset, ctx->m_postfx_framebuffer);
 						else
@@ -517,6 +516,7 @@ void Context::renderThread(void* context)
 				ctx->m_mod_pipeline->setUniform1i("u_IsMasking", cmd->m_hd_text_mask.masking);
 				cmd->m_hd_text_mask.active = false;
 			}
+
 			VertexMod::bindingDescription();
 			glDrawElements(GL_TRIANGLES, cmd->m_vertex_mod_count / 4 * 6, GL_UNSIGNED_INT, 0);
 		}
@@ -616,25 +616,31 @@ void Context::onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp)
 		m_movie_pipeline->setUniformMat4f("u_MVP", glm::ortho(-1.0f * offset_x, 1.0f * offset_x, 1.0f * offset_y, -1.0f * offset_y));
 	}
 
-	FrameBufferCreateInfo frambuffer_ci;
-	frambuffer_ci.size = App.viewport.size;
-	frambuffer_ci.attachments = { { TEXTURE_SLOT_POSTFX1, {}, { GL_LINEAR, GL_LINEAR } } };
-	m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
-	if (App.gl_caps.compute_shader)
-		m_postfx_framebuffer->getTexture()->bindImage(IMAGE_UNIT_FXAA);
+	if (game_resized || window_resized) {
+		FrameBufferCreateInfo frambuffer_ci;
+		frambuffer_ci.size = App.viewport.size;
+		frambuffer_ci.attachments = { { TEXTURE_SLOT_POSTFX1, {}, { GL_LINEAR, GL_LINEAR } } };
+		m_postfx_framebuffer = Context::createFrameBuffer(frambuffer_ci);
+		if (App.gl_caps.compute_shader)
+			m_postfx_framebuffer->getTexture()->bindImage(IMAGE_UNIT_FXAA);
 
-	m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
+		m_fxaa_work_size = { ceil((float)App.viewport.size.x / 16), ceil((float)App.viewport.size.y / 16) };
 
-	TextureCreateInfo texture_ci;
-	texture_ci.size = App.viewport.size;
-	texture_ci.slot = TEXTURE_SLOT_POSTFX2;
-	texture_ci.filter = { GL_LINEAR, GL_LINEAR };
-	m_postfx_texture = Context::createTexture(texture_ci);
+		TextureCreateInfo texture_ci;
+		texture_ci.size = App.viewport.size;
+		texture_ci.slot = TEXTURE_SLOT_POSTFX2;
+		texture_ci.filter = { GL_LINEAR, GL_LINEAR };
+		m_postfx_texture = Context::createTexture(texture_ci);
 
-	onShaderChange();
+		onShaderChange();
+	}
+
 	m_postfx_ubo->updateDataVec2f("rel_size", { 1.0f / App.viewport.size.x, 1.0f / App.viewport.size.y });
 	m_mod_pipeline->setUniformVec2f("u_Scale", App.viewport.scale);
-	m_mod_pipeline->setUniformVec4f("u_Viewport", { (float)App.viewport.offset.x, (float)App.viewport.offset.y, (float)App.viewport.size.x, (float)App.viewport.size.y });
+
+	const glm::ivec2 vp_size = { App.viewport.stretched.x ? App.window.size.x : App.viewport.size.x, App.viewport.stretched.y ? App.window.size.y : App.viewport.size.y };
+	const glm::ivec2 vp_offset = { App.viewport.stretched.x ? 0 : App.viewport.offset.x, App.viewport.stretched.y ? 0 : App.viewport.offset.y };
+	m_mod_pipeline->setUniformVec4f("u_Viewport", { (float)vp_offset.x, (float)vp_offset.y, (float)vp_size.x, (float)vp_size.y });
 
 	modules::MiniMap::Instance().resize();
 	toggleVsync();
