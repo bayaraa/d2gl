@@ -45,6 +45,16 @@ namespace d2gl::d2 {
 #define SCREENPANEL_LEFT 2
 #define SCREENPANEL_BOTH 3
 
+#define STAT_HP 6
+#define STAT_MAXHP 7
+#define STAT_DMGREDUCTIONPCT 36
+#define STAT_MAGICDMGREDUCTIONPCT 37
+#define STAT_FIRERESIST 39
+#define STAT_LIGHTNINGRESIST 41
+#define STAT_COLDRESIST 43
+#define STAT_POISONRESIST 45
+#define STAT_ITEMQUANTITY 70
+
 enum class UnitType {
 	Player,
 	Monster,

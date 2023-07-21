@@ -146,6 +146,7 @@ struct D2GLApp {
 	bool skip_intro = false;
 	bool no_pickup = false;
 	bool show_item_quantity = false;
+	bool show_monster_res = false;
 	bool show_fps = false;
 
 	struct {

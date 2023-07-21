@@ -1,4 +1,4 @@
-/*
+﻿/*
 	D2GL: Diablo 2 LoD Glide/DDraw to OpenGL Wrapper.
 	Copyright (C) 2023  Bayaraa
 
@@ -122,7 +122,7 @@ HDText::HDText()
 	App.hdt.fonts.items.push_back({ "17: Level/Class text on char selection screen (Custom)", 17 });
 	App.hdt.fonts.items.push_back({ "18: Level Entry text (Custom)", 18 });
 	App.hdt.fonts.items.push_back({ "19: Minimap first line text/clock/fps counter (Custom)", 19 });
-	App.hdt.fonts.items.push_back({ "20: Unused: For future reference (Custom)", 20 });
+	App.hdt.fonts.items.push_back({ "20: Monster resistances text on hp bar (Custom)", 20 });
 	App.hdt.fonts.items.push_back({ "21: Unused: For future reference (Custom)", 21 });
 	App.hdt.fonts.items.push_back({ "22: Unused: For future reference (Custom)", 22 });
 	getFont(0)->getMetrics();
@@ -816,8 +816,8 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	if (!name)
 		return;
 
-	const auto hp = d2::getUnitStat(unit, 6);
-	const auto max_hp = d2::getUnitStat(unit, 7);
+	const auto hp = d2::getUnitStat(unit, STAT_HP);
+	const auto max_hp = d2::getUnitStat(unit, STAT_MAXHP);
 	const auto type = d2::getMonsterType(unit);
 
 	const auto font = getFont(1);
@@ -834,11 +834,11 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	const auto text_size = font->getTextSize(name);
 	float hp_percent = (float)hp / (float)max_hp;
 
-	glm::vec2 bar_size = { 140.0f, 18.0f };
+	glm::vec2 bar_size = { 160.0f, 18.0f };
 	if (text_size.x + 40.0f > bar_size.x)
 		bar_size.x = text_size.x + 40.0f;
 
-	glm::vec2 bar_pos = { center - bar_size.x / 2, 18.0f };
+	glm::vec2 bar_pos = { center - bar_size.x / 2, d2::isLangCJK(m_lang_id) ? 18.0f : 20.0f };
 
 	m_object_bg->setFlags(2);
 	m_object_bg->setPosition(bar_pos);
@@ -863,9 +863,34 @@ void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 	if (hp == 0)
 		text_color = L'\x31';
 
-	glm::vec2 text_pos = { center - text_size.x / 2, 19.3f + 14.5f };
+	glm::vec2 text_pos = { center - text_size.x / 2, bar_pos.y + 15.8f };
 	font->drawText(name, text_pos, g_text_colors.at(text_color));
 	m_hovered_unit.color = 0;
+
+	if (App.show_monster_res) {
+		const auto s1 = d2::getUnitStat(unit, STAT_DMGREDUCTIONPCT);
+		const wchar_t* i1 = s1 >= 100 ? L"⛦" : L"";
+		const auto s2 = d2::getUnitStat(unit, STAT_MAGICDMGREDUCTIONPCT);
+		const wchar_t* i2 = s2 >= 100 ? L"⛦" : L"";
+		const auto s3 = d2::getUnitStat(unit, STAT_FIRERESIST);
+		const wchar_t* i3 = s3 >= 100 ? L"⛦" : L"";
+		const auto s4 = d2::getUnitStat(unit, STAT_LIGHTNINGRESIST);
+		const wchar_t* i4 = s4 >= 100 ? L"⛦" : L"";
+		const auto s5 = d2::getUnitStat(unit, STAT_COLDRESIST);
+		const wchar_t* i5 = s5 >= 100 ? L"⛦" : L"";
+		const auto s6 = d2::getUnitStat(unit, STAT_POISONRESIST);
+		const wchar_t* i6 = s6 >= 100 ? L"⛦" : L"";
+
+		static wchar_t res_str[100];
+		swprintf_s(res_str, L"ÿc\x34%s%d ÿc\x03⌁ ÿc\x38%s%d ÿc\x03⌁ ÿc\x31%s%d ÿc\x03⌁ ÿc\x39%s%d ÿc\x03⌁ ÿc\x33%s%d ÿc\x03⌁ ÿc\x32%s%d", i1, s1, i2, s2, i3, s3, i4, s4, i5, s5, i6, s6);
+
+		const auto font = getFont(20);
+		font->setShadow(1);
+		font->setMasking(false);
+
+		const auto text_size = font->getTextSize(res_str);
+		font->drawText(res_str, { center - text_size.x / 2.0f, bar_pos.y - 3.0f }, g_text_colors.at(16));
+	}
 }
 
 void HDText::drawPlayerHealthBar(d2::UnitAny* unit)
@@ -946,7 +971,7 @@ void HDText::drawItemQuantity(bool draw, int x, int y)
 
 	const auto item = d2::currently_drawing_item;
 	if (item->dwType == d2::UnitType::Item && d2::getItemLocation(item) != 0xFF) {
-		if (const auto quantity = d2::getUnitStat(item, 70)) {
+		if (const auto quantity = d2::getUnitStat(item, STAT_ITEMQUANTITY)) {
 			static wchar_t str[10] = { 0 };
 			swprintf_s(str, L"%d", quantity);
 
@@ -976,8 +1001,8 @@ void HDText::drawItemQuantity(bool draw, int x, int y)
 
 void HDText::updateFontSize()
 {
-	for (auto& p : m_fonts)
-		p.second->setSize();
+	for (auto& font : m_fonts)
+		font.second->setSize();
 }
 
 #ifdef _HDTEXT

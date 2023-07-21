@@ -124,6 +124,7 @@ void Menu::toggle(bool force)
 		m_options.window = App.window;
 		m_options.foreground_fps = App.foreground_fps;
 		m_options.background_fps = App.background_fps;
+		m_options.unlock_cursor = App.cursor.unlock;
 
 		m_closing = false;
 	}
@@ -192,9 +193,9 @@ void Menu::draw()
 			checkChanged(m_options.window.fullscreen != App.window.fullscreen);
 			drawSeparator();
 			ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCombo_m("Window Size", App.resolutions, "Select window size.", false, 17, resolutions);
+				drawCombo_m("Window Size", App.resolutions, "", false, 17, resolutions);
 				checkChanged(App.resolutions.items[App.resolutions.selected].value != m_options.window.size_save);
-				ImGui::Dummy({ 0.0f, 4.0f });
+				ImGui::Dummy({ 0.0f, 1.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
 					drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, { App.desktop_resolution.z, App.desktop_resolution.w });
 					checkChanged(!App.resolutions.selected && App.window.size != m_options.window.size_save);
@@ -202,12 +203,15 @@ void Menu::draw()
 				drawSeparator();
 				drawCheckbox_m("Centered Window", m_options.window.centered, "Make window centered to desktop screen.", centered_window);
 				checkChanged(m_options.window.centered != App.window.centered);
-				ImGui::Dummy({ 0.0f, 4.0f });
+				ImGui::Dummy({ 0.0f, 2.0f });
 				ImGui::BeginDisabled(m_options.window.centered);
 					drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { App.desktop_resolution.x, App.desktop_resolution.y }, { App.desktop_resolution.z, App.desktop_resolution.w });
 					checkChanged(!m_options.window.centered && App.window.position != m_options.window.position);
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
+			drawSeparator();
+			drawCheckbox_m("Unlock Cursor", m_options.unlock_cursor, "Cursor will not locked within window.", unlock_cursor);
+			checkChanged(m_options.unlock_cursor != App.cursor.unlock);
 			childSeparator("##w2", true);
 			drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
 			checkChanged(m_options.vsync != App.vsync);
@@ -249,6 +253,7 @@ void Menu::draw()
 					App.window.size_save = m_options.window.size_save;
 					App.window.centered = m_options.window.centered;
 					App.window.position = m_options.window.position;
+					App.cursor.unlock = m_options.unlock_cursor;
 					App.window.auto_minimize = m_options.window.auto_minimize;
 					App.window.dark_mode = m_options.window.dark_mode;
 					App.vsync = m_options.vsync;
@@ -262,6 +267,7 @@ void Menu::draw()
 					saveInt("Screen", "window_posx", App.window.position.x);
 					saveInt("Screen", "window_posy", App.window.position.y);
 
+					saveBool("Screen", "unlock_cursor", App.cursor.unlock);
 					saveBool("Screen", "auto_minimize", App.window.auto_minimize);
 					saveBool("Screen", "dark_mode", App.window.dark_mode);
 					saveBool("Screen", "vsync", App.vsync);
@@ -404,14 +410,14 @@ void Menu::draw()
 			drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 				saveBool("Feature", "no_pickup", App.no_pickup);
 			drawSeparator();
+			drawCheckbox_m("Show Monster Resistances", App.show_monster_res, "Show monster resistances on hp bar.", show_monster_res)
+				saveBool("Feature", "show_monster_res", App.show_monster_res);
+			drawSeparator();
 			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
 				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
 			drawSeparator();
 			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
 				saveBool("Feature", "show_fps", App.show_fps);
-			drawSeparator();
-			drawCheckbox_m("Unlock Cursor", App.cursor.unlock, "Cursor will not locked within window.", unlock_cursor)
-				saveBool("Feature", "unlock_cursor", App.cursor.unlock);
 			childEnd();
 			tabEnd();
 		}

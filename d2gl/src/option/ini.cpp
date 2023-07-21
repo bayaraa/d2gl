@@ -139,6 +139,8 @@ void saveIni()
 		"; Window position.\n"
 		"window_posx=%d\n"
 		"window_posy=%d\n\n"
+		"; Unlock Cursor (cursor will not locked within window).\n"
+		"unlock_cursor=%s\n\n"
 		"; Auto minimize when lose focus while in fullscreen.\n"
 		"auto_minimize=%s\n\n"
 		"; Dark style window title bar.\n"
@@ -162,6 +164,7 @@ void saveIni()
 		boolString(App.window.centered),
 		App.window.position.x,
 		App.window.position.y,
+		boolString(App.cursor.unlock),
 		boolString(App.window.auto_minimize),
 		boolString(App.window.dark_mode),
 		boolString(App.vsync),
@@ -235,10 +238,10 @@ void saveIni()
 		"no_pickup=%s\n\n"
 		"; Show item quantity on bottom left corner of icon.\n"
 		"show_item_quantity=%s\n\n"
+		"; Show monster resistances on hp bar.\n"
+		"show_monster_res=%s\n\n"
 		"; Show FPS Counter (bottom center).\n"
-		"show_fps=%s\n\n"
-		"; Unlock Cursor (cursor will not locked within window).\n"
-		"unlock_cursor=%s\n\n\n";
+		"show_fps=%s\n\n\n";
 
 	sprintf_s(buf, feature_setting,
 		boolString(App.hd_cursor),
@@ -254,8 +257,8 @@ void saveIni()
 		boolString(App.skip_intro),
 		boolString(App.no_pickup),
 		boolString(App.show_item_quantity),
-		boolString(App.show_fps),
-		boolString(App.cursor.unlock));
+		boolString(App.show_monster_res),
+		boolString(App.show_fps));
 	out_file << buf;
 
 	static const char* other_setting =
@@ -307,6 +310,7 @@ void loadIni()
 		App.window.auto_minimize = getBool("Screen", "auto_minimize", App.window.auto_minimize);
 		App.window.dark_mode = getBool("Screen", "dark_mode", App.window.dark_mode);
 		App.vsync = getBool("Screen", "vsync", App.vsync);
+		App.cursor.unlock = getBool("Screen", "unlock_cursor", App.cursor.unlock);
 
 		App.window.size.x = getInt("Screen", "window_width", App.window.size.x, 800, App.desktop_resolution.z);
 		App.window.size.y = getInt("Screen", "window_height", App.window.size.y, 600, App.desktop_resolution.w);
@@ -354,8 +358,8 @@ void loadIni()
 		App.skip_intro = getBool("Feature", "skip_intro", App.skip_intro);
 		App.no_pickup = getBool("Feature", "no_pickup", App.no_pickup);
 		App.show_item_quantity = getBool("Feature", "show_item_quantity", App.show_item_quantity);
+		App.show_monster_res = getBool("Feature", "show_monster_res", App.show_monster_res);
 		App.show_fps = getBool("Feature", "show_fps", App.show_fps);
-		App.cursor.unlock = getBool("Feature", "unlock_cursor", App.cursor.unlock);
 
 		App.gl_ver.x = getInt("Other", "gl_ver_major", App.gl_ver.x, 3, 4);
 		App.gl_ver.y = getInt("Other", "gl_ver_minor", App.gl_ver.y, 0, 6);
