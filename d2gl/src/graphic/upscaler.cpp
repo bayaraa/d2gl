@@ -233,6 +233,7 @@ void Upscaler::loadDefaultPreset()
 		}
 	}
 
+	trace_log("Loading default (%s) preset!", defalut_preset.c_str());
 	loadPreset();
 }
 
@@ -240,6 +241,8 @@ void Upscaler::setupPasses()
 {
 	if (m_passes.empty())
 		return;
+
+	bool complete = true;
 
 	TextureCreateInfo texture_ci;
 	texture_ci.size = App.game.tex_size;
@@ -275,6 +278,10 @@ void Upscaler::setupPasses()
 			frambuffer_ci.size = pass.out_size;
 			frambuffer_ci.attachments = { { i + 1, {}, { filter, filter }, pass.format } };
 			pass.frame_buffer = Context::createFrameBuffer(frambuffer_ci);
+			if (!pass.frame_buffer->isComplete()) {
+				complete = false;
+				break;
+			}
 		}
 
 		std::vector<BindingInfo> bindings;
@@ -345,6 +352,11 @@ void Upscaler::setupPasses()
 		}
 		if (!bindings.empty())
 			pass.pipeline->updateBindings(bindings);
+	}
+
+	if (!complete) {
+		loadDefaultPreset();
+		setupPasses();
 	}
 }
 

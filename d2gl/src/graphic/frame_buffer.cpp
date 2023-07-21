@@ -51,8 +51,12 @@ FrameBuffer::FrameBuffer(const FrameBufferCreateInfo& info)
 	glDrawBuffers(attachment_count, attachments);
 
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		error_log("(%d) Framebuffer is not complete!", status);
+		for (size_t i = 0; i < attachment_count; i++)
+			trace_log("Attachment #%d size: %d x %d (%d)", i, m_textures[i]->getWidth(), m_textures[i]->getHeight(), m_textures[i]->getSlot());
+		m_complete = false;
+	}
 
 	delete[] attachments;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

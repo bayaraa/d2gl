@@ -50,7 +50,7 @@ Texture::Texture(const TextureCreateInfo& info)
 
 Texture::~Texture()
 {
-	if (current_binded_texture[m_slot] != m_id)
+	if (current_binded_texture[m_slot] == m_id)
 		current_binded_texture[m_slot] = UINT32_MAX;
 	glDeleteTextures(1, &m_id);
 }
