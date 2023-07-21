@@ -189,8 +189,8 @@ void initHooks()
 	unit_hover_patch.toggle(true);
 
 	Patch show_item_quantity_patch = Patch();
-	show_item_quantity_patch.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x57566AFF), (0xB807D, 0x55536AFF), (0xBA42D, 0x55536AFF), (0x6B96B), (0x4689B), (0x9347B), (0x6B69B), (0x5F57B), (0x6EF78, 0x52536AFF)), 5, (uintptr_t)((isVerMax(V_110) || isVer(V_114d)) ? drawItemImageBeginPatchESI : drawItemImageBeginPatch));
-	show_item_quantity_patch.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0xD1E803C5), (0xB80B8, 0xBAFF0000), (0xBA468, 0xBAFF0000), (0x6B993), (0x468C3), (0x934A3), (0x6B6C3), (0x5F5A3), (0x6EF9D, 0xD1E803C7)), 5, (uintptr_t)drawItemImageEndPatch);
+	show_item_quantity_patch.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8A442416), (0x3AD84, 0x558BD38B), (0x410ED, 0x8B6C241C), (0xAF14E), (0x7A1BE), (0xAF88E), (0x95A2E), (0x99DFE), (0x841A1, 0x8A4DFF8A)), isVer(V_109d) ? 5 : 6, (uintptr_t)(isVerMax(V_110) ? drawInvItemPatchESI : (isVer(V_114d) ? drawInvItemPatchEDI : drawInvItemPatch)));
+	show_item_quantity_patch.add(PatchType::Auto, getOffset((DLL_D2CLIENT, 0x8A442416), (0x3AF2D, 0x558BD38B), (0x4128F, 0x8B6C241C), (0xAF26D), (0x7A2DD), (0xAF9AD), (0x95B4D), (0x99F1D), (0x842BF, 0x8A4DFF8A)), isVer(V_109d) ? 5 : 6, (uintptr_t)(isVerMax(V_110) ? drawInvItemPatchESI : (isVer(V_114d) ? drawInvItemPatchEDI : drawInvItemPatch)));
 	show_item_quantity_patch.toggle(true);
 
 	patch_motion_prediction = std::make_unique<Patch>();

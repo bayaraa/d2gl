@@ -471,7 +471,7 @@ __declspec(naked) void unitHoverEndPatch()
 	}
 }
 
-__declspec(naked) void drawItemImageBeginPatch()
+__declspec(naked) void drawInvItemPatch()
 {
 	__asm
 	{
@@ -480,20 +480,20 @@ __declspec(naked) void drawItemImageBeginPatch()
 	}
 }
 
-__declspec(naked) void drawItemImageBeginPatchESI()
+__declspec(naked) void drawInvItemPatchEDI()
 {
 	__asm
 	{
-		mov currently_drawing_item, esi
+		mov currently_drawing_item, edi
 		ret
 	}
 }
 
-__declspec(naked) void drawItemImageEndPatch()
+__declspec(naked) void drawInvItemPatchESI()
 {
 	__asm
 	{
-		mov currently_drawing_item, 0x0
+		mov currently_drawing_item, esi
 		ret
 	}
 }

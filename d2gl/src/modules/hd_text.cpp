@@ -933,10 +933,16 @@ void HDText::drawFpsCounter()
 	d2::setTextSizeHooked(old_size);
 }
 
-void HDText::drawItemQuantity(int x, int y)
+void HDText::drawItemQuantity(bool draw, int x, int y)
 {
-	if (!App.show_item_quantity || !d2::currently_drawing_item)
+	if (!App.show_item_quantity || App.game.screen != GameScreen::InGame || !d2::currently_drawing_item)
 		return;
+
+	static glm::ivec2 item_pos = { 0, 0 };
+	if (!draw) {
+		item_pos = { x, y };
+		return;
+	}
 
 	const auto item = d2::currently_drawing_item;
 	if (item->dwType == d2::UnitType::Item && d2::getItemLocation(item) != 0xFF) {
@@ -952,7 +958,7 @@ void HDText::drawItemQuantity(int x, int y)
 
 				d2::getFramedTextSizeHooked(str, &width, &height);
 				glm::vec2 size = { (float)(width + 10), (float)(height + 2) };
-				glm::vec2 pos = { (float)(x - 5 + 3), (float)(y - 1 - height - 2) };
+				glm::vec2 pos = { (float)(item_pos.x - 5 + 3), (float)(item_pos.y - 1 - height - 4) };
 
 				bg->setFlags(6, 0, 0, 1);
 				bg->setPosition(pos);
@@ -961,10 +967,11 @@ void HDText::drawItemQuantity(int x, int y)
 				bg->setExtra({ 0.4f, 0.6f });
 				App.context->pushObject(bg);
 			}
-			d2::drawNormalTextHooked(str, x + 3, y - 2, 0, 0);
+			d2::drawNormalTextHooked(str, item_pos.x + 3, item_pos.y - 4, 0, 0);
 			d2::setTextSizeHooked(old_size);
 		}
 	}
+	d2::currently_drawing_item = nullptr;
 }
 
 #ifdef _HDTEXT
