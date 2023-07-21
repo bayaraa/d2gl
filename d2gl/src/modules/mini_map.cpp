@@ -65,7 +65,7 @@ void MiniMap::draw()
 			App.context->pushObject(m_map);
 		}
 
-		if (App.hd_text) {
+		if (App.hd_text.active) {
 			time_t now = time(0);
 			localtime_s(&gmt_time, &now);
 			swprintf_s(time_str, L" | ÿc\x34%.2d:%.2d", gmt_time.tm_hour, gmt_time.tm_min);

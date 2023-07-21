@@ -310,11 +310,20 @@ void Menu::draw()
 			drawCheckbox_m("HD Cursor", App.hd_cursor, "High-definition in game & menu screen cursor.", hd_cursor)
 				saveBool("Feature", "hd_cursor", App.hd_cursor);
 			drawSeparator();
-			drawCheckbox_m("HD Text", App.hd_text, "High-definition ingame texts.", hd_text)
+			drawCheckbox_m("HD Text", App.hd_text.active, "High-definition ingame texts.", hd_text)
 			{
-				d2::patch_hd_text->toggle(App.hd_text);
-				saveBool("Feature", "hd_text", App.hd_text);
+				d2::patch_hd_text->toggle(App.hd_text.active);
+				saveBool("Feature", "hd_text", App.hd_text.active);
 			}
+			drawSlider_m(float, "", App.hd_text.scale, "%.2f", "", hd_text_scale)
+			{
+				for (int i = 0; i < 23; i++) {
+					  const auto font = modules::HDText::Instance().getFont((uint32_t)i);
+					  font->setSize(font->getFontSize() * App.hd_text.scale.value);
+				}
+				saveFloat("Feature", "hd_text_scale", App.hd_text.scale.value);
+			}
+			drawDescription("Scale for HD text size", m_colors[Color::Gray], 12);
 			drawSeparator();
 			ImGui::BeginDisabled(!ISGLIDE3X() || !App.mini_map.available);
 				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on minimap widget.", mini_map)
@@ -341,9 +350,6 @@ void Menu::draw()
 					}
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
-			drawSeparator();
-			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
-				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
 			/*drawSeparator();
 			ImGui::BeginDisabled(true);
 				drawCheckbox_m("HD Orbs", App.hd_orbs.active, "High-definition life & mana orbs. (coming soon)", hd_orbs)
@@ -374,6 +380,9 @@ void Menu::draw()
 			drawSeparator();
 			drawCheckbox_m("Unlock Cursor", App.cursor.unlock, "Cursor will not locked within window.", unlock_cursor)
 				saveBool("Feature", "unlock_cursor", App.cursor.unlock);
+			drawSeparator();
+			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
+				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
 			childEnd();
 			tabEnd();
 		}
