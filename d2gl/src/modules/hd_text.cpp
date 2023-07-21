@@ -86,8 +86,10 @@ HDText::HDText()
 			bool bordered = (id == 2 || id == 3 || id == 7 || id == 18);
 			wchar_t color = g_initial_colors.find(id) != g_initial_colors.end() ? g_initial_colors.at(id) : 0;
 			const auto offset = glm::vec2(std::stof(info[7]), std::stof(info[8]));
+			float font_size = std::stof(info[2]) * App.hd_text.scale.value;
+			float line_height = std::stof(info[5]) * App.hd_text.scale.value;
 
-			FontCreateInfo font_ci = { name, std::stof(info[2]), std::stof(info[3]), std::stof(info[4]), std::stof(info[5]), std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
+			FontCreateInfo font_ci = { name, font_size, std::stof(info[3]), std::stof(info[4]), line_height, std::stof(info[6]), offset, std::stof(info[9]), color, bordered };
 			m_fonts[id] = std::make_unique<Font>(glyph_sets[name], font_ci);
 		}
 
@@ -952,7 +954,7 @@ void HDText::drawItemQuantity(bool draw, int x, int y)
 
 			const auto old_size = modules::HDText::Instance().getTextSize();
 			d2::setTextSizeHooked(6);
-			if (App.hd_text) {
+			if (App.hd_text.active) {
 				static auto bg = std::make_unique<Object>();
 				uint32_t width, height;
 

@@ -66,7 +66,7 @@ public:
 	Font(GlyphSet* glyph_set, const FontCreateInfo& font_ci);
 	~Font() = default;
 
-	inline void setSize(float size) { m_size = size, m_scale = size / 32.0f, m_smoothness = size; }
+	inline void setSize(float size) { m_size = size / App.hd_text.scale.value, m_scale = size / 32.0f, m_smoothness = size; }
 	inline void setAlign(TextAlign align) { m_align = align; }
 	inline void setShadow(uint8_t level = 0) { m_shadow_level = level; }
 	inline void setMasking(bool masking) { m_masking = masking; }
@@ -74,7 +74,7 @@ public:
 	inline wchar_t getColor() { return m_color; }
 	inline float getFontSize() { return m_size; }
 	inline float getWeight() { return m_weight; }
-	inline float getLineHeight() { return m_size * m_line_height; }
+	inline float getLineHeight() { return m_size * m_line_height * App.hd_text.scale.value; }
 	inline float getLetterSpacing() { return m_size * m_letter_spacing; }
 	inline glm::vec2 getTextOffset() { return m_size * m_offset; }
 	inline int getLineCount() { return m_line_count; }
