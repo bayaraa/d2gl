@@ -81,7 +81,7 @@ void main()
 	FragColor.g = u_Gamma[int(FragColor.g * 255)].g;
 	FragColor.b = u_Gamma[int(FragColor.b * 255)].b;
 	FragColor.a = v_Flags.z == 1u ? v_Color2.a : 1.0;
-	
+
 	FragColorMap = vec4(0.0);
 	if (v_Flags.w > 0u && v_Flags.w < 10u)
 	{
@@ -93,7 +93,6 @@ void main()
 	FragColorMask = vec4(0.0);
 	if(v_Flags.w == 10u)
 		FragColorMask = FragColor;
-
 }
 
 #endif

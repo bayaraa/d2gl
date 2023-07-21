@@ -46,6 +46,7 @@ namespace d2gl::helpers {
 
 std::string getCurrentDir();
 bool fileExists(std::string file_path);
+std::string filePathFix(std::string parent_file_path, std::string file_path);
 
 std::vector<std::string> strToLines(const std::string& str);
 std::vector<std::wstring> strToLines(const std::wstring& str);
@@ -53,6 +54,7 @@ std::vector<std::string> splitToVector(const std::string& str, char delimeter = 
 
 void replaceAll(std::string& str, const std::string& from, const std::string& to);
 void strToLower(std::string& str);
+void trimString(std::string& str, const char* chars = " ");
 
 std::string getLangString(bool path = false);
 

@@ -36,6 +36,7 @@ struct D2GLApp {
 	bool log = false;
 	bool video_test = false;
 	bool ready = false;
+	bool direct = false;
 
 	std::string menu_title = "D2GL";
 	std::string version_str = "D2GL v1.2.2 by Bayaraa.";
@@ -45,13 +46,12 @@ struct D2GLApp {
 
 	Api api = Api::Glide;
 	std::unique_ptr<Context> context;
-	std::string gl_version = "";
+	std::string gl_ver_str = "";
 	bool vsync = true;
 	uint32_t frame_latency = 1;
 
 	GLCaps gl_caps;
-	uint8_t gl_ver_major = 4;
-	uint8_t gl_ver_minor = 6;
+	glm::vec<2, uint8_t> gl_ver = { 4, 6 };
 	bool use_compute_shader = false;
 
 	HMODULE hmodule = 0;
@@ -110,9 +110,18 @@ struct D2GLApp {
 		Range<int> range = { 25, 25, 60 };
 	} background_fps;
 
-	Select<int> shader = {};
+	struct {
+		Select<std::string> presets = {};
+		std::string preset = "bilinear.slangp";
+		int selected = 0;
+	} shader;
+
 	Select<int> lut = {};
-	bool fxaa = false;
+
+	struct {
+		bool active = false;
+		Select<int> presets = { 1, { { "Low", 0 }, { "Medium", 1 }, { "High", 2 } } };
+	} fxaa;
 
 	struct {
 		bool active = false;

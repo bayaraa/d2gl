@@ -40,6 +40,30 @@ bool fileExists(std::string file_path)
 	return std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path);
 }
 
+std::string filePathFix(std::string parent_file_path, std::string file_path)
+{
+	helpers::replaceAll(parent_file_path, "/", "\\");
+	parent_file_path = parent_file_path.substr(0, parent_file_path.rfind('\\'));
+
+	helpers::replaceAll(file_path, "/", "\\");
+	if (file_path.find(".\\") == 0)
+		file_path = file_path.substr(2);
+
+	size_t occurence_pos = 0;
+	while (file_path.find("..\\", occurence_pos) != std::string::npos)
+		occurence_pos += 3;
+
+	if (occurence_pos) {
+		file_path = file_path.substr(occurence_pos);
+		for (size_t i = 0; i < occurence_pos / 3; i++) {
+			size_t pos = parent_file_path.rfind("\\");
+			if (pos != std::string::npos)
+				parent_file_path = parent_file_path.substr(0, pos);
+		}
+	}
+	return parent_file_path + "\\" + file_path;
+}
+
 std::vector<std::string> strToLines(const std::string& str)
 {
 	std::vector<std::string> result;
@@ -90,6 +114,12 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 void strToLower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), [](uint8_t c) { return std::tolower(c); });
+}
+
+void trimString(std::string& str, const char* chars)
+{
+	str.erase(0, str.find_first_not_of(chars));
+	str.erase(str.find_last_not_of(chars) + 1);
 }
 
 std::string getLangString(bool path)

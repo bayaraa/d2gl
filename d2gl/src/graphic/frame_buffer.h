@@ -25,9 +25,8 @@ class Texture;
 struct FrameBufferAttachment {
 	uint32_t slot = 0;
 	std::array<float, 4> clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	GLint min_filter = GL_NEAREST;
-	GLint mag_filter = GL_NEAREST;
-	GLenum format = GL_RGBA;
+	std::pair<GLint, GLint> filter = { GL_NEAREST, GL_NEAREST };
+	std::pair<GLint, GLenum> format = { GL_RGBA8, GL_RGBA };
 };
 
 struct FrameBufferCreateInfo {

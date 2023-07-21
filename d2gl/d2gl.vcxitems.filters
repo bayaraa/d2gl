@@ -31,6 +31,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\patch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\modules\hd_text\glyph_set.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\graphic\upscaler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\app.h" />
@@ -63,10 +64,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\vertex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text\variables.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\modules\hd_text\glyph_set.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\upscaler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\mod.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\upscale\catmull-rom.glsl" />
     <None Include="$(MSBuildThisFileDirectory)src\graphic\shaders\ddraw.glsl" />
   </ItemGroup>
 </Project>

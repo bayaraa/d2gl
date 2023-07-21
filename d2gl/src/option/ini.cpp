@@ -146,7 +146,7 @@ void saveIni()
 		"; Vertical synchronization.\n"
 		"; Game fps adapt screen refresh rate (might have input lag).\n"
 		"vsync=%s\n\n"
-		"; Max Foreground FPS.\n"
+		"; Max Foreground FPS (if vsync is on this will be ignored).\n"
 		"; Limit maximum fps when game window is focused(active) (vsync must be disabled).\n"
 		"foreground_fps=%s\n"
 		"foreground_fps_value=%d\n\n"
@@ -171,19 +171,11 @@ void saveIni()
 		App.background_fps.range.value);
 	out_file << buf;
 
-	std::string shader_str = "";
-	for (size_t i = 0; i < App.shader.items.size(); i++) {
-		char label[100] = { 0 };
-		sprintf_s(label, "; %2d: %s", i, App.shader.items[i].name.c_str());
-		shader_str += std::string(label) + "\n";
-	}
-
 	static const char* graphic_setting =
 		"[Graphic]\n\n"
 		"; Upscale shader.\n"
-		"; Set one of following shaders.\n"
-		"%s"
-		"shader=%d\n\n"
+		"; Libretro's slang upscale shader preset file (slangp).\n"
+		"shader_preset=%d\n\n"
 		"; Color grading (LUT) (only available in glide mode).\n"
 		"; Set one of 1-%d predefined luts. 0 = game default.\n"
 		"lut=%d\n\n"
@@ -192,8 +184,9 @@ void saveIni()
 		"sharpen_strength=%.3f\n"
 		"sharpen_clamp=%.3f\n"
 		"sharpen_radius=%.3f\n\n"
-		"; Fast approximate anti-aliasing.\n"
-		"fxaa=%s\n\n"
+		"; Fast approximate anti-aliasing (preset: 0-2).\n"
+		"fxaa=%s\n"
+		"fxaa_preset=%d\n\n"
 		"; Bloom effect.\n"
 		"bloom=%s\n"
 		"bloom_exposure=%.3f\n"
@@ -203,15 +196,15 @@ void saveIni()
 		"stretched_vertical=%s\n\n\n";
 
 	sprintf_s(buf, graphic_setting,
-		shader_str.c_str(),
-		App.shader.selected,
+		App.shader.preset.c_str(),
 		App.lut.items.size() - 1,
 		App.lut.selected,
 		boolString(App.sharpen.active),
 		App.sharpen.strength.value,
 		App.sharpen.clamp.value,
 		App.sharpen.radius.value,
-		boolString(App.fxaa),
+		boolString(App.fxaa.active),
+		App.fxaa.presets.selected,
 		boolString(App.bloom.active),
 		App.bloom.exposure.value,
 		App.bloom.gamma.value,
@@ -279,8 +272,8 @@ void saveIni()
 		"load_dlls_late=%s\n";
 
 	sprintf_s(buf, other_setting,
-		App.gl_ver_major,
-		App.gl_ver_minor,
+		App.gl_ver.x,
+		App.gl_ver.y,
 		boolString(App.use_compute_shader),
 		App.frame_latency,
 		App.dlls_early.c_str(),
@@ -299,9 +292,6 @@ void loadIni()
 		GetSystemMetrics(SM_CXVIRTUALSCREEN),
 		GetSystemMetrics(SM_CYVIRTUALSCREEN),
 	};
-
-	for (auto& shader : g_shader_upscale)
-		App.shader.items.push_back({ shader.name });
 
 	App.lut.items.push_back({ "Game Default" });
 	for (int i = 1; i <= 14; i++) {
@@ -329,9 +319,10 @@ void loadIni()
 		App.background_fps.active = getBool("Screen", "background_fps", App.background_fps.active);
 		App.background_fps.range.value = getInt("Screen", "background_fps_value", App.background_fps.range.value, App.background_fps.range.min, App.background_fps.range.max);
 
-		App.shader.selected = getInt("Graphic", "shader", App.shader.selected, 0, App.shader.items.size() - 1);
+		App.shader.preset = getString("Graphic", "shader_preset", App.shader.preset);
 		App.lut.selected = getInt("Graphic", "lut", App.lut.selected, 0, App.lut.items.size() - 1);
-		App.fxaa = getBool("Graphic", "fxaa", App.fxaa);
+		App.fxaa.active = getBool("Graphic", "fxaa", App.fxaa.active);
+		App.fxaa.presets.selected = getInt("Graphic", "fxaa_preset", App.fxaa.presets.selected, 0, 2);
 
 		App.sharpen.active = getBool("Graphic", "sharpen", App.sharpen.active);
 		App.sharpen.strength.value = getFloat("Graphic", "sharpen_strength", App.sharpen.strength);
@@ -363,10 +354,10 @@ void loadIni()
 		App.show_fps = getBool("Feature", "show_fps", App.show_fps);
 		App.cursor.unlock = getBool("Feature", "unlock_cursor", App.cursor.unlock);
 
-		App.gl_ver_major = getInt("Other", "gl_ver_major", App.gl_ver_major, 3, 4);
-		App.gl_ver_minor = getInt("Other", "gl_ver_minor", App.gl_ver_minor, 0, 6);
-		if (App.gl_ver_major == 3)
-			App.gl_ver_minor = 3;
+		App.gl_ver.x = getInt("Other", "gl_ver_major", App.gl_ver.x, 3, 4);
+		App.gl_ver.y = getInt("Other", "gl_ver_minor", App.gl_ver.y, 0, 6);
+		if (App.gl_ver.x == 3)
+			App.gl_ver.x = 3;
 
 		App.use_compute_shader = getBool("Other", "use_compute_shader", App.use_compute_shader);
 		App.frame_latency = getInt("Other", "frame_latency", App.frame_latency, 1, 5);

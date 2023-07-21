@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace glslang {
 
@@ -15,9 +17,11 @@ struct GLVersion {
 };
 
 struct Result {
-	bool result;
-	std::string msg;
-	std::string str;
+	bool result = false;
+	std::string source;
+	std::string err_msg;
+	std::vector<std::string> samplers;
+	std::unordered_map<std::string, std::string> uniforms;
 };
 
 Result getGLSLCode(

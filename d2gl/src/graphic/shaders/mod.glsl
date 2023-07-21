@@ -68,8 +68,9 @@ in vec2 v_Extra;
 
 uniform vec2 u_Scale;
 uniform vec4 u_TextMask;
-uniform bool u_IsMasking = false;
 uniform vec4 u_Viewport;
+uniform bool u_IsMasking = false;
+uniform bool u_IsGlide = true;
 
 float msdf(vec3 rgb, float smoothess, float weight)
 {
@@ -165,7 +166,7 @@ void main()
 			FragColor.a *= (float(v_Flags.z) * 0.01);
 	}
 
-	if (texture(u_MaskTexture, (gl_FragCoord.xy - u_Viewport.xy) / u_Viewport.zw).r > 0.1)
+	if (u_IsGlide && texture(u_MaskTexture, (gl_FragCoord.xy - u_Viewport.xy) / u_Viewport.zw).r > 0.1)
 		FragColor.a = 0.0;
 }
 

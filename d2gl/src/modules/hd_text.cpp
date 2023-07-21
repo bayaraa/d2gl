@@ -47,8 +47,7 @@ HDText::HDText()
 		texture_ci.layer_count = 1;
 		texture_ci.size = { 1024, 1024 };
 		texture_ci.slot = TEXTURE_SLOT_FONTS;
-		texture_ci.min_filter = GL_LINEAR;
-		texture_ci.mag_filter = GL_LINEAR;
+		texture_ci.filter = { GL_LINEAR, GL_LINEAR };
 
 		static std::unordered_map<std::string, GlyphSet*> glyph_sets;
 		std::vector<std::vector<std::string>> info_list;

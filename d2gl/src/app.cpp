@@ -64,8 +64,8 @@ void dllAttach(HMODULE hmodule)
 		return;
 	}
 
-	if (command_line.find("-log") != std::string::npos)
-		App.log = true;
+	App.log = command_line.find("-log") != std::string::npos;
+	App.direct = command_line.find("-direct") != std::string::npos;
 
 	logInit();
 	trace_log("Renderer Api: %s", App.api == Api::Glide ? "Glide" : "DDraw");

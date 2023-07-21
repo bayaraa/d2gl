@@ -32,10 +32,11 @@ struct TextureData {
 struct TextureCreateInfo {
 	uint32_t slot = 0;
 	glm::uvec2 size = { 0, 0 };
-	GLint min_filter = GL_NEAREST;
-	GLint mag_filter = GL_NEAREST;
+	std::pair<GLint, GLint> filter = { GL_NEAREST, GL_NEAREST };
 	uint32_t layer_count = 1;
-	GLenum format = GL_RGBA;
+	std::pair<GLint, GLenum> format = { GL_RGBA8, GL_RGBA };
+	std::pair<GLint, GLint> wrap_mode = { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	bool mip_map = false;
 };
 
 class Texture {
@@ -49,7 +50,7 @@ public:
 	Texture(const TextureCreateInfo& info);
 	~Texture();
 
-	void bind();
+	void bind(bool force = false);
 	void bindImage(uint32_t unit = 0);
 
 	void fill(const uint8_t* pixels, uint32_t width, uint32_t height, uint32_t offset_x = 0, uint32_t offset_y = 0, uint32_t layer = 0);
@@ -60,9 +61,6 @@ public:
 	inline const uint32_t getSlot() const { return m_slot; };
 	inline const uint32_t getWidth() const { return m_width; }
 	inline const uint32_t getHeight() const { return m_height; }
-
-private:
-	static GLint getInternalFormat(GLenum format);
 };
 
 }

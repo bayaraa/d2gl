@@ -69,6 +69,7 @@ class HDText {
 	const uint32_t m_monster_hp = 0x56110BDD;
 
 	HDText();
+	~HDText() = default;
 
 public:
 	static HDText& Instance()
