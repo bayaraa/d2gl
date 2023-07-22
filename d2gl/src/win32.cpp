@@ -142,6 +142,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				option->window.position.x = rect->left;
 				option->window.position.y = rect->top;
 				option->window.centered = false;
+				option->pos_changed = true;
 			}
 			return DefWindowProc(hWnd, uMsg, wParam, lParam);
 		}

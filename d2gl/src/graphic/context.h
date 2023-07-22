@@ -39,18 +39,17 @@ namespace d2gl {
 
 #define TEXTURE_SLOT_DEFAULT 0
 #define TEXTURE_SLOT_GAME 1
-#define TEXTURE_SLOT_UPSCALE 4
-#define TEXTURE_SLOT_POSTFX1 5
-#define TEXTURE_SLOT_POSTFX2 6
-#define TEXTURE_SLOT_MAP 7
-#define TEXTURE_SLOT_LUT 8
-#define TEXTURE_SLOT_PREFX 9
-#define TEXTURE_SLOT_BLOOM1 10
-#define TEXTURE_SLOT_BLOOM2 11
-#define TEXTURE_SLOT_MASK 12
+#define TEXTURE_SLOT_POSTFX1 2
+#define TEXTURE_SLOT_POSTFX2 3
+#define TEXTURE_SLOT_PREFX 4
+#define TEXTURE_SLOT_BLOOM1 5
+#define TEXTURE_SLOT_BLOOM2 6
 
-#define TEXTURE_SLOT_CURSOR 2
-#define TEXTURE_SLOT_FONTS 3
+#define TEXTURE_SLOT_LUT 11
+#define TEXTURE_SLOT_CURSOR 12
+#define TEXTURE_SLOT_FONTS 13
+#define TEXTURE_SLOT_MASK 14
+#define TEXTURE_SLOT_MAP 15
 
 #define IMAGE_UNIT_BLUR 0
 #define IMAGE_UNIT_FXAA 1
@@ -135,11 +134,6 @@ class Context {
 	std::unique_ptr<FrameBuffer> m_game_framebuffer;
 	std::unique_ptr<Pipeline> m_movie_pipeline;
 
-	std::unique_ptr<UniformBuffer> m_upscale_ubo;
-	std::unique_ptr<Texture> m_upscale_texture;
-	std::unique_ptr<Pipeline> m_upscale_pipeline;
-	int m_current_shader = -1;
-
 	glm::vec3 m_sharpen_data;
 	glm::uvec2 m_fxaa_work_size = { 0, 0 };
 	std::unique_ptr<UniformBuffer> m_postfx_ubo;
@@ -149,6 +143,7 @@ class Context {
 	std::unique_ptr<Pipeline> m_fxaa_compute_pipeline;
 
 	std::unique_ptr<Pipeline> m_mod_pipeline;
+	int m_current_shader = -1;
 
 	// Glide only
 	std::unique_ptr<Texture> m_glide_texture;
@@ -175,7 +170,7 @@ public:
 	static void renderThread(void* context);
 
 	void onResize(glm::uvec2 w_size, glm::uvec2 g_size, uint32_t bpp = 8);
-	void onShaderChange(bool texture = false);
+	void onShaderChange();
 	void onStageChange();
 	void setBlendState(uint32_t index);
 
@@ -192,7 +187,7 @@ public:
 
 	void pushVertex(const GlideVertex* vertex, glm::vec2 fix = { 0.0f, 0.0f }, glm::ivec2 offset = { 0, 0 });
 	void flushVertices();
-	void drawQuad(int8_t flag_x = 0, glm::vec<2, int16_t> tex_ids = { 0, 0 });
+	void drawQuad(int8_t flag_x = 0, int8_t flag_y = 0, int16_t tex_id = 0);
 
 	inline void toggleDelayPush(bool delay) { m_delay_push = delay; }
 	void pushObject(const std::unique_ptr<Object>& object);

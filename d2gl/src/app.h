@@ -36,22 +36,22 @@ struct D2GLApp {
 	bool log = false;
 	bool video_test = false;
 	bool ready = false;
+	bool direct = false;
 
 	std::string menu_title = "D2GL";
-	std::string version_str = "D2GL v1.2.2 by Bayaraa.";
+	std::string version_str = "1.3.0";
 	std::string ini_file = "d2gl.ini";
 	std::string mpq_file = "d2gl.mpq";
 	std::string log_file = "d2gl.log";
 
 	Api api = Api::Glide;
 	std::unique_ptr<Context> context;
-	std::string gl_version = "";
+	std::string gl_ver_str = "";
 	bool vsync = true;
 	uint32_t frame_latency = 1;
 
 	GLCaps gl_caps;
-	uint8_t gl_ver_major = 4;
-	uint8_t gl_ver_minor = 6;
+	glm::vec<2, uint8_t> gl_ver = { 4, 6 };
 	bool use_compute_shader = false;
 
 	HMODULE hmodule = 0;
@@ -86,7 +86,7 @@ struct D2GLApp {
 		glm::uvec2 custom_size = { 0, 0 };
 		GameScreen screen = GameScreen::Movie;
 		DrawStage draw_stage = DrawStage::World;
-		glm::uvec2 tex_size = { 0, 0 };
+		glm::uvec2 tex_size = { 1024, 512 };
 		glm::vec2 tex_scale = { 1.0f, 1.0f };
 	} game;
 
@@ -110,9 +110,18 @@ struct D2GLApp {
 		Range<int> range = { 25, 25, 60 };
 	} background_fps;
 
-	Select<int> shader = {};
+	struct {
+		Select<std::string> presets = {};
+		std::string preset = "bilinear.slangp";
+		int selected = 0;
+	} shader;
+
 	Select<int> lut = {};
-	bool fxaa = false;
+
+	struct {
+		bool active = false;
+		Select<int> presets = { 1, { { "Low", 0 }, { "Medium", 1 }, { "High", 2 } } };
+	} fxaa;
 
 	struct {
 		bool active = false;
@@ -129,7 +138,7 @@ struct D2GLApp {
 
 	struct {
 		bool active = false;
-		Range<float> scale = { 1.0f, 0.5f, 1.2f };
+		Range<float> scale = { 1.0f, 0.8f, 1.2f };
 	} hd_text;
 
 	bool hd_cursor = false;
@@ -137,6 +146,7 @@ struct D2GLApp {
 	bool skip_intro = false;
 	bool no_pickup = false;
 	bool show_item_quantity = false;
+	bool show_monster_res = false;
 	bool show_fps = false;
 
 	struct {
@@ -192,6 +202,15 @@ constexpr inline float FLOATVAL(float glide3x, float ddraw)
 	return glide3x;
 #else
 	return ddraw;
+#endif
+}
+
+constexpr inline bool ISHDTEXT()
+{
+#ifdef _HDTEXT
+	return true;
+#else
+	return false;
 #endif
 }
 

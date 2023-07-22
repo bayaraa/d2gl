@@ -22,11 +22,17 @@ namespace d2gl {
 
 class UniformBuffer;
 
+enum class ShaderType {
+	GLSL,
+	SLang,
+};
+
 enum class BindingType {
 	UniformBuffer,
 	Texture,
 	Image,
 	TextureArray,
+	FBTexture,
 };
 
 enum class BlendType : int8_t {
@@ -43,6 +49,13 @@ struct BindingInfo {
 	BindingType type;
 	std::string name = "";
 	uint32_t value = 0;
+	union {
+		void* ptr = nullptr;
+		std::unique_ptr<Texture>* tex_ptr;
+		std::unique_ptr<FrameBuffer>* fbo_ptr;
+		std::unique_ptr<UniformBuffer>* ubo_ptr;
+	};
+	uint32_t index = 0;
 };
 
 struct BlendFactors {
@@ -61,7 +74,10 @@ struct UpscaleShader {
 };
 
 struct PipelineCreateInfo {
+	std::string name = "";
 	const char* shader = nullptr;
+	ShaderType shader_type = ShaderType::GLSL;
+	glm::vec<2, uint8_t> version = { 3, 3 };
 	std::vector<BindingInfo> bindings;
 	AttachmentBlends attachment_blends = { { BlendType::NoBlend } };
 	bool compute = false;
@@ -69,9 +85,12 @@ struct PipelineCreateInfo {
 
 class Pipeline {
 	GLuint m_id = 0;
+	std::string m_name = "";
 	AttachmentBlends m_attachment_blends;
 	std::unordered_map<std::string, GLint> m_uniform_cache;
-	bool m_compute = true;
+	std::vector<BindingInfo> m_bindings;
+	bool m_compute = false;
+	bool m_compile_success = true;
 
 public:
 	Pipeline(const PipelineCreateInfo& info);
@@ -80,19 +99,24 @@ public:
 	void bind(uint32_t index = 0);
 	void dispatchCompute(int flag, glm::ivec2 work_size, GLbitfield barrier = 0);
 
+	GLint getUniformLocation(const std::string& name);
 	void setUniform1i(const std::string& name, int value);
+	void setUniform1u(const std::string& name, uint32_t value);
+	void setUniform1f(const std::string& name, float value);
 	void setUniformVec2f(const std::string& name, const glm::vec2& value);
 	void setUniformVec4f(const std::string& name, const glm::vec4& value);
 	void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
 	inline const GLuint getId() const { return m_id; }
+	inline void updateBindings(std::vector<BindingInfo> bindings) { m_bindings = bindings; }
+	inline bool uniformExist(const std::string& name) { return glGetUniformLocation(m_id, name.c_str()) > -1; }
+	inline bool isCompileSuccess() { return m_compile_success; }
 
 private:
 	void setBlendState(uint32_t index = 0);
-	GLint getUniformLocation(const std::string& name);
 
 	static BlendFactors blendFactor(BlendType type);
-	static GLuint createShader(const char* source, int type);
+	static GLuint createShader(const char* source, int type, glm::vec<2, uint8_t> version, const std::string& name);
 };
 
 extern const char* g_shader_glide;

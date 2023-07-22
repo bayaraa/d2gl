@@ -69,6 +69,7 @@ class HDText {
 	const uint32_t m_monster_hp = 0x56110BDD;
 
 	HDText();
+	~HDText() = default;
 
 public:
 	static HDText& Instance()
@@ -82,6 +83,7 @@ public:
 
 	void reset();
 	void update();
+	void updateFontSize();
 
 	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 	bool drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
@@ -108,7 +110,7 @@ public:
 	void drawEntryText();
 
 	static void drawFpsCounter();
-	static void drawItemQuantity(int x, int y);
+	static void drawItemQuantity(bool draw, int x = 0, int y = 0);
 
 private:
 	void drawMonsterHealthBar(d2::UnitAny* unit);

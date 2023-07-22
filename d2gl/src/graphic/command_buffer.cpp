@@ -59,6 +59,7 @@ void CommandBuffer::resize()
 	m_resized = true;
 	m_game_size = App.game.size;
 	m_game_tex_bpp = App.game.bpp;
+	m_window_size = App.window.size;
 }
 
 void CommandBuffer::colorUpdate(UBOType type, const void* data)

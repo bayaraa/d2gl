@@ -228,7 +228,7 @@ void __stdcall drawImageHooked(CellContext* cell, int x, int y, uint32_t gamma, 
 		drawImage(cell, pos.x, pos.y, gamma, draw_mode, palette);
 	}
 
-	modules::HDText::drawItemQuantity(x, y);
+	modules::HDText::drawItemQuantity(true);
 }
 
 void __stdcall drawPerspectiveImageHooked(CellContext* cell, int x, int y, uint32_t gamma, int draw_mode, int screen_mode, uint8_t* palette)
@@ -279,6 +279,8 @@ void __stdcall drawSolidRectExHooked(int left, int top, int right, int bottom, u
 	auto offset = modules::MotionPrediction::Instance().drawSolidRect();
 	if (!modules::HDText::Instance().drawSolidRect(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode))
 		drawSolidRectEx(left - offset.x, top - offset.y, right - offset.x, bottom - offset.y, color, draw_mode);
+
+	modules::HDText::drawItemQuantity(false, left, bottom);
 }
 
 void __stdcall drawLineHooked(int x_start, int y_start, int x_end, int y_end, uint8_t color, uint8_t alpha)

@@ -53,9 +53,9 @@ void unitHoverBeginPatch();
 void unitHoverMidPatch();
 void unitHoverEndPatch();
 
-void drawItemImageBeginPatch();
-void drawItemImageBeginPatchESI();
-void drawItemImageEndPatch();
+void drawInvItemPatch();
+void drawInvItemPatchEDI();
+void drawInvItemPatchESI();
 
 void loadUIImageStub();
 void loadUIImageStubECX();

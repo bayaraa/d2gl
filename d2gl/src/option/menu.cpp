@@ -40,6 +40,10 @@ namespace d2gl::option {
 	static type opt_##id = b##.value;      \
 	if (drawSlider(#id, a, &b, c, d, &opt_##id))
 
+#define checkChanged(x) \
+	if (!changed && x)  \
+	changed = true
+
 Menu::Menu()
 {
 	m_colors[Color::Default] = ImColor(199, 179, 119);
@@ -108,7 +112,7 @@ Menu::Menu()
 	m_fonts[12] = font2.size ? io.Fonts->AddFontFromMemoryTTF((void*)font2.data, font2.size, 12.0f) : io.Fonts->Fonts[0];
 
 	App.menu_title += (ISGLIDE3X() ? " (Glide / " : " (DDraw / ");
-	App.menu_title += "OpenGL: " + App.gl_version + " / D2LoD: " + helpers::getVersionString() + " / " + helpers::getLangString() + ")";
+	App.menu_title += "OpenGL: " + App.gl_ver_str + " / D2LoD: " + helpers::getVersionString() + " / " + helpers::getLangString() + ")";
 }
 
 void Menu::toggle(bool force)
@@ -120,6 +124,7 @@ void Menu::toggle(bool force)
 		m_options.window = App.window;
 		m_options.foreground_fps = App.foreground_fps;
 		m_options.background_fps = App.background_fps;
+		m_options.unlock_cursor = App.cursor.unlock;
 
 		m_closing = false;
 	}
@@ -177,90 +182,116 @@ void Menu::draw()
 		ImGui::SetCursorPos({ 530.0f, 74.0f });
 		ImGui::PushFont(m_fonts[14]);
 		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Gray]);
-		ImGui::Text(App.version_str.c_str());
+		ImGui::Text("D2GL v%s by Bayaraa.", App.version_str.c_str());
 		ImGui::PopStyleColor();
 		ImGui::PopFont();	
 		// ImGui::SetTabItemClosed("Screen");
 		if (tabBegin("Screen", 0, &active_tab)) {
+			bool changed = m_options.pos_changed;
 			childBegin("##w1", true, true);
 			drawCheckbox_m("Fullscreen", m_options.window.fullscreen, "Game will run in windowed mode if unchecked.", fullscreen);
+			checkChanged(m_options.window.fullscreen != App.window.fullscreen);
 			drawSeparator();
 			ImGui::BeginDisabled(m_options.window.fullscreen);
-				drawCombo_m("Window Size", App.resolutions, "Select window size.", "", 17, resolutions);
-				ImGui::Dummy({ 0.0f, 4.0f });
+				drawCombo_m("Window Size", App.resolutions, "", false, 17, resolutions);
+				checkChanged(App.resolutions.items[App.resolutions.selected].value != m_options.window.size_save);
+				ImGui::Dummy({ 0.0f, 1.0f });
 				ImGui::BeginDisabled(App.resolutions.selected);
 					drawInput2("##ws", "Input custom width & height. (min: 800 x 600)", (glm::ivec2*)(&m_options.window.size_save), { 800, 600 }, { App.desktop_resolution.z, App.desktop_resolution.w });
+					checkChanged(!App.resolutions.selected && App.window.size != m_options.window.size_save);
 				ImGui::EndDisabled();
 				drawSeparator();
 				drawCheckbox_m("Centered Window", m_options.window.centered, "Make window centered to desktop screen.", centered_window);
-				ImGui::Dummy({ 0.0f, 4.0f });
+				checkChanged(m_options.window.centered != App.window.centered);
+				ImGui::Dummy({ 0.0f, 2.0f });
 				ImGui::BeginDisabled(m_options.window.centered);
 					drawInput2("##wp", "Window position from top left corner.", &m_options.window.position, { App.desktop_resolution.x, App.desktop_resolution.y }, { App.desktop_resolution.z, App.desktop_resolution.w });
+					checkChanged(!m_options.window.centered && App.window.position != m_options.window.position);
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
+			drawSeparator();
+			drawCheckbox_m("Unlock Cursor", m_options.unlock_cursor, "Cursor will not locked within window.", unlock_cursor);
+			checkChanged(m_options.unlock_cursor != App.cursor.unlock);
 			childSeparator("##w2", true);
 			drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
+			checkChanged(m_options.vsync != App.vsync);
 			drawSeparator();
 			ImGui::BeginDisabled(m_options.vsync);
 				drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
+				checkChanged(!m_options.vsync && m_options.foreground_fps.active != App.foreground_fps.active);
 				ImGui::BeginDisabled(!m_options.foreground_fps.active);
 					drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
+					checkChanged(!m_options.vsync && m_options.foreground_fps.active && m_options.foreground_fps.range.value != App.foreground_fps.range.value);
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			drawSeparator();
 			drawCheckbox_m("Max Background FPS", m_options.background_fps.active, "", background_fps);
+			checkChanged(m_options.background_fps.active != App.background_fps.active);
 			ImGui::BeginDisabled(!m_options.background_fps.active);
 				drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
+				checkChanged(m_options.background_fps.active && m_options.background_fps.range.value != App.background_fps.range.value);
 			ImGui::EndDisabled();
 			drawSeparator();
 			drawCheckbox_m("Auto Minimize", m_options.window.auto_minimize, "Auto minimize when lose focus while in fullscreen.", auto_minimize);
+			checkChanged(m_options.window.auto_minimize != App.window.auto_minimize);
 			drawSeparator();
 			drawCheckbox_m("Dark Mode", m_options.window.dark_mode, "Dark window title bar. Affect on next launch.", dark_mode);
+			checkChanged(m_options.window.dark_mode != App.window.dark_mode);
 			childEnd();
-			if (drawNav("Apply Changes")) {
-				if (App.resolutions.selected) {
-					const auto val = App.resolutions.items[App.resolutions.selected].value;
-					m_options.window.size_save = val;
+			ImGui::BeginDisabled(!changed);
+				if (drawNav("Apply Changes")) {
+					if (App.resolutions.selected) {
+						const auto val = App.resolutions.items[App.resolutions.selected].value;
+						m_options.window.size_save = val;
+					}
+
+					if (App.window.size != m_options.window.size_save || App.window.fullscreen != m_options.window.fullscreen)
+						window_pos_cond = ImGuiCond_Always;
+
+					App.window.fullscreen = m_options.window.fullscreen;
+					App.window.size = m_options.window.size_save;
+					App.window.size_save = m_options.window.size_save;
+					App.window.centered = m_options.window.centered;
+					App.window.position = m_options.window.position;
+					App.cursor.unlock = m_options.unlock_cursor;
+					App.window.auto_minimize = m_options.window.auto_minimize;
+					App.window.dark_mode = m_options.window.dark_mode;
+					App.vsync = m_options.vsync;
+					App.foreground_fps = m_options.foreground_fps;
+					App.background_fps = m_options.background_fps;
+
+					saveBool("Screen", "fullscreen", App.window.fullscreen);
+					saveInt("Screen", "window_width", App.window.size.x);
+					saveInt("Screen", "window_height", App.window.size.y);
+					saveBool("Screen", "centered_window", App.window.centered);
+					saveInt("Screen", "window_posx", App.window.position.x);
+					saveInt("Screen", "window_posy", App.window.position.y);
+
+					saveBool("Screen", "unlock_cursor", App.cursor.unlock);
+					saveBool("Screen", "auto_minimize", App.window.auto_minimize);
+					saveBool("Screen", "dark_mode", App.window.dark_mode);
+					saveBool("Screen", "vsync", App.vsync);
+
+					saveBool("Screen", "foreground_fps", App.foreground_fps.active);
+					saveInt("Screen", "foreground_fps_value", App.foreground_fps.range.value);
+					saveBool("Screen", "background_fps", App.background_fps.active);
+					saveInt("Screen", "background_fps_value", App.background_fps.range.value);
+
+					m_options.pos_changed = false;
+					m_changed = true;
 				}
-
-				if (App.window.size != m_options.window.size_save || App.window.fullscreen != m_options.window.fullscreen)
-					window_pos_cond = ImGuiCond_Always;
-
-				App.window.fullscreen = m_options.window.fullscreen;
-				App.window.size = m_options.window.size_save;
-				App.window.size_save = m_options.window.size_save;
-				App.window.centered = m_options.window.centered;
-				App.window.position = m_options.window.position;
-				App.window.auto_minimize = m_options.window.auto_minimize;
-				App.window.dark_mode = m_options.window.dark_mode;
-				App.vsync = m_options.vsync;
-				App.foreground_fps = m_options.foreground_fps;
-				App.background_fps = m_options.background_fps;
-
-				saveBool("Screen", "fullscreen", App.window.fullscreen);
-				saveInt("Screen", "window_width", App.window.size.x);
-				saveInt("Screen", "window_height", App.window.size.y);
-				saveBool("Screen", "centered_window", App.window.centered);
-				saveInt("Screen", "window_posx", App.window.position.x);
-				saveInt("Screen", "window_posy", App.window.position.y);
-
-				saveBool("Screen", "auto_minimize", App.window.auto_minimize);
-				saveBool("Screen", "dark_mode", App.window.dark_mode);
-				saveBool("Screen", "vsync", App.vsync);
-
-				saveBool("Screen", "foreground_fps", App.foreground_fps.active);
-				saveInt("Screen", "foreground_fps_value", App.foreground_fps.range.value);
-				saveBool("Screen", "background_fps", App.background_fps.active);
-				saveInt("Screen", "background_fps_value", App.background_fps.range.value);
-
-				m_changed = true;
-			}
+			ImGui::EndDisabled();
 			tabEnd();
 		}
 		if (tabBegin("Graphics", 1, &active_tab)) {
+			drawCombo_m("Upscale Shader Preset", App.shader.presets, "", true, 17, shader_preset);
+			ImGui::SameLine(0.0f, 4.0f);
+			ImGui::BeginDisabled(App.shader.selected == App.shader.presets.selected);
+				if (drawButton("Apply", { 100.0f, 0.0f }))
+					App.shader.selected = App.shader.presets.selected;
+			ImGui::EndDisabled();
+			drawDescription("RetroArch's slang shader preset files (.slangp).", m_colors[Color::Gray]);
 			childBegin("##w3", true);
-			drawCombo_m("Upscale Shader", App.shader, "Libretro upscale shaders.", "", 17, shader)
-				saveInt("Graphic", "shader", App.shader.selected);
 			drawSeparator();
 			drawCheckbox_m("Luma Sharpen", App.sharpen.active, "", sharpen)
 				saveBool("Graphic", "sharpen", App.sharpen.active);
@@ -276,11 +307,16 @@ void Menu::draw()
 				drawDescription("Radius of the sampling pattern.", m_colors[Color::Gray], 12);
 			ImGui::EndDisabled();
 			drawSeparator();
-			drawCheckbox_m("FXAA", App.fxaa, "Fast approximate anti-aliasing.", fxaa)
-				saveBool("Graphic", "fxaa", App.fxaa);
+			drawCheckbox_m("FXAA", App.fxaa.active, "Fast approximate anti-aliasing.", fxaa)
+				saveBool("Graphic", "fxaa", App.fxaa.active);
+			ImGui::BeginDisabled(!App.fxaa.active);
+				drawCombo_m("", App.fxaa.presets, "FXAA quality presets.", false, 17, fxaa_preset)
+					saveInt("Graphic", "fxaa_preset", App.fxaa.presets.selected);
+			ImGui::EndDisabled();
 			childSeparator("##w4");
+			drawSeparator();
 			ImGui::BeginDisabled(!ISGLIDE3X());
-				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", "", 17, lut)
+				drawCombo_m("Color Grading", App.lut, "Lookup table (LUT).", false, 17, lut)
 					saveInt("Graphic", "lut", App.lut.selected);
 				drawSeparator();
 				drawCheckbox_m("Bloom Effect", App.bloom.active, "", bloom)
@@ -297,10 +333,16 @@ void Menu::draw()
 			drawSeparator();
 			drawLabel("Stretched Viewport", m_colors[Color::Orange]);
 			drawCheckbox_m("Horizontal", App.viewport.stretched.x, "", stretched_horizontal)
+			{
+				App.context->getCommandBuffer()->resize();
 				saveBool("Graphic", "stretched_horizontal", App.viewport.stretched.x);
+			}
 			ImGui::SameLine(150.0f);
 			drawCheckbox_m("Vertical", App.viewport.stretched.y, "", stretched_vertical)
+			{
+				App.context->getCommandBuffer()->resize();
 				saveBool("Graphic", "stretched_vertical", App.viewport.stretched.y);
+			}
 			drawDescription("Stretch viewport to window size.", m_colors[Color::Gray], 14);
 			childEnd();
 			tabEnd();
@@ -315,15 +357,12 @@ void Menu::draw()
 				d2::patch_hd_text->toggle(App.hd_text.active);
 				saveBool("Feature", "hd_text", App.hd_text.active);
 			}
-			drawSlider_m(float, "", App.hd_text.scale, "%.2f", "", hd_text_scale)
-			{
-				for (int i = 0; i < 23; i++) {
-					  const auto font = modules::HDText::Instance().getFont((uint32_t)i);
-					  font->setSize(font->getFontSize() * App.hd_text.scale.value);
-				}
-				saveFloat("Feature", "hd_text_scale", App.hd_text.scale.value);
-			}
-			drawDescription("Scale for HD text size", m_colors[Color::Gray], 12);
+			ImGui::BeginDisabled(!App.hd_text.active || ISHDTEXT());
+				drawSlider_m(float, "", App.hd_text.scale, "%.3f", "Global scale for HD text.", hd_text_scale)
+					saveFloat("Feature", "hd_text_scale", App.hd_text.scale.value);
+				if (App.hd_text.active)
+					modules::HDText::Instance().updateFontSize();
+			ImGui::EndDisabled();
 			drawSeparator();
 			ImGui::BeginDisabled(!ISGLIDE3X() || !App.mini_map.available);
 				drawCheckbox_m("Mini Map", App.mini_map.active, "Always on minimap widget.", mini_map)
@@ -339,15 +378,11 @@ void Menu::draw()
 						saveBool("Feature", "mini_map_text_over", App.mini_map.text_over);
 					ImGui::Dummy({ 0.0f, 2.0f });
 					drawSlider_m(int, "", App.mini_map.width, "%d", "Minimap width.", mini_map_width_val)
-					{
-						modules::MiniMap::Instance().resize();
 						saveInt("Feature", "mini_map_width", App.mini_map.width.value);
-					}
 					drawSlider_m(int, "", App.mini_map.height, "%d", "Minimap height.", mini_map_height_val)
-					{
-						modules::MiniMap::Instance().resize();
 						saveInt("Feature", "mini_map_height", App.mini_map.height.value);
-					}
+					if (App.mini_map.active)
+						modules::MiniMap::Instance().resize();
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			/*drawSeparator();
@@ -375,14 +410,14 @@ void Menu::draw()
 			drawCheckbox_m("No Pickup", App.no_pickup, "Auto /nopickup option on launch (exclude 1.09d).", no_pickup)
 				saveBool("Feature", "no_pickup", App.no_pickup);
 			drawSeparator();
-			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
-				saveBool("Feature", "show_fps", App.show_fps);
-			drawSeparator();
-			drawCheckbox_m("Unlock Cursor", App.cursor.unlock, "Cursor will not locked within window.", unlock_cursor)
-				saveBool("Feature", "unlock_cursor", App.cursor.unlock);
+			drawCheckbox_m("Show Monster Resistances", App.show_monster_res, "Show monster resistances on hp bar.", show_monster_res)
+				saveBool("Feature", "show_monster_res", App.show_monster_res);
 			drawSeparator();
 			drawCheckbox_m("Show Item Quantity", App.show_item_quantity, "Show item quantity on bottom left corner of icon.", show_item_quantity)
 				saveBool("Feature", "show_item_quantity", App.show_item_quantity);
+			drawSeparator();
+			drawCheckbox_m("Show FPS", App.show_fps, "FPS Counter on bottom center.", show_fps)
+				saveBool("Feature", "show_fps", App.show_fps);
 			childEnd();
 			tabEnd();
 		}
@@ -541,17 +576,16 @@ bool Menu::drawCheckbox(const char* title, bool* option, const char* desc, bool*
 }
 
 template <typename T>
-bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, const char* btn_label, int* opt, int size)
+bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, bool have_btn, int* opt, int size)
 {
 	bool ret = false;
-	bool have_btn = (btn_label && btn_label[0]);
 
 	drawLabel(title, m_colors[Color::Orange], 17);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8.0f, 5.0f });
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 8.0f });
 	if (!m_ignore_font)
 		ImGui::PushFont(m_fonts[size]);
-	ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() - (have_btn ? 84.0f : 0.0f));
+	ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() - (have_btn ? 104.0f : 0.0f));
 	auto& selected = select->items[select->selected];
 	if (ImGui::BeginCombo(("##" + std::string(title)).c_str(), selected.name.c_str(), ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest)) {
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8.0f, 8.0f });
@@ -563,8 +597,7 @@ bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, con
 				select->selected = i;
 				if (select->selected != *opt) {
 					*opt = select->selected;
-					if (!have_btn)
-						ret = true;
+					ret = true;
 				}
 			}
 			if (is_selected) {
@@ -574,12 +607,6 @@ bool Menu::drawCombo(const char* title, Select<T>* select, const char* desc, con
 		}
 		ImGui::PopStyleVar();
 		ImGui::EndCombo();
-	}
-	if (have_btn) {
-		ImGui::SameLine(0.0f, 4.0f);
-		ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Orange]);
-		ret = ImGui::Button(btn_label, { 80.0f, 0.0f });
-		ImGui::PopStyleColor();
 	}
 	if (!m_ignore_font)
 		ImGui::PopFont();
@@ -641,6 +668,24 @@ bool Menu::drawSlider(const std::string& id, const char* title, Range<T>* range,
 		return true;
 	}
 	return false;
+}
+
+bool Menu::drawButton(const char* label, const ImVec2& btn_size, int size)
+{
+	bool ret = false;
+
+	ImGui::PushStyleColor(ImGuiCol_Text, m_colors[Color::Orange]);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8.0f, 5.0f });
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 8.0f });
+	if (!m_ignore_font)
+		ImGui::PushFont(m_fonts[size]);
+	if (ImGui::Button(label, btn_size))
+		ret = true;
+	if (!m_ignore_font)
+		ImGui::PopFont();
+	ImGui::PopStyleVar(2);
+	ImGui::PopStyleColor();
+	return ret;
 }
 
 void Menu::drawSeparator(float y_padd, float alpha)

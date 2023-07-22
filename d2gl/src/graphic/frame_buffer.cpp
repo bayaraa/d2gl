@@ -39,8 +39,7 @@ FrameBuffer::FrameBuffer(const FrameBufferCreateInfo& info)
 	for (size_t i = 0; i < attachment_count; i++) {
 		texture_ci.slot = info.attachments[i].slot;
 		texture_ci.format = info.attachments[i].format;
-		texture_ci.min_filter = info.attachments[i].min_filter;
-		texture_ci.mag_filter = info.attachments[i].mag_filter;
+		texture_ci.filter = info.attachments[i].filter;
 		m_textures.push_back(std::make_unique<Texture>(texture_ci));
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_textures[i]->getId(), 0);
@@ -50,17 +49,24 @@ FrameBuffer::FrameBuffer(const FrameBufferCreateInfo& info)
 	}
 
 	glDrawBuffers(attachment_count, attachments);
+
+	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		error_log("(%d) Framebuffer is not complete!", status);
+		for (size_t i = 0; i < attachment_count; i++)
+			trace_log("Attachment #%d size: %d x %d (%d)", i, m_textures[i]->getWidth(), m_textures[i]->getHeight(), m_textures[i]->getSlot());
+		m_complete = false;
+	}
+
 	delete[] attachments;
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		error_log("Framebuffer is not complete!");
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	current_binded_fbo = 0;
 }
 
 FrameBuffer::~FrameBuffer()
 {
+	for (auto& texture : m_textures)
+		texture.reset();
 	glDeleteFramebuffers(1, &m_id);
 }
 

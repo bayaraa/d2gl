@@ -41,7 +41,6 @@ void main()
 #elif FRAGMENT
 
 layout(location = 0) out vec4 FragColor;
-layout(location = 1) out vec4 FragColorMap;
 
 layout(std140) uniform ubo_Metrics {
 	float u_BloomExp;
@@ -143,8 +142,6 @@ void main()
 			FragColor = v_TexIds.x > 0 ? LUT(FragColor) : FragColor;
 		break;
 	}
-
-	FragColorMap = vec4(0.0, 0.0, 0.0, 0.0);
 }
 
 // =============================================================
@@ -155,7 +152,7 @@ layout(local_size_x = 16, local_size_y = 16) in;
 uniform sampler2D u_InTexture;
 writeonly uniform image2D u_OutTexture;
 
-uniform int u_Flag = 0;
+uniform uint u_Flag = 0;
 
 vec4 BlurPass17(sampler2D tex, ivec2 tc, int dir)
 {
@@ -201,8 +198,8 @@ void main()
 	vec4 color = vec4(0.0);
 
 	switch (u_Flag) {
-		case 0: color = BlurPass17(u_InTexture, v_TexCoord, 0); break;
-		case 1: color = BlurPass17(u_InTexture, v_TexCoord, 1); break;
+		case 0u: color = BlurPass17(u_InTexture, v_TexCoord, 0); break;
+		case 1u: color = BlurPass17(u_InTexture, v_TexCoord, 1); break;
 	}
 
 	imageStore(u_OutTexture, v_TexCoord, color);

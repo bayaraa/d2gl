@@ -4,6 +4,9 @@ AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AllowShortBlocksOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
+AllowShortLambdasOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
 BasedOnStyle: LLVM
 BraceWrapping:
   AfterClass: false
