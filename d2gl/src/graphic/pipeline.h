@@ -90,6 +90,7 @@ class Pipeline {
 	std::unordered_map<std::string, GLint> m_uniform_cache;
 	std::vector<BindingInfo> m_bindings;
 	bool m_compute = false;
+	bool m_compile_success = true;
 
 public:
 	Pipeline(const PipelineCreateInfo& info);
@@ -109,6 +110,7 @@ public:
 	inline const GLuint getId() const { return m_id; }
 	inline void updateBindings(std::vector<BindingInfo> bindings) { m_bindings = bindings; }
 	inline bool uniformExist(const std::string& name) { return glGetUniformLocation(m_id, name.c_str()) > -1; }
+	inline bool isCompileSuccess() { return m_compile_success; }
 
 private:
 	void setBlendState(uint32_t index = 0);

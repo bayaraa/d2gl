@@ -395,8 +395,8 @@ bool Upscaler::prepareShader(ShaderPass& pass, std::string shader_path)
 		return false;
 
 	std::string shader_source((const char*)buffer.data, buffer.size);
-	resolveInclude(shader_source, shader_path);
 	delete[] buffer.data;
+	resolveInclude(shader_source, shader_path);
 
 	uint8_t stage = 0;
 	std::string vert_source, frag_source;
@@ -465,6 +465,8 @@ bool Upscaler::prepareShader(ShaderPass& pass, std::string shader_path)
 	pipeline_ci.shader = source.c_str();
 	pipeline_ci.version = App.gl_ver;
 	pass.pipeline = Context::createPipeline(pipeline_ci);
+	if (!pass.pipeline->isCompileSuccess())
+		return false;
 
 	for (const auto& p : res1.samplers)
 		pass.samplers.push_back(p);
@@ -534,8 +536,8 @@ void Upscaler::resolveInclude(std::string& source, std::string file_path)
 			inc_file_source = std::string((const char*)buffer.data, buffer.size);
 			delete[] buffer.data;
 			resolveInclude(inc_file_source, inc_file);
+			source.replace(std::get<0>(p), std::get<1>(p), inc_file_source);
 		}
-		source.replace(std::get<0>(p), std::get<1>(p), inc_file_source);
 	}
 }
 

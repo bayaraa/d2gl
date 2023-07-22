@@ -33,12 +33,18 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 	if (m_compute) {
 		cs = createShader(info.shader, GL_COMPUTE_SHADER, info.version, m_name);
 		glAttachShader(m_id, cs);
+		if (cs == 0)
+			m_compile_success = false;
 	} else {
 		vs = createShader(info.shader, GL_VERTEX_SHADER, info.version, m_name);
 		glAttachShader(m_id, vs);
+		if (vs == 0)
+			m_compile_success = false;
 
 		fs = createShader(info.shader, GL_FRAGMENT_SHADER, info.version, m_name);
 		glAttachShader(m_id, fs);
+		if (fs == 0)
+			m_compile_success = false;
 	}
 
 	glLinkProgram(m_id);
@@ -49,7 +55,7 @@ Pipeline::Pipeline(const PipelineCreateInfo& info)
 
 	glUseProgram(m_id);
 
-	if (m_bindings.size() > 0) {
+	if (m_compile_success && m_bindings.size() > 0) {
 		for (auto& binding : m_bindings) {
 			switch (binding.type) {
 				case BindingType::UniformBuffer: {
@@ -227,6 +233,7 @@ GLuint Pipeline::createShader(const char* source, int type, glm::vec<2, uint8_t>
 		glGetShaderInfoLog(id, lenght, &lenght, message);
 		const char* stype = (type == GL_VERTEX_SHADER ? "VERTEX" : (type == GL_FRAGMENT_SHADER ? "FRAGMENT" : "COMPUTE"));
 		error_log("Shader compile failed! %s (%s) | %s", name.c_str(), stype, message);
+		trace_log("%s", src);
 
 		glDeleteShader(id);
 		return 0;

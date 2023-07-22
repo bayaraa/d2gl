@@ -76,8 +76,10 @@ Context::Context()
 		if (App.debug)
 			attribs[5] |= WGL_CONTEXT_DEBUG_BIT_ARB;
 
-		if (m_context = wglCreateContextAttribsARB(App.hdc, 0, attribs))
+		if (m_context = wglCreateContextAttribsARB(App.hdc, 0, attribs)) {
+			App.gl_ver = version;
 			break;
+		}
 	}
 
 	if (!m_context) {
@@ -226,7 +228,7 @@ Context::Context()
 		m_game_color_ubo = Context::createUniformBuffer(game_ubo_ci);
 
 		PipelineCreateInfo game_pipeline_ci = { "glide" };
-		game_pipeline_ci.version = { 4, 3 };
+		game_pipeline_ci.version = { 3, 3 };
 		game_pipeline_ci.shader = g_shader_glide;
 		game_pipeline_ci.bindings = {
 			{ BindingType::UniformBuffer, "ubo_Colors", m_game_color_ubo->getBinding() },
