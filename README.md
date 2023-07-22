@@ -12,7 +12,7 @@ Also run game.exe with `-3dfx -log` it will create `d2gl.log` and attach this al
 ## Features
 
 - In-Game Option Menu(`Ctrl+O`) to change settings on fly.
-- Upscale to higher resolution using pre-included libretro's shader.
+- Upscale to higher resolution using RetroArch's slang shaders.
 - Switch some parts in game to high-definition (all text, cursor etc.).
 - Unlocked FPS (menu screen 45fps / ingame unlocked).
 - Modified version of "D2DX's Unit/Weather Motion Predictor" feature (better with v-sync on).
@@ -43,16 +43,17 @@ Diablo II modding community (The Phrozen Keep) and **Everyone** who makes d2 mod
 
 - SGD2FreeRes D2 Custom Resolution (Mir Drualga).
 - D2DX's Unit/Weather Motion Predictor (Bolrog).
-- Libretro's common-shaders.
-- Detours (Microsoft).
+- Libretro's slang shaders (RetroArch).
 - The OpenGL Extension Wrangler Library (Brian Paul).
 - OpenGL Mathematics (GLM) (G-Truc Creation).
-- FXAA implementation by Timothy Lottes (NVIDIA Corporation).
+- FXAA implementation by Timothy Lottes (NVIDIA).
 - Dear ImGui (Omar Cornut).
 - stb_image, stb_image_write (Sean Barrett).
 - MurmurHash3 (Austin Appleby).
 - MSDF Atlas Generator (Chlumsky).
 - Shader Minifier (laurentlb).
+- SPIRV-Cross, glslang (KhronosGroup).
+- Detours (Microsoft).
 
 ## Some Screenshots
 
