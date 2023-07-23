@@ -85,7 +85,7 @@ public:
 	void update();
 	void updateFontSize();
 
-	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
+	bool drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl = 5);
 	bool drawFramedText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered);
 	bool drawRectangledText(const wchar_t* str, int x, int y, uint32_t rect_transparency, uint32_t color);
 	bool drawSolidRect(int left, int top, int right, int bottom, uint32_t color, int draw_mode);

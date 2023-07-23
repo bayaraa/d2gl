@@ -90,6 +90,8 @@
             "FragColor.w=0.;"
           "else "
              "FragColor.w*=.7;"
+        "else "
+           "FragColor.w*=v_Color2.w;"
       "}"
       "break;"
     "case 4u:"

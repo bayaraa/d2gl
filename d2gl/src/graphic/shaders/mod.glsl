@@ -112,6 +112,8 @@ void main()
 					FragColor.a = 0.0;
 				else
 					FragColor.a *= 0.7;
+			} else {
+				FragColor.a *= v_Color2.a;
 			}
 		}
 		break;

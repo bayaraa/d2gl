@@ -100,6 +100,11 @@ void Font::drawText(const wchar_t* str, glm::vec2 pos, uint32_t color, bool fram
 		else if (color == 0xDFB67966)
 			border_color = 0x443B2966;
 		m_object->setColor(border_color, 2);
+	} else {
+		uint32_t color2 = 0xFFFFFFFF;
+		uint8_t* opacity = (uint8_t*)&color2;
+		*opacity = (uint8_t)(255.0f * m_opacity);
+		m_object->setColor(color2, 2);
 	}
 
 	int char_num = 0;

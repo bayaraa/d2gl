@@ -703,6 +703,10 @@ void Context::onStageChange()
 #ifdef _HDTEXT
 			modules::HDText::showSampleText();
 #endif
+			d2::setTextSizeHooked(1);
+			for (int i = 0; i < 10; i++) {
+				d2::drawNormalTextExHooked(L"ABCDEF", 10 + i * 10, 60 + i * 20, 0, 0, i);
+			}
 			flushVertices();
 			setVertexFlagW(10);
 			appendDelayedObjects();

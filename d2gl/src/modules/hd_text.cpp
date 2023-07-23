@@ -156,7 +156,7 @@ void HDText::update()
 	m_cur_level_no = App.game.screen == GameScreen::InGame ? *d2::level_no : 0;
 }
 
-bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered)
+bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl)
 {
 	if (!isActive() || !str)
 		return false;
@@ -252,9 +252,16 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 		font->setShadow(2);
 	}
 
+	switch (trans_lvl) {
+		case 4: font->setOpacity(0.00f); break;
+		case 0: font->setOpacity(0.25f); break;
+		case 1: font->setOpacity(0.50f); break;
+		case 2: font->setOpacity(0.75f); break;
+	}
 	font->setMasking(m_masking);
 	font->setAlign(TextAlign::Left);
 	font->drawText(str, pos, text_color);
+	font->setOpacity(1.0f);
 
 	if (map_text) {
 		App.context->toggleDelayPush(false);

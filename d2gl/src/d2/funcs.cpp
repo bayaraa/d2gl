@@ -342,7 +342,7 @@ void __fastcall drawNormalTextHooked(const wchar_t* str, int x, int y, uint32_t 
 void __fastcall drawNormalTextExHooked(const wchar_t* str, int x, int y, uint32_t color, uint32_t centered, uint32_t trans_lvl)
 {
 	const auto pos = modules::MotionPrediction::Instance().drawText(str, x, y, D2DrawFn::NormalTextEx);
-	if (!modules::HDText::Instance().drawText(str, pos.x, pos.y, color, centered))
+	if (!modules::HDText::Instance().drawText(str, pos.x, pos.y, color, centered, trans_lvl))
 		drawNormalTextEx(str, pos.x, pos.y, color, centered, trans_lvl);
 }
 
