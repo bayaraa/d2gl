@@ -43,6 +43,7 @@ class Font {
 	float m_scale = 1.0f;
 	wchar_t m_color = 0;
 	bool m_bordered = false;
+	float m_opacity = 1.0f;
 
 	float m_size = 10.0f;
 	float m_font_size = 10.0f;
@@ -71,6 +72,7 @@ public:
 	inline void setAlign(TextAlign align) { m_align = align; }
 	inline void setShadow(uint8_t level = 0) { m_shadow_level = level; }
 	inline void setMasking(bool masking) { m_masking = masking; }
+	inline void setOpacity(float opacity) { m_opacity = opacity; }
 
 	inline wchar_t getColor() { return m_color; }
 	inline float getFontSize() { return m_font_size; }

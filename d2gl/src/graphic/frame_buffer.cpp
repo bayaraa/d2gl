@@ -25,40 +25,33 @@ namespace d2gl {
 GLuint current_binded_fbo = 0;
 
 FrameBuffer::FrameBuffer(const FrameBufferCreateInfo& info)
-	: m_width(info.size.x), m_height(info.size.y)
+	: m_width(info.size.x), m_height(info.size.y), m_attachment_count(info.attachments.size())
 {
 	glGenFramebuffers(1, &m_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-	size_t attachment_count = info.attachments.size();
-	GLenum* attachments = new GLenum[attachment_count];
-
 	TextureCreateInfo texture_ci;
 	texture_ci.size = info.size;
 
-	for (size_t i = 0; i < attachment_count; i++) {
+	for (size_t i = 0; i < m_attachment_count; i++) {
 		texture_ci.slot = info.attachments[i].slot;
 		texture_ci.format = info.attachments[i].format;
 		texture_ci.filter = info.attachments[i].filter;
 		m_textures.push_back(std::make_unique<Texture>(texture_ci));
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_textures[i]->getId(), 0);
-		attachments[i] = GL_COLOR_ATTACHMENT0 + i;
-
 		m_clear_colors.push_back(info.attachments[i].clear_color);
 	}
-
-	glDrawBuffers(attachment_count, attachments);
+	setDrawBuffers(m_attachment_count);
 
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		error_log("(%d) Framebuffer is not complete!", status);
-		for (size_t i = 0; i < attachment_count; i++)
+		for (size_t i = 0; i < m_attachment_count; i++)
 			trace_log("Attachment #%d size: %d x %d (%d)", i, m_textures[i]->getWidth(), m_textures[i]->getHeight(), m_textures[i]->getSlot());
 		m_complete = false;
 	}
 
-	delete[] attachments;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	current_binded_fbo = 0;
 }
@@ -105,6 +98,16 @@ void FrameBuffer::clearBuffer()
 		for (size_t i = 0; i < count; i++)
 			glClearBufferfv(GL_COLOR, i, m_clear_colors[i].data());
 	}
+}
+
+void FrameBuffer::setDrawBuffers(uint32_t count)
+{
+	GLenum* attachments = new GLenum[count];
+	for (size_t i = 0; i < count; i++)
+		attachments[i] = GL_COLOR_ATTACHMENT0 + i;
+
+	glDrawBuffers(count, attachments);
+	delete[] attachments;
 }
 
 }

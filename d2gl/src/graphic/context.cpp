@@ -435,10 +435,12 @@ void Context::renderThread(void* context)
 						ctx->bindFrameBuffer(ctx->m_game_framebuffer, false);
 						ctx->setViewport(cmd->m_game_size);
 						ctx->bindPipeline(ctx->m_prefx_pipeline);
+						FrameBuffer::setDrawBuffers(1);
 					}
 					ctx->drawQuad(3 + App.bloom.active, 0, App.lut.selected);
 
 					ctx->bindPipeline(ctx->m_game_pipeline, command->index);
+					FrameBuffer::setDrawBuffers(ctx->m_game_framebuffer->getAttachmentCount());
 					break;
 				case CommandType::Begin:
 					if (cmd->m_screen == GameScreen::Movie) {
