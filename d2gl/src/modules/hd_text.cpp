@@ -252,11 +252,13 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 		font->setShadow(2);
 	}
 
-	switch (trans_lvl) {
-		case 4: font->setOpacity(0.00f); break;
-		case 0: font->setOpacity(0.25f); break;
-		case 1: font->setOpacity(0.50f); break;
-		case 2: font->setOpacity(0.75f); break;
+	if (m_text_size != 9 && m_text_size != 10) {
+		switch (trans_lvl) {
+			case 4: font->setOpacity(0.00f); break;
+			case 0: font->setOpacity(0.25f); break;
+			case 1: font->setOpacity(0.50f); break;
+			case 2: font->setOpacity(0.75f); break;
+		}
 	}
 	font->setMasking(m_masking);
 	font->setAlign(TextAlign::Left);
