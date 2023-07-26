@@ -961,7 +961,7 @@ void HDText::drawFpsCounter()
 	swprintf_s(str, L"FPS: %.0f", fps);
 
 	const auto old_size = HDText::Instance().getTextSize();
-	d2::setTextSizeHooked(19);
+	App.hd_text.active ? d2::setTextSizeHooked(19) : d2::setTextSizeHooked(6);  // fix "FPS" text size in game when close the HD Text. 
 	const auto width = d2::getNormalTextWidthHooked(str);
 	d2::drawNormalTextHooked(str, App.game.size.x / 2 - width / 2, App.game.size.y - 58, 4, 0);
 	d2::setTextSizeHooked(old_size);
