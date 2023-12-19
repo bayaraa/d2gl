@@ -69,7 +69,7 @@ int WINAPI ShowCursor(BOOL bShow)
 
 BOOL WINAPI SetCursorPos(int X, int Y)
 {
-	if (App.hwnd && !App.cursor.unlock) {
+	if (App.hwnd) {
 		POINT pt = { (LONG)((float)X * App.cursor.scale.x), (LONG)((float)Y * App.cursor.scale.y) };
 		pt.x += App.viewport.offset.x;
 		pt.y += App.viewport.offset.y;
@@ -182,10 +182,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam) {
 				App.context->setFpsLimit(fps_capped, App.foreground_fps.range.value);
 				CallWindowProcA(App.wndproc, hWnd, WM_SYSKEYUP, VK_MENU, 0);
+
+				if (!option::Menu::instance().isVisible())
+					setCursorLock();
 			} else {
 				App.context->setFpsLimit(App.background_fps.active || fps_capped, App.background_fps.active ? App.background_fps.range.value : App.foreground_fps.range.value);
 				if (App.window.fullscreen && App.window.auto_minimize)
 					PostMessage(hWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+
+				POINT pt;
+				GetCursorPos(&pt);
+				ScreenToClient(App.hwnd, &pt);
+				const auto lParam = MAKELPARAM(pt.x, pt.y);
+				PostMessage(hWnd, WM_LBUTTONUP, 0, lParam);
+				PostMessage(hWnd, WM_RBUTTONUP, 0, lParam);
+
 				setCursorUnlock();
 			}
 			return 0;

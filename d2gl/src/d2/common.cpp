@@ -141,6 +141,13 @@ void initHooks()
 	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F84), (0x27AD0), (0x1E288), (0x1E194), (0x1E2B8), (0x1E174), (0x1E36C), (0x2D4CFC)), 1, 0x00);
 	no_intro.toggle(App.skip_intro);
 
+	Patch no_cursor_clip = Patch();
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2WIN), (0xF255), (0xD6B5), (0xB3D1), (0x12DB1), (0xC7A1), (0x17848), (0xDAD8), (0xFA72B)), 1, 0xEB);
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2WIN), (0xF264), (0xD6C4), (0xB3E0), (0x12DC0), (0xC7B0), (0x17857), (0xDAE7), (0xFA736)), 1, 0xEB);
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2CLIENT), (0xB51EF), (0xB736F), (0x3886B), (0x2831B), (0x9EFCB), (0x1640B), (0x1488B), (0x68889)), 1, 0xEB);
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2CLIENT), (0xB520D), (0xB738D), (0x38888), (0x28338), (0x9EFE8), (0x16428), (0x148A8), (0x688A8)), 1, 0xEB);
+	no_cursor_clip.toggle(true);
+
 	Patch multiple_instance = Patch();
 	multiple_instance.add(PatchType::Swap, getOffset((DLL_D2GFX), (0x447C), (0x446A), (0x84CF), (0x84AF), (0x894F), (0x85BF), (0xB6B0), (0xF562B)), 2, isVer(V_109d) ? 0xEB47 : (isVer(V_110) ? 0xEB49 : 0xEB45));
 	multiple_instance.toggle(true);
