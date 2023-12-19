@@ -69,7 +69,7 @@ Upscaler::Upscaler()
 			pos = preset_source.find("shaders=");
 		if (pos != std::string::npos) {
 			auto pos2 = preset_source.find("\n", pos);
-			auto count_str = preset_source.substr(pos, pos2 - pos - 1);
+			auto count_str = preset_source.substr(pos, pos2 - pos);
 			helpers::trimString(count_str, "\t\n\v\f\r ");
 			count_str.erase(std::remove_if(count_str.begin(), count_str.end(), (int (*)(int))std::isspace), count_str.end());
 			count_str = count_str.substr(8);
