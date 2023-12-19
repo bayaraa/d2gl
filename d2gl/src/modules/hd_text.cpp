@@ -588,9 +588,13 @@ void HDText::drawSubText(uint8_t fn)
 			y = (int*)(ptr + 0x6C);
 		}
 	} else if (fn == 2) {
+		length = (int*)(ptr + 0x14);
+		if (isVerMax(V_110)) {
+			*length = 0;
+			return;
+		}
 		str = (const wchar_t*)(ptr + 0x390);
 		color = (uint32_t*)(ptr + 0x74);
-		length = (int*)(ptr + 0x14);
 		x = (int*)(ptr + 0x1C);
 		y = (int*)(ptr + 0x4);
 	} else {
