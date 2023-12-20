@@ -69,7 +69,8 @@ int WINAPI ShowCursor(BOOL bShow)
 
 BOOL WINAPI SetCursorPos(int X, int Y)
 {
-	if (App.hwnd) {
+	trace("locked: %d", App.cursor.locked);
+	if (App.hwnd && App.cursor.locked) {
 		POINT pt = { (LONG)((float)X * App.cursor.scale.x), (LONG)((float)Y * App.cursor.scale.y) };
 		pt.x += App.viewport.offset.x;
 		pt.y += App.viewport.offset.y;
@@ -96,10 +97,8 @@ LRESULT WINAPI SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 
 		x = glm::max((int)glm::round((x + App.viewport.offset.x * App.cursor.unscale.x) * App.cursor.scale.x), 0);
 		y = glm::max((int)glm::round((y + App.viewport.offset.y * App.cursor.unscale.y) * App.cursor.scale.y), 0);
-
 		x = glm::min(x, (int)App.window.size.x);
 		y = glm::min(y, (int)App.window.size.y);
-
 		lParam = MAKELPARAM(x, y);
 	}
 	return SendMessageA_Og(hWnd, Msg, wParam, lParam);
@@ -190,12 +189,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (App.window.fullscreen && App.window.auto_minimize)
 					PostMessage(hWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 
-				POINT pt;
-				GetCursorPos(&pt);
-				ScreenToClient(App.hwnd, &pt);
-				const auto lParam = MAKELPARAM(pt.x, pt.y);
-				PostMessage(hWnd, WM_LBUTTONUP, 0, lParam);
-				PostMessage(hWnd, WM_RBUTTONUP, 0, lParam);
+				auto cursor_pos = d2::getCursorPos();
+				cursor_pos.x = glm::max((int)glm::round((cursor_pos.x + App.viewport.offset.x * App.cursor.unscale.x) * App.cursor.scale.x), 0);
+				cursor_pos.y = glm::max((int)glm::round((cursor_pos.y + App.viewport.offset.y * App.cursor.unscale.y) * App.cursor.scale.y), 0);
+				cursor_pos.x = glm::min(cursor_pos.x, (int)App.window.size.x);
+				cursor_pos.y = glm::min(cursor_pos.y, (int)App.window.size.y);
+				LPARAM xy = MAKELPARAM(cursor_pos.x, cursor_pos.y);
+				SendMessage(hWnd, WM_LBUTTONUP, 0, xy);
+				SendMessage(hWnd, WM_RBUTTONUP, 0, xy);
 
 				setCursorUnlock();
 			}
