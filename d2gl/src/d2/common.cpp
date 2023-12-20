@@ -40,6 +40,7 @@ int is_unit_hovered = 0;
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
 UnitAny* selected_item = (UnitAny*)getProc((DLL_D2CLIENT), (0x11FBB8), (0x1158F0), (0x11BA40), (0x11BBDC), (0x11B9FC), (0x11BC38), (0x11CB28), (0x3BCBF4));
+wchar_t* hovered_monster_name = (wchar_t*)getProc((DLL_D2WIN), (0x6105C), (0x5D9F4), (0xC8E1C), (0xC8E24), (0xC8E2C), (0xC9E5C), (0xC9E6C), (0x441ECC));
 int* level_no = (int*)getProc((DLL_D2CLIENT), (0x1201B4), (0x115EF0), (0x11C17C), (0x11B99C), (0x11BCEC), (0x11C310), (0x11CDE8), (0x3A3140));
 
 void* alt_item_pos = nullptr;
