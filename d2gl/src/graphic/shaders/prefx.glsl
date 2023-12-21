@@ -41,6 +41,8 @@ void main()
 #elif FRAGMENT
 
 layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 FragColorMap;
+layout(location = 2) out vec4 FragColorMask;
 
 layout(std140) uniform ubo_Metrics {
 	float u_BloomExp;
@@ -142,6 +144,9 @@ void main()
 			FragColor = v_TexIds.x > 0 ? LUT(FragColor) : FragColor;
 		break;
 	}
+
+	FragColorMap = vec4(0.0);
+	FragColorMask = vec4(0.0);
 }
 
 // =============================================================

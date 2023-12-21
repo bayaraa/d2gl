@@ -82,6 +82,7 @@ extern int is_unit_hovered;
 extern uint32_t* is_in_game;
 extern UnitAny* player_unit;
 extern UnitAny* selected_item;
+extern wchar_t* hovered_monster_name;
 extern int* level_no;
 
 extern void* alt_item_pos;

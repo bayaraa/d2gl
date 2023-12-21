@@ -40,6 +40,7 @@ int is_unit_hovered = 0;
 uint32_t* is_in_game = (uint32_t*)getProc((DLL_D2CLIENT), (0x1109FC), (0x1077C4), (0xE48EC), (0xF18C0), (0x11BCC4), (0xF8C9C), (0xF79E0), (0x3A27C0));
 UnitAny* player_unit = (UnitAny*)getProc((DLL_D2CLIENT), (0x1263F8), (0x11C200), (0x11C4F0), (0x11C1E0), (0x11C3D0), (0x11BBFC), (0x11D050), (0x3A6A70));
 UnitAny* selected_item = (UnitAny*)getProc((DLL_D2CLIENT), (0x11FBB8), (0x1158F0), (0x11BA40), (0x11BBDC), (0x11B9FC), (0x11BC38), (0x11CB28), (0x3BCBF4));
+wchar_t* hovered_monster_name = (wchar_t*)getProc((DLL_D2WIN), (0x6105C), (0x5D9F4), (0xC8E1C), (0xC8E24), (0xC8E2C), (0xC9E5C), (0xC9E6C), (0x441ECC));
 int* level_no = (int*)getProc((DLL_D2CLIENT), (0x1201B4), (0x115EF0), (0x11C17C), (0x11B99C), (0x11BCEC), (0x11C310), (0x11CDE8), (0x3A3140));
 
 void* alt_item_pos = nullptr;
@@ -140,6 +141,13 @@ void initHooks()
 	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F5C), (0x27AA8), (0x1E260), (0x1E16C), (0x1E290), (0x1E14C), (0x1E344), (0x2D4CD4)), 1, 0x00);
 	no_intro.add(PatchType::Swap, getOffset((DLL_D2LAUNCH), (0x24F84), (0x27AD0), (0x1E288), (0x1E194), (0x1E2B8), (0x1E174), (0x1E36C), (0x2D4CFC)), 1, 0x00);
 	no_intro.toggle(App.skip_intro);
+
+	Patch no_cursor_clip = Patch();
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2WIN), (0xF255), (0xD6B5), (0xB3D1), (0x12DB1), (0xC7A1), (0x17848), (0xDAD8), (0xFA72B)), 1, 0xEB);
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2WIN), (0xF264), (0xD6C4), (0xB3E0), (0x12DC0), (0xC7B0), (0x17857), (0xDAE7), (0xFA736)), 1, 0xEB);
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2CLIENT), (0xB51EF), (0xB736F), (0x3886B), (0x2831B), (0x9EFCB), (0x1640B), (0x1488B), (0x68889)), 1, 0xEB);
+	no_cursor_clip.add(PatchType::Swap, getOffset((DLL_D2CLIENT), (0xB520D), (0xB738D), (0x38888), (0x28338), (0x9EFE8), (0x16428), (0x148A8), (0x688A8)), 1, 0xEB);
+	no_cursor_clip.toggle(true);
 
 	Patch multiple_instance = Patch();
 	multiple_instance.add(PatchType::Swap, getOffset((DLL_D2GFX), (0x447C), (0x446A), (0x84CF), (0x84AF), (0x894F), (0x85BF), (0xB6B0), (0xF562B)), 2, isVer(V_109d) ? 0xEB47 : (isVer(V_110) ? 0xEB49 : 0xEB45));

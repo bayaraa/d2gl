@@ -588,9 +588,13 @@ void HDText::drawSubText(uint8_t fn)
 			y = (int*)(ptr + 0x6C);
 		}
 	} else if (fn == 2) {
+		length = (int*)(ptr + 0x14);
+		if (isVerMax(V_110)) {
+			*length = 0;
+			return;
+		}
 		str = (const wchar_t*)(ptr + 0x390);
 		color = (uint32_t*)(ptr + 0x74);
-		length = (int*)(ptr + 0x14);
 		x = (int*)(ptr + 0x1C);
 		y = (int*)(ptr + 0x4);
 	} else {
@@ -821,9 +825,19 @@ void HDText::drawUnitHealthBar()
 
 void HDText::drawMonsterHealthBar(d2::UnitAny* unit)
 {
-	const auto name = d2::getMonsterName(unit);
-	if (!name)
-		return;
+	auto name = d2::getMonsterName(unit);
+	if (!name || wcslen(name) <= 0) {
+		static wchar_t name_str[50] = { 0 };
+		wcscpy_s(name_str, d2::hovered_monster_name);
+		const auto len = wcslen(name_str);
+		if (len <= 0)
+			return;
+
+		auto end = name_str + len - 1;
+		while (end >= name_str && *end == L' ') end--;
+		*(end + 1) = '\0';
+		name = name_str;
+	}
 
 	const auto hp = d2::getUnitStat(unit, STAT_HP);
 	const auto max_hp = d2::getUnitStat(unit, STAT_MAXHP);
@@ -961,7 +975,7 @@ void HDText::drawFpsCounter()
 	swprintf_s(str, L"FPS: %.0f", fps);
 
 	const auto old_size = HDText::Instance().getTextSize();
-	d2::setTextSizeHooked(19);
+	App.hd_text.active ? d2::setTextSizeHooked(19) : d2::setTextSizeHooked(6);
 	const auto width = d2::getNormalTextWidthHooked(str);
 	d2::drawNormalTextHooked(str, App.game.size.x / 2 - width / 2, App.game.size.y - 58, 4, 0);
 	d2::setTextSizeHooked(old_size);

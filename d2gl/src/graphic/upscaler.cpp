@@ -69,7 +69,7 @@ Upscaler::Upscaler()
 			pos = preset_source.find("shaders=");
 		if (pos != std::string::npos) {
 			auto pos2 = preset_source.find("\n", pos);
-			auto count_str = preset_source.substr(pos, pos2 - pos - 1);
+			auto count_str = preset_source.substr(pos, pos2 - pos);
 			helpers::trimString(count_str, "\t\n\v\f\r ");
 			count_str.erase(std::remove_if(count_str.begin(), count_str.end(), (int (*)(int))std::isspace), count_str.end());
 			count_str = count_str.substr(8);
@@ -101,6 +101,7 @@ bool Upscaler::loadPreset()
 	m_passes.clear();
 	m_textures.clear();
 	std::unordered_map<std::string, TextureInfo> texture_info;
+	std::unordered_map<std::string, float> preset_params;
 
 	auto lines = helpers::strToLines(preset_source);
 	for (auto& line : lines) {
@@ -170,12 +171,18 @@ bool Upscaler::loadPreset()
 			m_passes[index].scale_size.x = std::stof(value);
 		else if (var_name == "scale_y" && pass_data)
 			m_passes[index].scale_size.y = std::stof(value);
-		else if (var_str == "textures") {
+		else if (var_str == "parameters") {
+			const auto segmets = helpers::splitToVector(value, ';');
+			for (auto& p : segmets)
+				preset_params.insert({ p, 0.0f });
+		} else if (var_str == "textures") {
 			const auto segmets = helpers::splitToVector(value, ';');
 			for (auto& p : segmets)
 				texture_info.insert({ p, {} });
 		} else {
-			if (texture_info.find(var_str) != texture_info.end())
+			if (preset_params.find(var_str) != preset_params.end())
+				preset_params[var_str] = std::stof(value);
+			else if (texture_info.find(var_str) != texture_info.end())
 				texture_info[var_str].path = helpers::filePathFix(preset_path, value);
 			else {
 				std::string tex_name;
@@ -197,6 +204,14 @@ bool Upscaler::loadPreset()
 						case 3: texture_info[tex_name].wrap_mode = (value == "mirrored_repeat") ? GL_MIRRORED_REPEAT : GL_CLAMP_TO_EDGE; break;
 					}
 				}
+			}
+		}
+	}
+
+	for (auto& pass : m_passes) {
+		for (auto& pass_param : pass.params) {
+			if (preset_params.find(pass_param.id) != preset_params.end()) {
+				pass_param.value = preset_params[pass_param.id];
 			}
 		}
 	}
