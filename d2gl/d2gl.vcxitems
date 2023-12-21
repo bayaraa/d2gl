@@ -15,7 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)src\app.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\exports.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\d2gl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\funcs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\d2\stubs.cpp" />
@@ -90,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\app.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\exports.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\d2gl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\d2\funcs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\graphic\command_buffer.h" />

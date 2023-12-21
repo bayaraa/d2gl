@@ -17,11 +17,27 @@
 */
 
 #include "pch.h"
-#include "exports.h"
+#include "d2gl.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+__declspec(dllexport) BOOL __stdcall d2glConfigQueryImpl(D2GLConfigId config_id)
+{
+	switch (config_id) {
+		case D2GL_CONFIG_VSYNC: return d2gl::App.vsync;
+		case D2GL_CONFIG_CURSOR_UNLOCKED: return d2gl::App.cursor.unlock;
+		case D2GL_CONFIG_HD_CURSOR: return d2gl::App.hd_cursor;
+		case D2GL_CONFIG_HD_TEXT: return d2gl::App.hd_text.active;
+		case D2GL_CONFIG_MOTION_PREDICTION: return d2gl::App.motion_prediction;
+		case D2GL_CONFIG_MINI_MAP: return d2gl::App.mini_map.active;
+		case D2GL_CONFIG_SHOW_ITEM_QUANTITY: return d2gl::App.show_item_quantity;
+		case D2GL_CONFIG_SHOW_MONSTER_RES: return d2gl::App.show_monster_res;
+		case D2GL_CONFIG_SHOW_FPS: return d2gl::App.show_fps;
+	}
+	return FALSE;
+}
 
 __declspec(dllexport) void __stdcall setCustomScreenSize(uint32_t width, uint32_t height)
 {
