@@ -238,16 +238,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 				}
 			} else {
-				if (wParam == 0x4F && GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-					option::Menu::instance().toggle();
-
-					if (option::Menu::instance().isVisible())
-						setCursorUnlock();
-					else
-						setCursorLock();
-
+				if (wParam == 0x4F && GetAsyncKeyState(VK_CONTROL) & 0x8000)
 					return 0;
-				}
+
 				if (option::Menu::instance().isVisible()) {
 					if (wParam == VK_ESCAPE || (wParam >= 0x30 && wParam <= 0x39))
 						return 0;
@@ -256,6 +249,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_KEYUP: {
+			if (wParam == 0x4F && GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				option::Menu::instance().toggle();
+				if (option::Menu::instance().isVisible())
+					setCursorUnlock();
+				else
+					setCursorLock();
+
+				return 0;
+			}
 			if (option::Menu::instance().isVisible()) {
 				if (wParam == VK_ESCAPE) {
 					option::Menu::instance().toggle();

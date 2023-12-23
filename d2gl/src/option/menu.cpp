@@ -134,6 +134,7 @@ void Menu::check()
 {
 	if (m_closing) {
 		win32::setCursorLock();
+		SendMessage(App.hwnd, WM_SYSKEYUP, VK_CONTROL, 0);
 		m_closing = false;
 	}
 
