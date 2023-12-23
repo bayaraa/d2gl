@@ -426,7 +426,7 @@ std::string saveScreenShot(uint8_t* data, int width, int height)
 	}
 
 	stbi_flip_vertically_on_write(1);
-	stbi_write_png(file_name, width, height, 4, data, width * 4);
+	stbi_write_png(file_name, width, height, 3, data, width * 3);
 
 	return file_name;
 }
