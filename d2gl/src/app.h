@@ -39,7 +39,7 @@ struct D2GLApp {
 	bool direct = false;
 
 	std::string menu_title = "D2GL";
-	std::string version_str = "1.3.2";
+	std::string version_str = "1.3.3";
 	std::string ini_file = "d2gl.ini";
 	std::string mpq_file = "d2gl.mpq";
 	std::string log_file = "d2gl.log";
@@ -49,6 +49,7 @@ struct D2GLApp {
 	std::string gl_ver_str = "";
 	bool vsync = true;
 	uint32_t frame_latency = 1;
+	bool d2fps_mod = false;
 
 	GLCaps gl_caps;
 	glm::vec<2, uint8_t> gl_ver = { 4, 6 };

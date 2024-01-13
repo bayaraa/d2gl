@@ -205,6 +205,17 @@ bool HDText::drawText(const wchar_t* str, int x, int y, uint32_t color, uint32_t
 	if (!ISGLIDE3X())
 		pos.y += font->getFontSize() * 0.08f;
 
+	if (App.game.draw_stage == DrawStage::Map && m_text_size == 6 && *d2::screen_shift != SCREENPANEL_NONE) {
+		const auto center = (int)(*d2::screen_width / 2);
+		if (*d2::screen_shift == SCREENPANEL_LEFT && x < center)
+			return true;
+		if (*d2::screen_shift == SCREENPANEL_RIGHT) {
+			const auto size = font->getTextSize(str);
+			if (x + (int)size.x > center)
+				return true;
+		}
+	}
+
 	static bool map_text = false;
 	if (App.game.draw_stage == DrawStage::Map && modules::MiniMap::Instance().isActive()) {
 		if (m_text_size == 6 && !*d2::automap_on) {

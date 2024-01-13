@@ -904,13 +904,14 @@ void Context::resetFileTime()
 
 void Context::takeScreenShot()
 {
-	static uint8_t* data = new GLubyte[App.viewport.size.x * App.viewport.size.y * 4];
-	memset(data, 0, App.viewport.size.x * App.viewport.size.y * 4);
+	uint8_t* data = new GLubyte[App.viewport.size.x * App.viewport.size.y * 3];
+	memset(data, 0, App.viewport.size.x * App.viewport.size.y * 3);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(App.viewport.offset.x, App.viewport.offset.y, App.viewport.size.x, App.viewport.size.y, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glReadPixels(App.viewport.offset.x, App.viewport.offset.y, App.viewport.size.x, App.viewport.size.y, GL_RGB, GL_UNSIGNED_BYTE, data);
 
 	std::string file_name = helpers::saveScreenShot(data, App.viewport.size.x, App.viewport.size.y);
+	delete[] data;
 }
 
 void Context::imguiInit()
