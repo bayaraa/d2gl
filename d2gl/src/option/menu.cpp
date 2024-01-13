@@ -214,10 +214,10 @@ void Menu::draw()
 			drawCheckbox_m("Unlock Cursor", m_options.unlock_cursor, "Cursor will not locked within window.", unlock_cursor);
 			checkChanged(m_options.unlock_cursor != App.cursor.unlock);
 			childSeparator("##w2", true);
+			drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
+			checkChanged(m_options.vsync != App.vsync);
+			drawSeparator();
 			ImGui::BeginDisabled(App.d2fps_mod);
-				drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
-				checkChanged(m_options.vsync != App.vsync);
-				drawSeparator();
 				ImGui::BeginDisabled(m_options.vsync);
 					drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
 					checkChanged(!m_options.vsync && m_options.foreground_fps.active != App.foreground_fps.active);
