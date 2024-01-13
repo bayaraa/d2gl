@@ -438,12 +438,42 @@ void loadDlls(const std::string& dlls, bool late)
 
 	for (std::string dll; std::getline(ss, dll, ',');) {
 		dll.erase(remove_if(dll.begin(), dll.end(), isspace), dll.end());
-
 		if (dll != "") {
-			if (LoadLibraryA(dll.c_str())) {
-				trace_log("%s loaded.", dll.c_str());
+			auto segments = splitToVector(dll, ':');
+			auto handle = LoadLibraryA(segments[0].c_str());
+			if (handle) {
+				auto log_str = segments[0] + " loaded";
+				if (segments.size() == 3) {
+					bool called = false;
+					if (segments[1] == "cdecl") {
+						if (auto func = (void(__cdecl*)())GetProcAddress(handle, segments[2].c_str())) {
+							called = true;
+							func();
+						}
+					} else if (segments[1] == "stdcall") {
+						if (auto func = (void(__stdcall*)())GetProcAddress(handle, segments[2].c_str())) {
+							called = true;
+							func();
+						}
+					} else if (segments[1] == "fastcall") {
+						if (auto func = (void(__fastcall*)())GetProcAddress(handle, segments[2].c_str())) {
+							called = true;
+							func();
+						}
+					}
+					if (called)
+						log_str += " and " + segments[1] + " " + segments[2] + " function called";
+				}
+				trace_log("%s.", log_str.c_str());
+				if (!late && dll == "d2fps.dll:stdcall:_Init@0") {
+					App.d2fps_mod = true;
+					App.vsync = false;
+					App.foreground_fps.active = false;
+					App.background_fps.active = false;
+					App.motion_prediction = false;
+				}
 			} else {
-				error_log("%s not loaded.", dll.c_str());
+				error_log("%s not loaded.", segments[0].c_str());
 			}
 		}
 	}
