@@ -467,7 +467,6 @@ void loadDlls(const std::string& dlls, bool late)
 				trace_log("%s.", log_str.c_str());
 				if (!late && dll == "d2fps.dll:stdcall:_Init@0") {
 					App.d2fps_mod = true;
-					App.vsync = false;
 					App.foreground_fps.active = false;
 					App.background_fps.active = false;
 					App.motion_prediction = false;
