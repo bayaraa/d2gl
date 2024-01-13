@@ -49,6 +49,7 @@ struct D2GLApp {
 	std::string gl_ver_str = "";
 	bool vsync = true;
 	uint32_t frame_latency = 1;
+	bool d2fps_mod = false;
 
 	GLCaps gl_caps;
 	glm::vec<2, uint8_t> gl_ver = { 4, 6 };

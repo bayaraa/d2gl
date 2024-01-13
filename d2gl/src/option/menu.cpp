@@ -214,23 +214,25 @@ void Menu::draw()
 			drawCheckbox_m("Unlock Cursor", m_options.unlock_cursor, "Cursor will not locked within window.", unlock_cursor);
 			checkChanged(m_options.unlock_cursor != App.cursor.unlock);
 			childSeparator("##w2", true);
-			drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
-			checkChanged(m_options.vsync != App.vsync);
-			drawSeparator();
-			ImGui::BeginDisabled(m_options.vsync);
-				drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
-				checkChanged(!m_options.vsync && m_options.foreground_fps.active != App.foreground_fps.active);
-				ImGui::BeginDisabled(!m_options.foreground_fps.active);
-					drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
-					checkChanged(!m_options.vsync && m_options.foreground_fps.active && m_options.foreground_fps.range.value != App.foreground_fps.range.value);
+			ImGui::BeginDisabled(App.d2fps_mod);
+				drawCheckbox_m("V-Sync", m_options.vsync, "Vertical Synchronization.", vsync);
+				checkChanged(m_options.vsync != App.vsync);
+				drawSeparator();
+				ImGui::BeginDisabled(m_options.vsync);
+					drawCheckbox_m("Max Foreground FPS", m_options.foreground_fps.active, "", foreground_fps);
+					checkChanged(!m_options.vsync && m_options.foreground_fps.active != App.foreground_fps.active);
+					ImGui::BeginDisabled(!m_options.foreground_fps.active);
+						drawSlider_m(int, "", m_options.foreground_fps.range, "%d", "Max fps when game window is active.", foreground_fps_val);
+						checkChanged(!m_options.vsync && m_options.foreground_fps.active && m_options.foreground_fps.range.value != App.foreground_fps.range.value);
+					ImGui::EndDisabled();
 				ImGui::EndDisabled();
-			ImGui::EndDisabled();
-			drawSeparator();
-			drawCheckbox_m("Max Background FPS", m_options.background_fps.active, "", background_fps);
-			checkChanged(m_options.background_fps.active != App.background_fps.active);
-			ImGui::BeginDisabled(!m_options.background_fps.active);
-				drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
-				checkChanged(m_options.background_fps.active && m_options.background_fps.range.value != App.background_fps.range.value);
+				drawSeparator();
+				drawCheckbox_m("Max Background FPS", m_options.background_fps.active, "", background_fps);
+				checkChanged(m_options.background_fps.active != App.background_fps.active);
+				ImGui::BeginDisabled(!m_options.background_fps.active);
+					drawSlider_m(int, "", m_options.background_fps.range, "%d", "Max fps when game window is in inactive.", background_fps_val);
+					checkChanged(m_options.background_fps.active && m_options.background_fps.range.value != App.background_fps.range.value);
+				ImGui::EndDisabled();
 			ImGui::EndDisabled();
 			drawSeparator();
 			drawCheckbox_m("Auto Minimize", m_options.window.auto_minimize, "Auto minimize when lose focus while in fullscreen.", auto_minimize);
@@ -399,11 +401,13 @@ void Menu::draw()
 				ImGui::EndDisabled();
 			ImGui::EndDisabled();*/
 			childSeparator("##w6");
-			drawCheckbox_m("Motion Prediction", App.motion_prediction, "D2DX's motion prediction feature.", motion_prediction)
-			{
-				modules::MotionPrediction::Instance().toggle(App.motion_prediction);
-				saveBool("Feature", "motion_prediction", App.motion_prediction);
-			}
+			ImGui::BeginDisabled(App.d2fps_mod);
+				drawCheckbox_m("Motion Prediction", App.motion_prediction, "D2DX's motion prediction feature.", motion_prediction)
+				{
+					modules::MotionPrediction::Instance().toggle(App.motion_prediction);
+					saveBool("Feature", "motion_prediction", App.motion_prediction);
+				}
+			ImGui::EndDisabled();
 			drawSeparator();
 			drawCheckbox_m("Skip Intro", App.skip_intro, "Auto skip intro videos on launch.", skip_intro)
 				saveBool("Feature", "skip_intro", App.skip_intro);
