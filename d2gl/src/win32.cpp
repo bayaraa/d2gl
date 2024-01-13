@@ -22,6 +22,7 @@
 #include "helpers.h"
 #include "modules/hd_cursor.h"
 #include "option/menu.h"
+#include "dwmapi.h"
 
 #include <detours/detours.h>
 
@@ -377,12 +378,33 @@ void setWindowRect()
 		RECT wr_test = { 0 };
 		AdjustWindowRect(&wr_test, App.window.style, FALSE);
 
+		AdjustWindowRect(&wr, App.window.style, FALSE);
+
+		// apply the shift
 		wr.left -= wr_test.left;
 		wr.right -= wr_test.left;
 		wr.top -= wr_test.top;
 		wr.bottom -= wr_test.top;
 
-		AdjustWindowRect(&wr, App.window.style, FALSE);
+		// show window first to get GetWindowRect works
+		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
+
+		// Get the invisible borders
+		RECT fr = { 0 };
+		DwmGetWindowAttribute(App.hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &fr, sizeof(fr));
+
+		RECT border;
+		border.left = fr.left - wr.left;
+		border.top = fr.top - wr.top;
+		border.right = wr.right - fr.right;
+		border.bottom = wr.bottom - fr.bottom;
+
+		// apply the border
+		wr.left -= border.left;
+		wr.top -= border.top;
+		wr.right += border.right;
+		wr.bottom += border.bottom;
+
 		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
 		trace_log("Switched to windowed mode: %d x %d", App.window.size.x, App.window.size.y);
 	} else {
