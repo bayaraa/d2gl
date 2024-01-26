@@ -26,20 +26,6 @@ namespace d2gl {
 
 D2GLApp App;
 
-void checkCompatibilityMode()
-{
-	char buffer[1024] = { 0 };
-	if (GetEnvironmentVariableA("__COMPAT_LAYER", buffer, sizeof(buffer))) {
-		std::string compat_str(buffer);
-		helpers::strToLower(compat_str);
-		if (compat_str.find("win95") != std::string::npos || compat_str.find("win98") != std::string::npos || compat_str.find("nt4sp5") != std::string::npos) {
-			MessageBoxA(NULL, "Please disable compatibility mode for game executable and then try to start the game again.", "Compatibility mode detected!", MB_OK | MB_ICONWARNING);
-			error_log("Compatibility mode '%s' detected!", buffer);
-			exit(1);
-		}
-	}
-}
-
 void dllAttach(HMODULE hmodule)
 {
 	std::string command_line = GetCommandLineA();
@@ -92,7 +78,6 @@ void dllAttach(HMODULE hmodule)
 	}
 	trace_log("Diablo 2 LoD (%s) version %s detected.", helpers::getLangString().c_str(), helpers::getVersionString().c_str());
 
-	checkCompatibilityMode();
 	timeBeginPeriod(1);
 	win32::setDPIAwareness();
 	App.hmodule = hmodule;
