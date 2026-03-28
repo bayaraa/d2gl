@@ -302,6 +302,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (!App.cursor.unlock && !App.cursor.locked)
 				return 0;
 
+			if (GetForegroundWindow() != hWnd)
+				return 0;
+
 			int x = GET_X_LPARAM(lParam);
 			int y = GET_Y_LPARAM(lParam);
 
