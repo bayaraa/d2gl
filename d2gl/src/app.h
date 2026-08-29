@@ -68,6 +68,7 @@ struct D2GLApp {
 		glm::uvec2 size = { 800, 600 };
 		glm::uvec2 size_save = { 800, 600 };
 		bool fullscreen = false;
+		bool borderless = false;
 		bool auto_minimize = false;
 		bool centered = true;
 		bool dark_mode = true;

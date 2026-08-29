@@ -348,6 +348,14 @@ void setWindow(HWND hwnd)
 	App.window.style |= WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX);
 }
 
+DWORD getWindowStyle()
+{
+	if (App.window.borderless)
+		return (App.window.style & ~WS_OVERLAPPEDWINDOW) | WS_POPUP;
+
+	return App.window.style;
+}
+
 void setWindowRect()
 {
 	HMONITOR monitor = MonitorFromWindow(App.hwnd, MONITOR_DEFAULTTONEAREST);
@@ -372,19 +380,20 @@ void setWindowRect()
 		y = (y > wr.top + screen_h - 50) ? wr.top + screen_h - 50 : y;
 		wr = { x, y, (LONG)App.window.size.x + x, (LONG)App.window.size.y + y };
 
-		SetWindowLong(App.hwnd, GWL_STYLE, App.window.style);
+		const DWORD style = getWindowStyle();
+		SetWindowLong(App.hwnd, GWL_STYLE, style);
 
 		RECT wr_test = { 0 };
-		AdjustWindowRect(&wr_test, App.window.style, FALSE);
+		AdjustWindowRect(&wr_test, style, FALSE);
 
 		wr.left -= wr_test.left;
 		wr.right -= wr_test.left;
 		wr.top -= wr_test.top;
 		wr.bottom -= wr_test.top;
 
-		AdjustWindowRect(&wr, App.window.style, FALSE);
-		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
-		trace_log("Switched to windowed mode: %d x %d", App.window.size.x, App.window.size.y);
+		AdjustWindowRect(&wr, style, FALSE);
+		SetWindowPos_Og(App.hwnd, HWND_NOTOPMOST, wr.left, wr.top, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW | SWP_FRAMECHANGED);
+		trace_log("Switched to %s windowed mode: %d x %d", (App.window.borderless ? "borderless" : "bordered"), App.window.size.x, App.window.size.y);
 	} else {
 		SetWindowLong(App.hwnd, GWL_STYLE, App.window.style & ~WS_OVERLAPPEDWINDOW);
 		App.window.size = { screen_w, screen_h };

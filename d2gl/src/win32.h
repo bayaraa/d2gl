@@ -62,6 +62,7 @@ COLORREF WINAPI GetPixel(HDC hdc, int x, int y);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void setWindow(HWND hwnd);
+DWORD getWindowStyle();
 void setWindowRect();
 void setWindowMetrics();
 void setCursorLock();

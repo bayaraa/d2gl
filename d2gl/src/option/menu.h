@@ -29,6 +29,14 @@ enum class Color {
 	Gray,
 };
 
+// Borderless is a windowed mode, so it keeps its own [Screen] key rather than folding into
+// fullscreen. The three are mutually exclusive only as far as the menu is concerned.
+enum WindowMode {
+	WINDOW_MODE_WINDOWED,
+	WINDOW_MODE_BORDERLESS,
+	WINDOW_MODE_FULLSCREEN,
+};
+
 struct Options {
 	bool vsync = false;
 	bool unlock_cursor = false;
@@ -46,6 +54,7 @@ class Menu {
 	std::unordered_map<int, ImFont*> m_fonts;
 	std::unordered_map<Color, ImVec4> m_colors;
 	Options m_options;
+	Select<int> m_window_mode;
 	bool m_ignore_font = false;
 
 	Menu();
