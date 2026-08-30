@@ -24,6 +24,7 @@ void CommandBuffer::reset()
 	m_tex_update_queue.data_offset = 0;
 	m_vertex_count = 0;
 	m_vertex_mod_count = 0;
+	m_occluders.count = 0;
 	m_tex_update.bit = 0;
 
 	m_screen = App.game.screen;

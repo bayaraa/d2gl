@@ -57,6 +57,20 @@ struct GameTexUpdate {
 	glm::vec<2, uint16_t> size = { 0, 0 };
 };
 
+#define MAX_OCCLUDERS 64 // must match the u_Occluders/u_OccluderAtten array size in mod.glsl
+#define MOD_COVERAGE_CELLS 32 // module content occupancy grid, one bit per cell in a uint32 row
+
+// Opaque/translucent panel backgrounds emitted into the game vertex stream. The module pass is
+// composited after the whole game frame is resolved, so module content submitted *before* one of
+// these panels would otherwise draw on top of it. Each module vertex records how many panels had
+// been registered when it was pushed, and the module shader attenuates fragments that fall inside
+// a panel registered later than that.
+struct Occluders {
+	uint32_t count = 0;
+	glm::vec4 rects[MAX_OCCLUDERS] = {};    // clip space, matching the u_TextMask convention
+	float attenuations[MAX_OCCLUDERS] = {}; // 1.0 - panel alpha
+};
+
 struct HDTextMasking {
 	bool active = false;
 	bool masking = false;
@@ -82,6 +96,7 @@ class CommandBuffer {
 	uint8_t* m_tex_buffer = nullptr;
 	GameTexUpdate m_tex_update;
 	HDTextMasking m_hd_text_mask;
+	Occluders m_occluders;
 
 	friend class Context;
 

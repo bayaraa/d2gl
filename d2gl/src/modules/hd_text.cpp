@@ -506,6 +506,13 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	if (draw_mode == 1 && height == 16 && (left == 11 || left == 10 || (*d2::screen_shift == SCREENPANEL_LEFT && left == App.game.size.x / 2 + 10))) // message bg
 		return true;
 
+	// Only restyle the draw modes below. D2's DrawMode enum ends at 7 (DRAWMODE_HIGHLIGHT);
+	// 6 (DRAWMODE_TRANSHIGHLIGHT) brightens rather than darkens, so forcing it to opaque black
+	// would be wrong, and anything above 8 is not a mode any known caller uses. Leave those to
+	// the native path instead of silently blackening them.
+	if (draw_mode == 6 || draw_mode > 8)
+		return false;
+
 	uint32_t bg_color = 0x000000FF;
 	switch (draw_mode) {
 		case 0: bg_color = 0x00000066; break;
@@ -521,11 +528,26 @@ bool HDText::drawSolidRect(int left, int top, int right, int bottom, uint32_t co
 	// draw_mode == 7 : BH setting tab bg
 	// draw_mode == 8 : BH setting checkbox bg
 
+	const bool bordered = (draw_mode == 1 && top == App.game.size.y - 103 && height == 47); // message input bg
+
+	// A flat fill gains nothing from the HD (module) pass, and that pass is composited after the
+	// whole game frame is resolved, so anything the game or a third-party overlay draws on top of
+	// this background afterwards would end up underneath it. Emit it into the game vertex stream
+	// instead, where submission order is preserved. Only the bordered/gradient variant needs the
+	// module shader, and nothing is drawn over that one.
+	if (!bordered && App.context->pushFlatQuad({ (float)left, (float)top }, { (float)width, (float)height }, bg_color)) {
+		// The panel now sits in the game pass, below everything the module pass draws. Register it
+		// so module content submitted before it is attenuated by the panel's opacity instead of
+		// floating on top of it.
+		App.context->addOccluder({ (float)left, (float)top }, { (float)width, (float)height }, bg_color);
+		return true;
+	}
+
 	m_object_bg->setPosition({ (float)left, (float)top });
 	m_object_bg->setSize({ (float)width, (float)height });
 	m_object_bg->setColor(bg_color, 1);
 
-	if (draw_mode == 1 && top == App.game.size.y - 103 && height == 47) { // message input bg
+	if (bordered) {
 		m_object_bg->setColor(m_border_color, 2);
 		m_object_bg->setFlags(2, 4);
 		m_object_bg->setExtra({ (float)width, (float)height });

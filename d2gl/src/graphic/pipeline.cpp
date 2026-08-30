@@ -193,6 +193,16 @@ void Pipeline::setUniformVec4f(const std::string& name, const glm::vec4& value)
 	glUniform4fv(getUniformLocation(name), 1, &value.x);
 }
 
+void Pipeline::setUniformVec4fArray(const std::string& name, const glm::vec4* values, uint32_t count)
+{
+	glUniform4fv(getUniformLocation(name), count, &values[0].x);
+}
+
+void Pipeline::setUniform1fArray(const std::string& name, const float* values, uint32_t count)
+{
+	glUniform1fv(getUniformLocation(name), count, values);
+}
+
 void Pipeline::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);

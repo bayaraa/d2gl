@@ -105,6 +105,8 @@ public:
 	void setUniform1f(const std::string& name, float value);
 	void setUniformVec2f(const std::string& name, const glm::vec2& value);
 	void setUniformVec4f(const std::string& name, const glm::vec4& value);
+	void setUniformVec4fArray(const std::string& name, const glm::vec4* values, uint32_t count);
+	void setUniform1fArray(const std::string& name, const float* values, uint32_t count);
 	void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
 	inline const GLuint getId() const { return m_id; }

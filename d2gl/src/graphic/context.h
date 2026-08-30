@@ -124,6 +124,8 @@ class Context {
 	Vertices<VertexMod, MAX_VERTICES_MOD, MAX_FRAME_LATENCY> m_vertices_mod;
 	Vertices<VertexMod, MAX_VERTICES_MOD, 1> m_vertices_late;
 	VertexParams m_vertex_params;
+	Occluders m_occluders;
+	uint32_t m_mod_coverage[MOD_COVERAGE_CELLS] = {};
 
 	FrameMetrics m_frame;
 	LimiterMetrics m_limiter;
@@ -186,12 +188,15 @@ public:
 	inline void bindPipeline(const std::unique_ptr<Pipeline>& pipeline, uint32_t index = 0) { pipeline->bind(index); }
 
 	void pushVertex(const GlideVertex* vertex, glm::vec2 fix = { 0.0f, 0.0f }, glm::ivec2 offset = { 0, 0 });
+	bool pushFlatQuad(glm::vec2 pos, glm::vec2 size, uint32_t color);
 	void flushVertices();
 	void drawQuad(int8_t flag_x = 0, int8_t flag_y = 0, int16_t tex_id = 0);
 
 	inline void toggleDelayPush(bool delay) { m_delay_push = delay; }
 	void pushObject(const std::unique_ptr<Object>& object);
 	void appendDelayedObjects();
+	void addOccluder(glm::vec2 pos, glm::vec2 size, uint32_t color);
+	void addPanelOccluders();
 
 	inline void setVertexColor(uint32_t color) { m_vertex_params.color = color; }
 	inline void setVertexTexShift(uint8_t shift) { m_vertex_params.tex_shift = shift; }
@@ -217,6 +222,10 @@ public:
 
 private:
 	void resetFileTime();
+
+	glm::ivec4 coverageCells(glm::vec2 pos, glm::vec2 size);
+	void markModCoverage(glm::vec2 pos, glm::vec2 size);
+	bool coversModContent(glm::vec2 pos, glm::vec2 size);
 
 	void imguiInit();
 	void imguiDestroy();

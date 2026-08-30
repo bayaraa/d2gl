@@ -41,6 +41,8 @@ public:
 	void setExtra(glm::vec2 extra);
 
 	inline const VertexMod* getVertices() { return m_vertices; };
+	inline glm::vec2 getPosition() { return m_position; };
+	inline glm::vec2 getSize() { return m_size; };
 };
 
 }

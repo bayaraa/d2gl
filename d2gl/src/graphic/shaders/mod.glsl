@@ -71,6 +71,9 @@ uniform vec4 u_TextMask;
 uniform vec4 u_Viewport;
 uniform bool u_IsMasking = false;
 uniform bool u_IsGlide = true;
+uniform vec4 u_Occluders[64];
+uniform float u_OccluderAtten[64];
+uniform int u_OccluderCount = 0;
 
 float msdf(vec3 rgb, float smoothess, float weight)
 {
@@ -170,6 +173,16 @@ void main()
 
 	if (u_IsGlide && texture(u_MaskTexture, (gl_FragCoord.xy - u_Viewport.xy) / u_Viewport.zw).r > 0.1)
 		FragColor.a = 0.0;
+
+	// Panels emitted into the game stream after this fragment was submitted sit above it, so let
+	// them attenuate it by their own opacity. v_TexIds.y is how many were already registered when
+	// this fragment was pushed, so anything earlier than that is skipped.
+	for (int i = v_TexIds.y; i < u_OccluderCount; i++)
+	{
+		if (u_Occluders[i].x < v_Position.x && u_Occluders[i].z > v_Position.x &&
+			u_Occluders[i].y > v_Position.y && u_Occluders[i].w < v_Position.y)
+			FragColor.a *= u_OccluderAtten[i];
+	}
 }
 
 #endif
