@@ -69,7 +69,6 @@ int WINAPI ShowCursor(BOOL bShow)
 
 BOOL WINAPI SetCursorPos(int X, int Y)
 {
-	trace("locked: %d", App.cursor.locked);
 	if (App.hwnd && App.cursor.locked) {
 		POINT pt = { (LONG)((float)X * App.cursor.scale.x), (LONG)((float)Y * App.cursor.scale.y) };
 		pt.x += App.viewport.offset.x;
@@ -419,29 +418,80 @@ void setWindowMetrics()
 	App.cursor.unscale = { (float)App.game.size.x / App.viewport.size.x, (float)App.game.size.y / App.viewport.size.y };
 }
 
+static bool isForegroundWindow()
+{
+	const HWND foreground = GetForegroundWindow();
+	return foreground && (foreground == App.hwnd || foreground == GetAncestor(App.hwnd, GA_ROOT));
+}
+
+static RECT getCursorClipRect()
+{
+	RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
+	MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
+	return rc;
+}
+
+// ClipCursor fails unless we own the foreground window, which WM_ACTIVATE does not guarantee.
+static void applyCursorClip()
+{
+	if (!isForegroundWindow())
+		return;
+
+	const RECT rc = getCursorClipRect();
+	App.cursor.clipped = ClipCursor(&rc) != FALSE;
+}
+
+static void releaseCursorClip()
+{
+	if (App.cursor.clipped) {
+		ClipCursor(NULL);
+		App.cursor.clipped = false;
+	}
+}
+
 void setCursorLock()
 {
-	if (!App.cursor.locked) {
-		if (!App.cursor.unlock) {
-			RECT rc = { App.viewport.offset.x, App.viewport.offset.y, (int)App.viewport.size.x + App.viewport.offset.x, (int)App.viewport.size.y + App.viewport.offset.y };
-			MapWindowPoints(App.hwnd, NULL, (LPPOINT)&rc, 2);
-			ClipCursor(&rc);
-		}
+	if (App.cursor.locked)
+		return;
 
-		while(ShowCursor_Og(false) >= 0);
-		App.cursor.locked = true;
-	}
+	if (!App.cursor.unlock)
+		applyCursorClip();
+
+	while(ShowCursor_Og(false) >= 0);
+	App.cursor.locked = true;
 }
 
 void setCursorUnlock()
 {
 	if (App.cursor.locked) {
-		if (!App.cursor.unlock)
-			ClipCursor(NULL);
-		
+		releaseCursorClip();
+
 		while(ShowCursor_Og(true) <= 0);
 		App.cursor.locked = false;
 	}
+}
+
+// The clip rect is global state with no change notification: the system, other processes and
+// window moves can all invalidate it, so re-assert rather than chase every such event.
+void checkCursorLock()
+{
+	if (!App.cursor.locked || App.cursor.unlock) {
+		releaseCursorClip();
+		return;
+	}
+
+	// Never grab the cursor back while another window has the foreground; that is WM_ACTIVATE's job.
+	if (!isForegroundWindow()) {
+		App.cursor.clipped = false;
+		return;
+	}
+
+	const RECT want = getCursorClipRect();
+	RECT current = { 0 };
+	if (App.cursor.clipped && GetClipCursor(&current) && EqualRect(&current, &want))
+		return;
+
+	applyCursorClip();
 }
 
 void windowResize()

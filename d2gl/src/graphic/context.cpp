@@ -763,6 +763,7 @@ void Context::presentFrame()
 		m_frame.drawcall_count++;
 	}
 	option::Menu::instance().check();
+	win32::checkCursorLock();
 
 	ReleaseSemaphore(m_semaphore_cpu[m_frame_index], 1, NULL);
 	m_frame_index = (m_frame_index + 1) % (App.frame_latency + 1);

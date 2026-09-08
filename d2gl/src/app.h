@@ -92,7 +92,8 @@ struct D2GLApp {
 	} game;
 
 	struct {
-		bool locked = false;
+		bool locked = false;   // the game should own the cursor
+		bool clipped = false;  // our ClipCursor rect is actually installed
 		glm::vec2 scale = { 1.0f, 1.0f };
 		glm::vec2 unscale = { 1.0f, 1.0f };
 		bool unlock = false;
