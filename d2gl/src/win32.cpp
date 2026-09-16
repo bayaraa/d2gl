@@ -114,6 +114,74 @@ COLORREF WINAPI GetPixel(HDC hdc, int x, int y)
 	return 0;
 }
 
+// The game acts on a button release, so a WM_*BUTTONUP without a matching press it has seen
+// registers as a fresh click at the cursor's current position. Track which presses were actually
+// forwarded so an unmatched release is dropped instead of rewriting the player's last command.
+static uint32_t held_buttons = 0;
+
+static uint32_t mouseButtonBit(UINT uMsg)
+{
+	switch (uMsg) {
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONDBLCLK:
+		case WM_LBUTTONUP: return 0x1;
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONDBLCLK:
+		case WM_RBUTTONUP: return 0x2;
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONDBLCLK:
+		case WM_MBUTTONUP: return 0x4;
+	}
+	return 0;
+}
+
+static bool isMouseButtonUp(UINT uMsg)
+{
+	return uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONUP || uMsg == WM_MBUTTONUP;
+}
+
+// Returns false when the message must not reach the game.
+static bool trackMouseButton(UINT uMsg)
+{
+	const uint32_t bit = mouseButtonBit(uMsg);
+	if (!bit)
+		return true;
+
+	if (isMouseButtonUp(uMsg)) {
+		if (!(held_buttons & bit))
+			return false;
+
+		held_buttons &= ~bit;
+	} else
+		held_buttons |= bit;
+
+	return true;
+}
+
+// Focus loss would leave the game holding any pressed button, so release what it has seen.
+static void releaseHeldButtons(HWND hWnd)
+{
+	if (!held_buttons)
+		return;
+
+	auto cursor_pos = d2::getCursorPos();
+	cursor_pos.x = glm::max((int)glm::round((cursor_pos.x + App.viewport.offset.x * App.cursor.unscale.x) * App.cursor.scale.x), 0);
+	cursor_pos.y = glm::max((int)glm::round((cursor_pos.y + App.viewport.offset.y * App.cursor.unscale.y) * App.cursor.scale.y), 0);
+	cursor_pos.x = glm::min(cursor_pos.x, (int)App.window.size.x);
+	cursor_pos.y = glm::min(cursor_pos.y, (int)App.window.size.y);
+	const LPARAM xy = MAKELPARAM(cursor_pos.x, cursor_pos.y);
+
+	if (held_buttons & 0x1)
+		SendMessage(hWnd, WM_LBUTTONUP, 0, xy);
+	if (held_buttons & 0x2)
+		SendMessage(hWnd, WM_RBUTTONUP, 0, xy);
+	if (held_buttons & 0x4)
+		SendMessage(hWnd, WM_MBUTTONUP, 0, xy);
+
+	// A release the menu swallows never reaches trackMouseButton.
+	held_buttons = 0;
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (App.ready && option::Menu::instance().isVisible())
@@ -190,14 +258,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (App.window.fullscreen && App.window.auto_minimize)
 					PostMessage(hWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 
-				auto cursor_pos = d2::getCursorPos();
-				cursor_pos.x = glm::max((int)glm::round((cursor_pos.x + App.viewport.offset.x * App.cursor.unscale.x) * App.cursor.scale.x), 0);
-				cursor_pos.y = glm::max((int)glm::round((cursor_pos.y + App.viewport.offset.y * App.cursor.unscale.y) * App.cursor.scale.y), 0);
-				cursor_pos.x = glm::min(cursor_pos.x, (int)App.window.size.x);
-				cursor_pos.y = glm::min(cursor_pos.y, (int)App.window.size.y);
-				LPARAM xy = MAKELPARAM(cursor_pos.x, cursor_pos.y);
-				SendMessage(hWnd, WM_LBUTTONUP, 0, xy);
-				SendMessage(hWnd, WM_RBUTTONUP, 0, xy);
+				releaseHeldButtons(hWnd);
 
 				setCursorUnlock();
 			}
@@ -309,6 +370,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			y = (int)((float)glm::max(y - App.viewport.offset.y, 0) * App.cursor.unscale.y);
 			x = glm::min(x, (int)App.game.size.x);
 			y = glm::min(y, (int)App.game.size.y);
+
+			if (!trackMouseButton(uMsg))
+				return 0;
 
 			lParam = MAKELPARAM(x, y);
 
